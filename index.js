@@ -61,7 +61,7 @@ const checkCurrentStatus = () => {
     const currentSsid = getCurrentSsid();
     const ssidConfig = getSsidConfig(currentSsid);
 
-    if (ssidConfig && ssidConfig.status !== profile.status_text && (config.forceUpdate || isNotCustomStatus(profile.status_text, currentSsid))) {
+    if (ssidConfig && ssidConfig.status !== profile.status_text && (process.env.FORCE_UPDATE || config.forceUpdate || isNotCustomStatus(profile.status_text, currentSsid))) {
       setNewStatus(ssidConfig, profile);
     }
   });

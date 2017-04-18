@@ -25,14 +25,15 @@ https://nodejs.org/en/download/package-manager/
     nano config.js
 
     # Run the script
-    npm start
+    npm run update
 
     # If you want it to run automatically every 5 minutes, run:
     npm run install-crontab
 
 # Commands
 
-* `npm run start` executes this script once.
+* `npm run update` executes this script once normally.
+* `npm run force-update` executes this script once and will overwrite any status that is set.
 * `npm run install-crontab` installs this script into crontab, which is executed once in every 5 minutes.
 * `npm run uninstall-crontab` removes this script from crontab.
 

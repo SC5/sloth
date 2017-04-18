@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "update": "node index.js",
+    "force-update": "FORCE_UPDATE=true node index.js",
     "install-crontab": "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && echo 'Already installed in crontab' || ((crontab -l 2>/dev/null; echo \"*/5 * * * * $(which node) $(pwd)/index.js >/dev/null  # ssid-to-slack-status\") | crontab - && echo 'Crontab installed')",
     "uninstall-crontab": "crontab -l 2>/dev/null | grep -v '# ssid-to-slack-status' | crontab - && echo 'Uninstalled from crontab'"
   },
