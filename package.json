@@ -1,0 +1,18 @@
+{
+  "name": "ssid-to-slack-status",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "install": "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && echo 'Already installed in crontab' || ((crontab -l 2>/dev/null; echo \"*/5 * * * * $(which node) $(pwd)/index.js >/dev/null  # ssid-to-slack-status\") | crontab - && echo 'Crontab installed')",
+    "uninstall": "crontab -l 2>/dev/null | grep -v '# ssid-to-slack-status' | crontab - && echo 'Uninstalled from crontab'"
+  },
+  "repository": {
+    "url": "https://github.com/kirbo/ssid-to-slack-status.git",
+    "type": "git"
+  },
+  "author": "kimmo.saari@sc5.io",
+  "license": "MIT",
+  "dependencies": {
+    "slack": "8.2.7"
+  }
+}
