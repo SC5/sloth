@@ -32,8 +32,9 @@ https://nodejs.org/en/download/package-manager/
 
 # Commands
 
-`npm run install` installs this script into crontab, which is executed once in every 5 minutes.
-`npm run uninstall` removes this script from crontab.
+`npm run start` execute this script once.
+`npm run install-crontab` installs this script into crontab, which is executed once in every 5 minutes.
+`npm run uninstall-crontab` removes this script from crontab.
 
 **If you set a 'custom status' in Slack**, this script will not overwrite your status, so you need to manually set it to something from the `config.js` in order for it to continue updating the status automatically.
 
