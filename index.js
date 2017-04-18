@@ -2,7 +2,7 @@ const execSync = require('child_process').execSync;
 const slack = require('slack');
 
 const {
-  token,
+  config,
   ssids,
 } = require('./config');
 
@@ -21,26 +21,26 @@ const getSsidConfig = () => (
 );
 
 /**
- * @param {Object} config - Current SSID config.
+ * @param {Object} ssidConfig - Current SSID config.
  * @param {Object} profile - Current profile in Slack.
  * 
  * @returns {String} - Current SSID name.
  */
-const setNewStatus = (config, profile) => {
+const setNewStatus = (ssidConfig, profile) => {
   const payload = {
-    token,
+    token: config.token,
     profile: Object.assign(
       {},
       profile,
       {
-        status_text: config.status,
-        status_emoji: config.icon
+        status_text: ssidConfig.status,
+        status_emoji: ssidConfig.icon
       }
     )
   };
 
   slack.users.profile.set(payload, (err, data) => {
-    console.log(`Setting new status to '${config.status}', with emoji '${config.icon}' ${data.ok ? 'Succeeded' : 'Failed'}`);
+    console.log(`Setting new status to '${ssidConfig.status}', with emoji '${ssidConfig.icon}' ${data.ok ? 'Succeeded' : 'Failed'}`);
   });
 };
 
@@ -53,13 +53,13 @@ const isNotCustomStatus = (status, currentSsid) => (
 )
 
 const checkCurrentStatus = () => {
-  slack.users.profile.get({token}, (err, data) => {
+  slack.users.profile.get({token: config.token}, (err, data) => {
     const { profile } = data;
 
     const currentSsid = getCurrentSsid();
     const ssidConfig = getSsidConfig(currentSsid);
 
-    if (ssidConfig.status !== profile.status_text && isNotCustomStatus(profile.status_text, currentSsid)) {
+    if (ssidConfig && ssidConfig.status !== profile.status_text && (config.forceUpdate || isNotCustomStatus(profile.status_text, currentSsid))) {
       setNewStatus(ssidConfig, profile);
     }
   });

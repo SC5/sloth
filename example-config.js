@@ -1,5 +1,7 @@
-// If you have not registered a Slack app yet, you can do it here: https://api.slack.com/apps
-const token = 'slack-token-here';
+const config = {
+  token: 'slack-token-here', // If you have not registered a Slack app yet, you can do it here: https://api.slack.com/apps
+  forceUpdate: false, // Should this script force update the status based on the SSID (overwrites manually set custom statuses).
+};
 
 const ssids = [
   {
