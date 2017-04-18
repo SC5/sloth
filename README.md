@@ -20,6 +20,8 @@ https://nodejs.org/en/download/package-manager/
  
     # Copy sample config file
     cp example-config.js config.js
+
+**Get your access token from:** [https://ssid-to-slack-status.tunkkaus.com](https://ssid-to-slack-status.tunkkaus.com)
     
     # Edit the file you just copied with your favorite editor, e.g.
     nano config.js
