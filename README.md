@@ -32,7 +32,7 @@ https://nodejs.org/en/download/package-manager/
 
 # Commands
 
-* `npm run start` execute this script once.
+* `npm run start` executes this script once.
 * `npm run install-crontab` installs this script into crontab, which is executed once in every 5 minutes.
 * `npm run uninstall-crontab` removes this script from crontab.
 
