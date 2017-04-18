@@ -28,7 +28,7 @@ https://nodejs.org/en/download/package-manager/
     npm start
 
     # If you want it to run automatically every 5 minutes, run:
-    npm run install
+    npm run install-crontab
 
 # Commands
 
