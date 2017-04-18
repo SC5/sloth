@@ -19,7 +19,7 @@ const getCurrentSsid = () => (
  * @returns {Object} - If configuration for SSID is found, return it.
  */
 const getSsidConfig = () => (
-  ssids.find(s => s.ssid === getCurrentSsid().toLowerCase()) || undefined
+  ssids.find(s => s.ssid.toLowerCase() === getCurrentSsid().toLowerCase()) || undefined
 );
 
 /**
