@@ -22,6 +22,6 @@ const ssids = [
 ];
 
 module.exports = {
-  token,
+  config,
   ssids,
 };
