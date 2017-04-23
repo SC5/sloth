@@ -16,3 +16,8 @@ tr {
 tr:nth-child(even) {
   background: #fafafa;
 }
+
+img.emoji {
+  max-width: 24px;
+  max-height: 24px;
+}

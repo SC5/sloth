@@ -1,23 +1,23 @@
-import slack from 'slack';
-import wifi from 'node-wifi';
-import emoji from 'node-emoji';
+const slack = require('slack');
+const wifi = require('node-wifi');
+const emoji = require('node-emoji');
 
-import {
+const {
   config,
   ssids,
-} from './config';
+} = require('./config');
 
 wifi.init({
   iface : config.iface || null,
 });
 
-export const uniqueObjectsFromArray = (array, property) => (
+const uniqueObjectsFromArray = (array, property) => (
   Array.from(array.reduce((m, o) => 
     m.set(o[property], o), new Map()).values()
   )
 )
 
-export const getEmoji = text => (
+const getEmoji = text => (
   emoji.get(text)
 )
 
@@ -26,7 +26,7 @@ export const getEmoji = text => (
  * 
  * @returns {Array} - Connections information.
  */
-export const getCurrentConnections = () => {
+const getCurrentConnections = () => {
   return new Promise((resolve, reject) => {
     wifi.getCurrentConnections((error, connections) => {
       if (error) {
@@ -45,7 +45,7 @@ export const getCurrentConnections = () => {
  * 
  * @returns {Array} - Connections information.
  */
-export const scanConnections = () => {
+const scanConnections = () => {
   return new Promise((resolve, reject) => {
     wifi.scan((error, connections) => {
       if (error) {
@@ -64,9 +64,9 @@ export const scanConnections = () => {
  * 
  * @returns {Array} - Array of all the currently connected SSID names.
  */
-export const getCurrentSsidNames = () => (
+const getCurrentSsidNames = () => (
   new Promise((resolve, reject) => {
-    this.getCurrentConnections()
+    getCurrentConnections()
       .then(connections => {
         resolve(connections.map(connection => connection.ssid.toLowerCase()) || []);
       })
@@ -76,10 +76,14 @@ export const getCurrentSsidNames = () => (
 /**
  * @returns {Object} - If configuration for SSID is found, return it.
  */
-export const getSsidConfig = () => {
-  const connectedSsids = this.getCurrentSsidNames();
-  return ssids.find(s => connectedSsids.includes(s.ssid.toLowerCase())) || undefined;
-}
+const getSsidConfig = () => (
+  new Promise((resolve, reject) => {
+  getCurrentSsidNames()
+    .then(connectedSsids => {
+      resolve(ssids.find(s => connectedSsids.includes(s.ssid.toLowerCase())) || undefined);
+    })
+  })
+)
 
 /**
  * Update the status with predefined one for the current SSID.
@@ -89,7 +93,7 @@ export const getSsidConfig = () => {
  * 
  * @returns {String} - Current SSID name.
  */
-export const setNewStatus = (ssidConfig, profile) => {
+const setNewStatus = (ssidConfig, profile) => {
   const payload = {
     token: config.token,
     profile: Object.assign({},
@@ -102,7 +106,7 @@ export const setNewStatus = (ssidConfig, profile) => {
   };
 
   return new Promise((resolve, reject) => {
-    slack.users.profile.set(payload, async(error, data) => {
+    slack.users.profile.set(payload, (error, data) => {
       if (error) {
         reject(error);
         return;
@@ -128,36 +132,37 @@ export const setNewStatus = (ssidConfig, profile) => {
  * 
  * @returns {Boolean} - true = Predefined, false = Custom
  */
-export const isStatusPredefined = (status, currentSsid) => (
+const isStatusPredefined = (status, currentSsid) => (
   !ssids.find(s => s.status === status && s.ssid !== currentSsid)
 )
 
 /**
  * Checks the status and updates it if all the conditions are matched.
  */
-export const checkCurrentStatus = () => {
+const checkCurrentStatus = () => {
   return new Promise((resolve, reject) => {
-    slack.users.profile.get({token: config.token}, async(error, data) => {
+    slack.users.profile.get({token: config.token}, (error, data) => {
       if (error) {
         reject(error);
         return;
       }
       const { status_emoji, status_text } = data.profile;
 
-      const ssidConfig = await this.getSsidConfig();
-
-      if (
-        ssidConfig
-        && (ssidConfig.icon !== status_emoji || ssidConfig.status !== status_text)
-        && (process.env.FORCE_UPDATE || config.forceUpdate || !this.isStatusPredefined(status_text, ssidConfig.ssid))
-      ) {
-        this.setNewStatus(ssidConfig, data.profile)
-          .then(response => resolve(response))
-          .catch(reason => reject(reason))
-        ;
-      } else {
-        resolve(`Already up-to-date, status: ${getEmoji(status_emoji)}  ${status_text}`);
-      }
+      getSsidConfig()
+        .then(ssidConfig => {
+          if (
+            ssidConfig
+            && (ssidConfig.icon !== status_emoji || ssidConfig.status !== status_text)
+            && (process.env.FORCE_UPDATE || config.forceUpdate || !isStatusPredefined(status_text, ssidConfig.ssid))
+          ) {
+            setNewStatus(ssidConfig, data.profile)
+              .then(response => resolve(response))
+              .catch(reason => reject(reason))
+            ;
+          } else {
+            resolve(`Already up-to-date, status: ${getEmoji(status_emoji)}  ${status_text}`);
+          }
+        })
     });
   });
 }
@@ -165,9 +170,9 @@ export const checkCurrentStatus = () => {
 /**
  * Checks the status and updates it if all the conditions are matched.
  */
-export const getCurrentStatus = () => {
+const getCurrentStatus = () => {
   return new Promise((resolve, reject) => {
-    slack.users.profile.get({token: config.token}, async(error, data) => {
+    slack.users.profile.get({token: config.token}, (error, data) => {
       if (error) {
         reject(error);
         return;
@@ -178,11 +183,26 @@ export const getCurrentStatus = () => {
 }
 
 /**
+ * Checks the status and updates it if all the conditions are matched.
+ */
+const getEmojis = () => {
+  return new Promise((resolve, reject) => {
+    slack.emoji.list({token: config.token}, (error, data) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(data.emoji);
+    });
+  });
+}
+
+/**
  * 
  * @param {Array} data - Data to sort.
  * @param {String} property - Property to sort by.
  */
-export const sortConnections = (data, property) => (
+const sortConnections = (data, property) => (
   data.sort((a,b) => a[property] > b[property])
 )
 
@@ -194,8 +214,8 @@ const QUARTER_MINUTE  = 15    * SECOND;
 const HALF_MINUTE     = 2     * QUARTER_MINUTE;
 const MINUTE          = 2     * HALF_MINUTE;
 const QUARTER_HOUR    = 15    * MINUTE;
-const HALF_HOUR       = 2     * HALF_HOUR;
-const HOUR            = 2     * HOUR;
+const HALF_HOUR       = 2     * QUARTER_HOUR;
+const HOUR            = 2     * HALF_HOUR;
 const QUARTER_DAY     = 6     * HOUR;
 const HALF_DAY        = 2     * QUARTER_DAY;
 const DAY             = 2     * HALF_DAY;
@@ -203,7 +223,7 @@ const WEEK            = 7     * DAY;
 const MONTH           = 4     * WEEK;
 const YEAR            = 365   * DAY;
 
-export const times = {
+const times = {
   MILLISECOND,
   QUARTER_SECOND,
   HALF_SECOND,
@@ -220,4 +240,20 @@ export const times = {
   WEEK,
   MONTH,
   YEAR
+}
+
+module.exports = {
+  uniqueObjectsFromArray,
+  getEmoji,
+  getCurrentConnections,
+  scanConnections,
+  getCurrentSsidNames,
+  getSsidConfig,
+  setNewStatus,
+  isStatusPredefined,
+  checkCurrentStatus,
+  getCurrentStatus,
+  getEmojis,
+  sortConnections,
+  times
 }

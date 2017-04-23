@@ -4,12 +4,12 @@
   "main": "index.js",
   "scripts": {
     "upgrade": "npm install && npm prune && echo 'Dependencies upgraded' && crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && npm run crontab-reinstall || exit 0",
-    "update": "node --harmony index.js",
-    "force-update": "FORCE_UPDATE=true $(which node) --harmony index.js",
-    "crontab": "node --harmony crontab.js",
-    "crontab-install": "node --harmony crontab.js install",
-    "crontab-uninstall": "node --harmony crontab.js uninstall",
-    "crontab-reinstall": "node --harmony crontab.js reinstall",
+    "update": "$(which node) --harmony src/utils/update.js update",
+    "force-update": "FORCE_UPDATE=true $(which node) --harmony src/utils/update.js force-update",
+    "crontab": "$(which node) --harmony src/utils/crontab.js",
+    "crontab-install": "$(which node) --harmony src/utils/crontab.js install",
+    "crontab-uninstall": "$(which node) --harmony src/utils/crontab.js uninstall",
+    "crontab-reinstall": "$(which node) --harmony src/utils/crontab.js reinstall",
     "start": "./node_modules/.bin/electron .",
     "watch": "./node_modules/.bin/webpack-dev-server",
     "electron-rebuild": "./node_modules/.bin/electron-rebuild"
@@ -21,12 +21,13 @@
   "author": "kimmo.saari@sc5.io",
   "license": "MIT",
   "dependencies": {
-    "antd": "^2.9.2",
+    "antd": "2.9.2",
     "electron": "1.6.5",
     "node-emoji": "1.5.1",
     "node-wifi": "git+https://github.com/kirbo/node-wifi.git",
     "react": "15.5.4",
-    "react-dom": "^15.5.4",
+    "react-dom": "15.5.4",
+    "react-intl": "2.2.3",
     "slack": "8.2.7"
   },
   "devDependencies": {
