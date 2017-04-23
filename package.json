@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "update": "node index.js",
-    "force-update": "FORCE_UPDATE=true node index.js",
-    "install-crontab": "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && echo 'Already installed in crontab' || ((crontab -l 2>/dev/null; echo \"*/5 * * * * $(which node) $(pwd)/index.js >/dev/null 2>&1 # ssid-to-slack-status\") | crontab - && echo 'Crontab installed')",
-    "uninstall-crontab": "crontab -l 2>/dev/null | grep -v '# ssid-to-slack-status' | crontab - && echo 'Uninstalled from crontab'"
+    "upgrade": "npm install && npm prune && echo 'Dependencies upgraded' && crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && npm run crontab-reinstall || exit 0",
+    "update": "node --harmony index.js",
+    "force-update": "FORCE_UPDATE=true $(which node) --harmony index.js",
+    "crontab": "node --harmony crontab.js",
+    "crontab-install": "node --harmony crontab.js install",
+    "crontab-uninstall": "node --harmony crontab.js uninstall",
+    "crontab-reinstall": "node --harmony crontab.js reinstall"
   },
   "repository": {
     "url": "https://github.com/kirbo/ssid-to-slack-status.git",
@@ -15,6 +18,8 @@
   "author": "kimmo.saari@sc5.io",
   "license": "MIT",
   "dependencies": {
+    "node-emoji": "1.5.1",
+    "node-wifi": "1.2.4",
     "slack": "8.2.7"
   }
 }

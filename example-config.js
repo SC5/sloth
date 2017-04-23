@@ -1,6 +1,7 @@
 const config = {
   token: 'slack-token-here',    // Get your token here: https://ssid-to-slack-status.tunkkaus.com/
   forceUpdate: false,           // Should this script force update the status based on the SSID (overwrites manually set custom statuses)
+  iface: null,                  // Network interface. Chooses a random WiFi interface if set to null
 };
 
 const ssids = [
