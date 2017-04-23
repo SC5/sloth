@@ -9,7 +9,10 @@
     "crontab": "node --harmony crontab.js",
     "crontab-install": "node --harmony crontab.js install",
     "crontab-uninstall": "node --harmony crontab.js uninstall",
-    "crontab-reinstall": "node --harmony crontab.js reinstall"
+    "crontab-reinstall": "node --harmony crontab.js reinstall",
+    "start": "./node_modules/.bin/electron .",
+    "watch": "./node_modules/.bin/webpack-dev-server",
+    "electron-rebuild": "./node_modules/.bin/electron-rebuild"
   },
   "repository": {
     "url": "https://github.com/kirbo/ssid-to-slack-status.git",
@@ -18,8 +21,33 @@
   "author": "kimmo.saari@sc5.io",
   "license": "MIT",
   "dependencies": {
+    "electron": "1.6.5",
     "node-emoji": "1.5.1",
-    "node-wifi": "1.2.4",
+    "node-wifi": "git+https://github.com/kirbo/node-wifi.git",
+    "react": "15.5.4",
+    "react-dom": "^15.5.4",
     "slack": "8.2.7"
+  },
+  "devDependencies": {
+    "babel": "6.23.0",
+    "babel-core": "6.24.1",
+    "babel-loader": "7.0.0",
+    "babel-plugin-react-transform": "2.0.2",
+    "babel-plugin-transform-object-assign": "6.22.0",
+    "babel-polyfill": "6.23.0",
+    "babel-preset-es2015": "6.24.1",
+    "babel-preset-react": "6.24.1",
+    "babel-preset-react-hmre": "1.1.1",
+    "babel-preset-stage-0": "6.24.1",
+    "css-loader": "0.28.0",
+    "electron-packager": "8.6.0",
+    "electron-rebuild": "1.5.7",
+    "node-libs-browser": "2.0.0",
+    "node-sass": "4.5.2",
+    "sass": "0.5.0",
+    "sass-loader": "6.0.3",
+    "style-loader": "0.16.1",
+    "webpack": "2.4.1",
+    "webpack-dev-server": "2.4.4"
   }
 }

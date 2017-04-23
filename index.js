@@ -1,137 +1,55 @@
-const slack = require('slack');
-const wifi = require('node-wifi');
-const emoji = require('node-emoji');
+const {app, BrowserWindow} = require('electron');
+const path = require('path');
+const url = require('url');
 
-const {
-  config,
-  ssids,
-} = require('./config');
+// Keep a global reference of the window object, if you don't, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let win
 
-wifi.init({
-  iface : config.iface || null,
-});
+const createWindow = () => {
+  // Create the browser window.
+  win = new BrowserWindow({width: 1360, height: 800})
 
+  // and load the index.html of the app.
+  win.loadURL(url.format({
+    pathname: path.join(__dirname, 'src/index.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
 
-/**
- * Fetches the current WiFi connections information.
- * 
- * @returns {Array} - Connections information.
- */
-const getCurrentConnections = async() => {
-  return new Promise((resolve, reject) => {
-    wifi.getCurrentConnections((error, connections) => {
-      if (error) {
-          reject();
-      }
-      resolve(connections);
-    });
+  // Open the DevTools.
+  win.webContents.openDevTools()
+
+  // Emitted when the window is closed.
+  win.on('closed', () => {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    win = null
   })
-  .catch(error => {
-    console.error('Error:', error);
-  });
 }
 
-/**
- * Tries to get the SSID names for the current WiFi connections.
- * 
- * @returns {Array} - Array of all the currently connected SSID names.
- */
-const getCurrentSsidNames = async() => {
-  const connections = await getCurrentConnections();
-  return connections.map(connection => connection.ssid.toLowerCase()) || [];
-}
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+app.on('ready', createWindow)
 
-/**
- * @returns {Object} - If configuration for SSID is found, return it.
- */
-const getSsidConfig = async() => {
-  const connectedSsids = await getCurrentSsidNames();
-  return ssids.find(s => connectedSsids.includes(s.ssid.toLowerCase())) || undefined;
-}
+// Quit when all windows are closed.
+app.on('window-all-closed', () => {
+  // On macOS it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
 
-/**
- * Update the status with predefined one for the current SSID.
- * 
- * @param {Object} ssidConfig - Current SSID config.
- * @param {Object} profile - Current profile in Slack.
- * 
- * @returns {String} - Current SSID name.
- */
-const setNewStatus = (ssidConfig, profile) => {
-  const payload = {
-    token: config.token,
-    profile: Object.assign({},
-      profile,
-      {
-        status_text: ssidConfig.status,
-        status_emoji: ssidConfig.icon
-      }
-    )
-  };
+app.on('activate', () => {
+  // On macOS it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (win === null) {
+    createWindow()
+  }
+})
 
-  return new Promise((resolve, reject) => {
-    slack.users.profile.set(payload, async(error, data) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      let response;
-      const newStatus = `new status: ${emoji.get(ssidConfig.icon)}  ${ssidConfig.status}`;
-      if (data.ok) {
-        response = `Succesfully set ${newStatus}\nOld was: ${emoji.get(profile.status_emoji)}  ${profile.status_text}`;
-      } else {
-        response = `Failed to set new status: ${newStatus}`;
-      }
-      resolve(response);
-    });
-  });
-}
-
-/**
- * Checks if the current status text is not predefined in config or not.
- * 
- * @param {String} status - Current status text.
- * @param {String} currentSsid - Current SSID config.
- * 
- * @returns {Boolean} - true = Predefined, false = Custom
- */
-const isStatusPredefined = (status, currentSsid) => (
-  !ssids.find(s => s.status === status && s.ssid !== currentSsid)
-)
-
-/**
- * Checks the status and updates it if all the conditions are matched.
- */
-const checkCurrentStatus = () => {
-  return new Promise((resolve, reject) => {
-    slack.users.profile.get({token: config.token}, async(error, data) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      const { status_emoji, status_text } = data.profile;
-
-      const ssidConfig = await getSsidConfig();
-
-      if (
-        ssidConfig
-        && (ssidConfig.icon !== status_emoji || ssidConfig.status !== status_text)
-        && (process.env.FORCE_UPDATE || config.forceUpdate || !isStatusPredefined(status_text, ssidConfig.ssid))
-      ) {
-        setNewStatus(ssidConfig, data.profile)
-          .then(response => resolve(response))
-          .catch(reason => reject(reason))
-        ;
-      } else {
-        resolve(`Already up-to-date, status: ${emoji.get(status_emoji)}  ${status_text}`);
-      }
-    });
-  });
-}
-
-// Execute the check.
-checkCurrentStatus()
-  .then(response => console.log(response))
-  .catch(reason => console.error('Error:', reason))
-;
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and require them here.
