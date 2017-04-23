@@ -1,1 +1,57 @@
 @import '../../main.css';
+
+#app {
+  background: #eee;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+
+#app .container {
+  padding: 10px;
+}
+
+#app .ant-layout-header {
+  $header-height: 72px;
+  display: flex;
+  background: #fff;
+  padding: 0;
+  height: $header-height;
+  line-height: $header-height;
+  font-size: 14px;
+
+  & .header {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+
+    & .user {
+      display: flex;
+      align-items: flex-start;
+      flex: 1 1 auto;
+
+      & div {
+        display: inline-flex;
+        padding-right: 5px;
+      }
+    }
+
+    & .status {
+      display: flex;
+      align-items: flex-end;
+      align-self: flex-end;
+      flex: 1 1 auto;
+      padding: 0 5px;
+
+      & div {
+        display: inline-flex;
+        padding-left: 5px;
+      }
+    }
+  }
+}
+
+
+#app .ant-layout-footer {
+  text-align: center;
+}

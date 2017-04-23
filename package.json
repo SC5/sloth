@@ -21,6 +21,7 @@
   "author": "kimmo.saari@sc5.io",
   "license": "MIT",
   "dependencies": {
+    "antd": "^2.9.2",
     "electron": "1.6.5",
     "node-emoji": "1.5.1",
     "node-wifi": "git+https://github.com/kirbo/node-wifi.git",
