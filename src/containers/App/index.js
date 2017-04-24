@@ -1,33 +1,28 @@
+import '../../../antd.less';
 import './App.css';
 
 import React from 'react';
 import { FormattedRelative } from 'react-intl';
+const socket = require('socket.io-client/lib/index')('http://localhost:5000');
 
-import * as utils from '../../utils';
-const { SECOND, MINUTE } = utils.times
+import { Layout, notification, message } from 'antd';
 
-import { Layout, Menu, Table, Icon, Spin } from 'antd';
-const { Header, Content, Footer, Sider } = Layout;
+import Emoji from '../../components/Emoji';
+import Logged from '../Logged';
+import Authorise from '../Authorise';
 
-const connectionColumns = [{
-  title: 'SSID',
-  dataIndex: 'ssid',
-  key: 'mac',
-}, {
-  title: 'Action',
-  key: 'action',
-  render: (text, record) => (
-    <span>
-      <a href="#">Action 一 {record.ssid}</a>
-      <span className="ant-divider" />
-      <a href="#">Delete</a>
-      <span className="ant-divider" />
-      <a href="#" className="ant-dropdown-link">
-        More actions <Icon type="down" />
-      </a>
-    </span>
-  ),
-}];
+import Utils from '../../utils';
+const utils = new Utils();
+
+import * as constants from '../../utils/constants';
+const {
+  QUARTER_SECOND,
+  SECOND,
+  HALF_MINUTE,
+  MINUTE
+} = constants.TIMES;
+
+const intervals = [];
 
 class App extends React.Component {
   state = {
@@ -51,32 +46,96 @@ class App extends React.Component {
       connections: [],
       time: null,
     },
+    configurations: [],
     initialised: false,
+    token: false,
+    crontab: false,
+    interval: 5,
   }
 
   componentWillMount = () => {
-    const currentConnections    = this.getCurrentConnections();
-    const availableConnections  = this.getAvailableConnections();
-    const profile               = this.getCurrentStatus();
-    const emojis                = this.getEmojis();
+    this.getConfig()
+      .then(config => this.setConfig(config))
+      .then(() => {
+        this.hasToken();
 
-    Promise.all([
-      currentConnections,
-      availableConnections,
-      profile,
-      emojis,
-    ])
-    .then(values => {
-      this.setState({
-        initialised: true,
+        const currentConnections    = this.getCurrentConnections();
+        const availableConnections  = this.getAvailableConnections();
+        const crontab               = this.getCrontab();        
+
+        intervals.push(setInterval(() => this.getCurrentConnections(),    MINUTE * 3));
+        intervals.push(setInterval(() => this.getAvailableConnections(),  MINUTE * 1));
+        intervals.push(setInterval(() => this.getCrontab(),               HALF_MINUTE));
+        
       })
-    })
+      .catch(error => { throw new Error(error) })
+    ;
+
+    socket
+      .on('authorised', data => {
+        if (!this.state.token && !this.state.initialised) {
+          this.getConfig()
+            .then(config => this.setConfig(config))
+            .then(() => this.hasToken())
+            .catch(error => { throw new Error(error) })
+          ;
+        }
+      })
+    ;
   }
 
-  componentDidMount = () => {
-    setInterval(() => this.getCurrentConnections(),     1 * MINUTE);
-    setInterval(() => this.getAvailableConnections(),   1 * MINUTE);
-    setInterval(() => this.getCurrentStatus(),          5 * MINUTE);
+  componentWillUnmount = () => {
+    intervals.map(interval => {
+      clearInterval(interval);
+    });
+  }
+
+  getConfig = () => (
+    new Promise((resolve, reject) => {
+      resolve(utils.getConfig());
+    })
+  )
+
+  /**
+   * @param {Object} config - Configs.
+   */
+  setConfig = config => (
+    new Promise((resolve, reject) => {
+      this.setState({
+        token: !!config.token,
+        configurations: config.ssids,
+        defaultCollapsed: config.defaultCollapsed,
+        interval: config.interval || this.state.interval,
+      });
+      setTimeout(() => {
+        resolve();
+      }, QUARTER_SECOND);
+    })
+  )
+
+  hasToken = () => {
+    if (this.state.token) {
+      intervals.push(setInterval(() => this.getCurrentStatus(), MINUTE * this.state.interval));
+
+      const emojis  = this.getEmojis();
+      const profile = this.getCurrentStatus();
+
+      Promise.all([
+        emojis
+      ])
+      .then(values => (
+        new Promise((resolve, reject) => {
+          resolve(this.setState({ initialised: true }))
+        })
+      ))
+    }
+  }
+
+  /**
+   * @param {Boolean} crontab - Is crontab installed or not.
+   */
+  setCrontab = crontab => {
+    this.setState({ crontab });
   }
 
   getCurrentConnections = () => {
@@ -138,66 +197,14 @@ class App extends React.Component {
     });
   }
 
-  getProfile = () => {
-    if (!this.state.profile.data) {
-      return (
-        <div className="loading">
-          <Spin />
-        </div>
-      );
-    }
-
-    return (
-      <div className="profile">
-        <div className="column-left">
-          <div className="user">
-            <div className="avatar"><img src={this.state.profile.data.image_72} /></div>
-            <div className="firstname">{this.state.profile.data.first_name}</div>
-            <div className="lastname">{this.state.profile.data.last_name}</div>
-          </div>
-        </div>
-        <div className="column-right">
-          <div className="status">
-            <div className="emoji">{this.getEmoji(this.state.profile.data.status_emoji)}</div>
-            <div className="status">{this.state.profile.data.status_text}</div>
-          </div>
-        </div>
-      </div>
-    );
+  getCrontab = () => {
+    this.setState({ crontab: !!utils.checkCrontab() });
   }
 
-  getEmoji = emoji => {
-    const strippedEmoji = emoji.replace(/:/g, '');
-    const source = this.state.emojis.data[strippedEmoji];
-
-    if (source) {
-      return (
-        <img className="emoji" src={source} />
-      );
-    }
-
-    return utils.getEmoji(emoji);
-  }
-
-  renderCurrentConnections = () => (
-    <Table
-      loading={!this.state.current.fetched}
-      columns={connectionColumns}
-      dataSource={utils.sortConnections(this.state.current.connections, 'ssid')}
-      pagination={this.state.current.connections.length < 10 ? false : true}
-    />
-  )
-
-  renderAvailableConnections = () => (
-    <Table
-      loading={!this.state.available.fetched}
-      columns={connectionColumns}
-      dataSource={utils.sortConnections(this.state.available.connections, 'ssid')}
-      pagination={this.state.available.connections.length < 10 ? false : true}
-    />
-  )
-
-  renderLastUpdate = time => {
+  /**
+   * @param {Date} time - Datetime.
+   */
+  lastUpdate = time => {
     if (time === null) {
       return null;
     }
@@ -205,56 +212,56 @@ class App extends React.Component {
     return <FormattedRelative value={time} />;
   }
 
-  renderCurrentProfile = () => {
-    return (
-      <div className="header">
-        <div className="title">
-          <div className="text">Profile</div>
-          <div className="update"><span>Fetched: {this.renderLastUpdate(this.state.profile.time)}</span></div>
-        </div>
-        {this.getProfile()}
-      </div>
-    )
+  /**
+   * @param {Array} keys - Expanded panels.
+   */
+  saveDefaultCollapse = keys => {
+    this.setState({
+      defaultCollapsed: keys,
+    })
   }
 
-  renderConnections = () => {
-    return (
-      <div>
-        <div className="title">
-          <div className="text">Current connections</div>
-          <div className="update"><span>Last update: {this.renderLastUpdate(this.state.current.time)}</span></div>
-        </div>
-        <div>{this.renderCurrentConnections()}</div>
-
-        <div className="title">
-          <div className="text">Available connections</div>
-          <div className="update"><span>Last update: {this.renderLastUpdate(this.state.available.time)}</span></div>
-        </div>
-        <div>{this.renderAvailableConnections()}</div>
-      </div>
-    )
+  /**
+   * @param {Object} config - Configuration
+   */
+  saveToConfig = config => {
+    utils.saveToConfig(config);
   }
+
+
+  openNotification = data => {
+    notification[data.type]({
+      message: data.title,
+      description: data.message,
+      duration: 4.5
+    });
+  };
+
+  openMessage = data => {
+    message[data.type || 'info'](data.message);
+  };
 
   render = () => {
-    if (!this.state.initialised) {
-      return null;
+    if (!this.state.token) {
+      return (
+        <Authorise
+          openNotification={this.openNotification}
+          openMessage={this.openMessage}
+        />
+      );
     }
-
+    
     return (
-      <Layout>
-        <Header>
-          {this.renderCurrentProfile()}
-        </Header>
-        <Content>
-          <div>
-            {this.renderConnections()}
-          </div>
-        </Content>
-        <Footer>
-          Kimmo Saari ©2017 Created by Ant UED
-        </Footer>
-      </Layout>
-    );
+      <Logged
+        {...this.state}
+        getCurrentStatus={this.getCurrentStatus}
+        openNotification={this.openNotification}
+        openMessage={this.openMessage}
+        lastUpdate={this.lastUpdate}
+        saveToConfig={this.saveToConfig}
+        setCrontab={this.setCrontab}
+      />
+    )
   }
 }
 

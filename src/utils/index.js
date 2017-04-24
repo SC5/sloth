@@ -1,259 +1,403 @@
+const fs = require('fs');
+const path = require('path');
 const slack = require('slack');
 const wifi = require('node-wifi');
 const emoji = require('node-emoji');
+const { app: electron, shell, remote } = require('electron');
+const execSync = require('child_process').execSync;
 
 const {
-  config,
-  ssids,
-} = require('./config');
+  CONFIG,
+  CONFIG_FILENAME
+} = require('./constants');
 
-wifi.init({
-  iface : config.iface || null,
-});
+const isElectronRenderer = function() {
+  // running in a web browser
+  if (typeof process === 'undefined') return true
 
-const uniqueObjectsFromArray = (array, property) => (
-  Array.from(array.reduce((m, o) => 
-    m.set(o[property], o), new Map()).values()
-  )
-)
+  // node-integration is disabled
+  if (!process) return true
 
-const getEmoji = text => (
-  emoji.get(text)
-)
+  // We're in node.js somehow
+  if (!process.type) return false
 
-/**
- * Fetches the current WiFi connections information.
- * 
- * @returns {Array} - Connections information.
- */
-const getCurrentConnections = () => {
-  return new Promise((resolve, reject) => {
-    wifi.getCurrentConnections((error, connections) => {
-      if (error) {
-          reject();
-      }
-      resolve(connections);
-    });
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
+  return process.type === 'renderer'
 }
 
-/**
- * Fetches the current WiFi connections information.
- * 
- * @returns {Array} - Connections information.
- */
-const scanConnections = () => {
-  return new Promise((resolve, reject) => {
-    wifi.scan((error, connections) => {
-      if (error) {
-          reject();
-      }
-      resolve(uniqueObjectsFromArray(connections, 'ssid'));
+class Utils {
+  constructor() {
+    this.config = CONFIG;
+    this.loadedConfig = this.loadFromConfig();
+
+    if (this.loadedConfig !== undefined) {
+      this.config = Object.assign({}, CONFIG, this.loadedConfig);
+    } else {
+      this.config = this.saveToConfig(this.config);
+    }
+
+    wifi.init({
+      iface : this.config.iface || null,
     });
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  });
-}
+  }
 
-/**
- * Tries to get the SSID names for the current WiFi connections.
- * 
- * @returns {Array} - Array of all the currently connected SSID names.
- */
-const getCurrentSsidNames = () => (
-  new Promise((resolve, reject) => {
-    getCurrentConnections()
-      .then(connections => {
-        resolve(connections.map(connection => connection.ssid.toLowerCase()) || []);
-      })
-  })
-)
+  /**
+   * Get configurations.
+   * 
+   * @returns {Array} - Connections information.
+   */
+  getConfig() {
+    return this.loadFromConfig();
+  }
 
-/**
- * @returns {Object} - If configuration for SSID is found, return it.
- */
-const getSsidConfig = () => (
-  new Promise((resolve, reject) => {
-  getCurrentSsidNames()
-    .then(connectedSsids => {
-      resolve(ssids.find(s => connectedSsids.includes(s.ssid.toLowerCase())) || undefined);
-    })
-  })
-)
+  loadFromConfig() {
+    let loadedConfig = undefined;
 
-/**
- * Update the status with predefined one for the current SSID.
- * 
- * @param {Object} ssidConfig - Current SSID config.
- * @param {Object} profile - Current profile in Slack.
- * 
- * @returns {String} - Current SSID name.
- */
-const setNewStatus = (ssidConfig, profile) => {
-  const payload = {
-    token: config.token,
-    profile: Object.assign({},
-      profile,
-      {
-        status_text: ssidConfig.status,
-        status_emoji: ssidConfig.icon
+    if (process.env.APP_ENV === 'browser') {
+      const configPath = path.join(path.normalize(remote.app.getAppPath()), `./${CONFIG_FILENAME}`);
+      if (fs.existsSync(configPath)) {
+        loadedConfig = JSON.parse(fs.readFileSync(configPath).toString());
       }
+    } else {
+      if (fs.existsSync(path.join(__dirname, `../../${CONFIG_FILENAME}`))) {
+        loadedConfig = require(path.join(__dirname, `../../${CONFIG_FILENAME}`));
+      }
+    }
+
+    return loadedConfig;
+  }
+
+  saveToConfig(data) {
+    let config;
+    let configFile = path.join(__dirname, `../../${CONFIG_FILENAME}`);
+
+    if (process.env.APP_ENV === 'browser') {
+      configFile = path.join(path.normalize(remote.app.getAppPath()), `./${CONFIG_FILENAME}`);
+    }
+
+    config = Object.assign({},
+      CONFIG,
+      this.loadFromConfig(),
+      data
+    );
+
+    fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
+
+    return config;
+  }
+
+  checkToken(bool) {
+    bool = bool || null;
+    this.config = this.getConfig();
+    if (!this.config || !this.config.token || this.config.token.length < 1) {
+      if (process.env.APP_ENV === 'browser' || bool) {
+        return false;
+      }
+      else {
+        throw new Error('Token not set');
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * 
+   * @param {Array} array - Array to sort.
+   * @param {String} property - Property sort by.
+   */
+  uniqueObjectsFromArray(array, property) {
+    return Array.from(array.reduce((m, o) => 
+      m.set(o[property], o), new Map()).values()
     )
-  };
+  }
 
-  return new Promise((resolve, reject) => {
-    slack.users.profile.set(payload, (error, data) => {
-      if (error) {
-        reject(error);
-        return;
-      }
+  /**
+   * 
+   * @param {String} text - Emoji.
+   */
+  getEmoji(text) {
+    return emoji.get(text)
+  }
 
-      let response;
-      const newStatus = `new status: ${getEmoji(ssidConfig.icon)}  ${ssidConfig.status}`;
-      if (data.ok) {
-        response = `Succesfully set ${newStatus}\nOld was: ${getEmoji(profile.status_emoji)}  ${profile.status_text}`;
-      } else {
-        response = `Failed to set new status: ${newStatus}`;
-      }
-      resolve(response);
+  /**
+   * @param {Array} connections - Connections to fix MAC address from.
+   */
+  fixConnectionsMac(connections) {
+    return (
+      connections.map(connection => (
+        Object.assign({},
+          connection,
+          { mac: connection.mac.split(':').map(part => part.length < 2 ? `0${part}` : part).join(':') }
+        )
+      ))
+    );
+  }
+
+  /**
+   * Fetches the current WiFi connections information.
+   * 
+   * @returns {Array} - Connections information.
+   */
+  getCurrentConnections() {
+    const parent = this;
+
+    return new Promise((resolve, reject) => {
+      wifi.getCurrentConnections((error, connections) => {
+        if (error) {
+            reject();
+        }
+        //resolve(parent.uniqueObjectsFromArray(connections, 'ssid'));
+        resolve(parent.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
+      });
+    })
+    .catch(error => {
+      console.error('Error:', error);
     });
-  });
-}
+  }
 
-/**
- * Checks if the current status text is not predefined in config or not.
- * 
- * @param {String} status - Current status text.
- * @param {String} currentSsid - Current SSID config.
- * 
- * @returns {Boolean} - true = Predefined, false = Custom
- */
-const isStatusPredefined = (status, currentSsid) => (
-  !ssids.find(s => s.status === status && s.ssid !== currentSsid)
-)
+  /**
+   * Fetches the current WiFi connections information.
+   * 
+   * @returns {Array} - Connections information.
+   */
+  scanConnections() {
+    const parent = this;
 
-/**
- * Checks the status and updates it if all the conditions are matched.
- */
-const checkCurrentStatus = () => {
-  return new Promise((resolve, reject) => {
-    slack.users.profile.get({token: config.token}, (error, data) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      const { status_emoji, status_text } = data.profile;
+    return new Promise((resolve, reject) => {
+      wifi.scan((error, connections) => {
+        if (error) {
+            reject();
+        }
+        //resolve(parent.uniqueObjectsFromArray(connections, 'ssid'));
+        resolve(parent.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
+      });
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  }
 
-      getSsidConfig()
-        .then(ssidConfig => {
-          if (
-            ssidConfig
-            && (ssidConfig.icon !== status_emoji || ssidConfig.status !== status_text)
-            && (process.env.FORCE_UPDATE || config.forceUpdate || !isStatusPredefined(status_text, ssidConfig.ssid))
-          ) {
-            setNewStatus(ssidConfig, data.profile)
-              .then(response => resolve(response))
-              .catch(reason => reject(reason))
-            ;
-          } else {
-            resolve(`Already up-to-date, status: ${getEmoji(status_emoji)}  ${status_text}`);
-          }
+  /**
+   * Tries to get the SSID names for the current WiFi connections.
+   * 
+   * @returns {Array} - Array of all the currently connected SSID names.
+   */
+  getCurrentSsidNames() {
+    const parent = this;
+    return new Promise((resolve, reject) => {
+      parent.getCurrentConnections()
+        .then(connections => {
+          resolve(connections.map(connection => connection.ssid.toLowerCase()) || []);
         })
-    });
-  });
-}
+    })
+  }
 
-/**
- * Checks the status and updates it if all the conditions are matched.
- */
-const getCurrentStatus = () => {
-  return new Promise((resolve, reject) => {
-    slack.users.profile.get({token: config.token}, (error, data) => {
-      if (error) {
-        reject(error);
-        return;
+  /**
+   * @returns {Object} - If configuration for SSID is found, return it.
+   */
+  getSsidConfig() {
+    const parent = this;
+    return new Promise((resolve, reject) => {
+      parent.getCurrentSsidNames().then(connectedSsids => {
+        resolve(parent.config.ssids.find(s => connectedSsids.includes(s.ssid.toLowerCase())) || undefined);
+      })
+    })
+  }
+
+  /**
+   * Update the status with predefined one for the current SSID.
+   * 
+   * @param {Object} ssidConfig - Current SSID config.
+   * @param {Object} profile - Current profile in Slack.
+   * 
+   * @returns {String} - Current SSID name.
+   */
+  setNewStatus(ssidConfig, profile) {
+    this.checkToken();
+
+    const parent = this;
+
+    const payload = {
+      token: this.config.token,
+      profile: Object.assign({},
+        profile,
+        {
+          status_text: ssidConfig.status,
+          status_emoji: ssidConfig.icon
+        }
+      )
+    };
+
+    return new Promise((resolve, reject) => {
+      slack.users.profile.set(payload, (error, data) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        let response;
+        const newStatus = `new status: ${parent.getEmoji(ssidConfig.icon)}  ${ssidConfig.status}`;
+        if (data.ok) {
+          response = `Succesfully set ${newStatus}\nOld was: ${parent.getEmoji(profile.status_emoji)}  ${profile.status_text}`;
+        } else {
+          response = `Failed to set new status: ${newStatus}`;
+        }
+        resolve(response);
+      });
+    });
+  }
+
+  /**
+   * Checks if the current status text is not predefined in config or not.
+   * 
+   * @param {String} status - Current status text.
+   * @param {String} currentSsid - Current SSID config.
+   * 
+   * @returns {Boolean} - true = Predefined, false = Custom
+   */
+  isStatusPredefined(status, currentSsid) {
+    return !this.config.ssids.find(s => s.status === status && s.ssid !== currentSsid);
+  }
+
+  /**
+   * Checks the status and updates it if all the conditions are matched.
+   */
+  checkCurrentStatus() {
+    this.checkToken();
+
+    const parent = this;
+
+    return new Promise((resolve, reject) => {
+      slack.users.profile.get({token: parent.config.token}, (error, data) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        const { status_emoji, status_text } = data.profile;
+
+        parent.getSsidConfig()
+          .then(ssidConfig => {
+            if (
+              ssidConfig
+              && (ssidConfig.icon !== status_emoji || ssidConfig.status !== status_text)
+              && (process.env.FORCE_UPDATE || parent.config.forceUpdate || !parent.isStatusPredefined(status_text, ssidConfig.ssid))
+            ) {
+              parent.setNewStatus(ssidConfig, data.profile)
+                .then(response => resolve(response))
+                .catch(reason => reject(reason))
+              ;
+            } else {
+              resolve(`Already up-to-date, status: ${parent.getEmoji(status_emoji)}  ${status_text}`);
+            }
+          })
+      });
+    });
+  }
+
+  /**
+   * Checks the status and updates it if all the conditions are matched.
+   */
+  getCurrentStatus() {
+    this.checkToken();
+
+    const parent = this;
+
+    return new Promise((resolve, reject) => {
+      slack.users.profile.get({token: parent.config.token}, (error, data) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(data.profile);
+      });
+    });
+  }
+
+  /**
+   * Checks the status and updates it if all the conditions are matched.
+   */
+  getEmojis() {
+    this.checkToken();
+
+    const parent = this;
+
+    return new Promise((resolve, reject) => {
+      slack.emoji.list({token: parent.config.token}, (error, data) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve(data.emoji);
+      });
+    });
+  }
+
+  /**
+   * 
+   * @param {Array} data - Data to sort.
+   * @param {String} property - Property to sort by.
+   */
+  alphabeticSortByProperty(data, property) {
+    return data.sort((a,b) => a[property].toLowerCase() > b[property].toLowerCase())
+  }
+
+  electronOpenLinkInBrowser(url, event) {
+    if(isElectronRenderer()) {
+      if (url && url.preventDefault) {
+        event = url;
+        event.preventDefault();
+        shell.openExternal(event.target.href);
+      } else {
+        event.preventDefault();
+        shell.openExternal(url);
       }
-      resolve(data.profile);
-    });
-  });
-}
-
-/**
- * Checks the status and updates it if all the conditions are matched.
- */
-const getEmojis = () => {
-  return new Promise((resolve, reject) => {
-    slack.emoji.list({token: config.token}, (error, data) => {
-      if (error) {
-        reject(error);
-        return;
+    } else {
+      if (url && !url.preventDefault) {
+        event.preventDefault();
+        window.location.href = url;
       }
-      resolve(data.emoji);
-    });
-  });
+    }
+  }
+
+
+  parseOutput(command) {
+    const output = execSync(command);
+    if (output) {
+      return output.toString().replace(/^\s+|\s+$/g, '')
+    }
+
+    return null;
+  }
+
+  checkCrontab() {
+    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && echo 'Already installed in crontab' || exit 0";
+    const output = this.parseOutput(command);
+
+    return output || null;
+  }
+  installCrontab() {
+    const command = `crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && echo 'Already installed in crontab' || ((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * $(pwd)/execute-in-crontab.sh >/dev/null 2>&1 # ssid-to-slack-status") | crontab - && echo 'Installed in crontab')`;
+    const output = this.parseOutput(command);
+
+    return output;
+  }
+  uninstallCrontab() {
+    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && crontab -l 2>/dev/null | grep -v '# ssid-to-slack-status' | crontab - && echo 'Uninstalled from crontab' || echo 'Was not installed in crontab'";
+    const output = this.parseOutput(command);
+
+    return output;
+  }
+  reinstallCrontab() {
+    const unistall = this.uninstallCrontab();
+    const install = this.installCrontab();
+
+    let output = "Reinstalled in crontab";
+    if (unistall === 'Was not installed in crontab') {
+      output = 'Installed in crontab';
+    }
+
+    return output;
+  }
 }
 
-/**
- * 
- * @param {Array} data - Data to sort.
- * @param {String} property - Property to sort by.
- */
-const sortConnections = (data, property) => (
-  data.sort((a,b) => a[property] > b[property])
-)
-
-const MILLISECOND     = 1;
-const QUARTER_SECOND  = 250   * MILLISECOND;
-const HALF_SECOND     = 2     * QUARTER_SECOND;
-const SECOND          = 2     * HALF_SECOND;
-const QUARTER_MINUTE  = 15    * SECOND;
-const HALF_MINUTE     = 2     * QUARTER_MINUTE;
-const MINUTE          = 2     * HALF_MINUTE;
-const QUARTER_HOUR    = 15    * MINUTE;
-const HALF_HOUR       = 2     * QUARTER_HOUR;
-const HOUR            = 2     * HALF_HOUR;
-const QUARTER_DAY     = 6     * HOUR;
-const HALF_DAY        = 2     * QUARTER_DAY;
-const DAY             = 2     * HALF_DAY;
-const WEEK            = 7     * DAY;
-const MONTH           = 4     * WEEK;
-const YEAR            = 365   * DAY;
-
-const times = {
-  MILLISECOND,
-  QUARTER_SECOND,
-  HALF_SECOND,
-  SECOND,
-  QUARTER_MINUTE,
-  HALF_MINUTE,
-  MINUTE,
-  QUARTER_HOUR,
-  HALF_HOUR,
-  HOUR,
-  QUARTER_DAY,
-  HALF_DAY,
-  DAY,
-  WEEK,
-  MONTH,
-  YEAR
-}
-
-module.exports = {
-  uniqueObjectsFromArray,
-  getEmoji,
-  getCurrentConnections,
-  scanConnections,
-  getCurrentSsidNames,
-  getSsidConfig,
-  setNewStatus,
-  isStatusPredefined,
-  checkCurrentStatus,
-  getCurrentStatus,
-  getEmojis,
-  sortConnections,
-  times
-}
+module.exports = Utils;

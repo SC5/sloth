@@ -1,0 +1,30 @@
+@import '../../main.css';
+
+#authorise {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 10px;
+
+  & p {
+    margin: 10px 0;
+  }
+
+  & .ant-layout-header {
+    display: flex;
+    background: #eee;
+    padding: 0;
+    height: 116px;
+    line-height: 72px;
+    font-size: 72px;
+    align-self: center;
+  }
+
+  & .ant-layout-content {
+    text-align: center;
+  }
+
+  & .ant-layout-content .authorise {
+    margin-top: 100px;
+  }
+}

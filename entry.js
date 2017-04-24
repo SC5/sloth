@@ -11,19 +11,24 @@ import locale from 'antd/lib/locale-provider/en_US';
 import App from './src/containers/App';
 
 const mount  = document.getElementById('app');
-const render = () => {
-  ReactDOM.render(
+
+if (module.hot) {
+	module.hot.accept();
+	const NewApp = require('./src/containers/App').default;
+	ReactDOM.render(
     <IntlProvider locale="en">
       <LocaleProvider locale={locale}>
-        <App />
+        <NewApp />
       </LocaleProvider>
     </IntlProvider>
   , mount);
-};
-
-if (module.hot) {
-  module.hot.accept('./src/containers/App', () => render());
 }
 
-render();
+ReactDOM.render(
+  <IntlProvider locale="en">
+    <LocaleProvider locale={locale}>
+      <App />
+    </LocaleProvider>
+  </IntlProvider>
+, mount);
 

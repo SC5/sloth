@@ -1,3 +1,7 @@
 node_modules/*
-config.js
+**/config.js
 yarn.lock
+data/config.js
+data/backup-config.json
+dist/**
+.env

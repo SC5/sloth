@@ -1,0 +1,231 @@
+@import '../../main.css';
+
+#logged {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  & .container {
+    padding: 10px;
+  }
+
+  & .ant-layout-header {
+    @header-height: 72px;
+    @header-padding-vertical: 8px;
+
+    display: flex;
+    background: #fff;
+    padding: 0;
+    height: calc(@header-height + (2 * @header-padding-vertical));
+    line-height: @header-padding-vertical;
+    font-size: 14px;
+
+    & .header {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+
+      & .title {
+        display: flex;
+        flex-direction: row;
+        line-height: 16px;
+        padding: @header-padding-vertical 5px;
+        background: #404040;
+        color: #fff;
+        font-size: 12px;
+        flex: 1;
+
+        & > div {
+          display: flex;
+          align-items: center;
+          flex: 1;
+        }
+
+        & .text {
+          font-size: 16px;
+          font-weight: 700;
+        }
+
+        & .update {
+          color: #efefef;
+          position: absolute;
+          top: 5px;
+          right: 5px;
+        }
+      }
+
+      & .profile {
+        display: flex;
+        flex-direction: row;
+        flex: 1;
+        height: @header-height;
+        line-height: @header-height;
+        font-size: 14px;
+
+        & .column-left {
+          display: flex;
+
+          & div {
+            display: inline-flex;
+            margin-right: 5px;
+            width: 72px;
+          }
+        }
+
+        & .column-right {
+          padding: 0 5px;
+          display: flex;
+          align-items: flex-start;
+          flex-direction: column;
+          flex: 1;
+
+          & > div.user {
+            display: flex;
+            line-height: calc(@header-height / 2);
+
+            & > div {
+              padding-right: 5px;
+            }
+          }
+
+          & > div.status {
+            display: flex;
+            line-height: calc(@header-height / 2);
+
+            & > div {
+              padding-right: 5px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  & .ant-layout-content {
+    & .title {
+      display: flex;
+      flex-direction: row;
+      line-height: 16px;
+      padding: 14px 5px;
+      background: #404040;
+      color: #fff;
+
+      & > div {
+        display: flex;
+        align-items: center;
+        flex: 1;
+      }
+
+      & .text {
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      & .update {
+        color: #efefef;
+        align-self: flex-end;
+        align-items: flex-end;
+        flex-direction: column;
+      }
+    }
+
+    & .crontab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+
+      & .status {
+        flex: 1;
+        display: flex;
+        font-size: 14px;
+        align-items: center;
+
+        & > .anticon {
+          margin-right: 5px;
+        }
+
+        &.installed {
+          color: #0c0;
+        }
+
+        &.not-installed {
+          color: #c00;
+        }
+      }
+
+      & .buttons {
+        display: flex;
+        flex: 0 1 auto;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-direction: row;
+
+        & > button {
+          margin-left: 5px;
+        }
+      }
+    }
+  }
+}
+
+.ant-table {
+  & .ant-table-body {
+    & tr {
+      display: flex;
+      flex: 1;
+      flex-direction: row;
+    }
+  }
+
+  & .ant-table-thead th,
+  & .ant-table-row td {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    &.icon {
+      width: 50px;
+      flex: 0 1 auto;
+    }
+
+    &.status {
+      word-break: break-word;
+    }
+
+    &.action {
+      align-items: flex-end;
+    }
+  }
+}
+
+&.ant-collapse-header {
+  & .header-text {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+
+    & .status,
+    & .update {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      align-self: center;
+      flex-direction: column;
+      margin-right: 12px;
+
+      &.installed {
+        color: #0c0;
+      }
+
+      &.not-installed {
+        color: #c00;
+      }
+    }
+  }
+}
+
+.tooltip-table,
+.tooltip-table * {
+  background: transparent !important;
+}

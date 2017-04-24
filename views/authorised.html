@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>SSID to Slack status - authorisation</title>
+  </head>
+  <body>
+    <div id="app"></div>
+  </body>
+  
+  <script src="/socket.io/socket.io.js"></script> 
+  <script>
+    var socket = io.connect('http://localhost:5000');
+    socket
+      .on('connect', function(data) {
+        socket.emit('authorised', true);
+      })
+      .on('authorised', function(data) {
+        window.title = 'SSID to Slack status - authorised';
+        document.querySelector('#app').innerHTML = 'You may now close this window.';
+      })
+    ;
+  </script>
+</html>

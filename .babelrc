@@ -4,9 +4,9 @@
     "react",
     "stage-0"
   ],
-  "env": {
-    "start": {
-      "presets": ["react-hmre"]
-    }
-  }
+  "plugins": [
+    [
+      "import", { "libraryName": "antd" }
+    ]
+  ]
 }

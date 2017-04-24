@@ -1,4 +1,5 @@
-const utils = require('./index');
+const Utils = require('./index');
+const utils = new Utils();
 
 switch (process.argv[2]) {
   case 'update': {
