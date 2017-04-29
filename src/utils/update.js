@@ -13,7 +13,7 @@ switch (process.argv[2]) {
     break;
   }
   case 'force-update': {
-    utils.checkCurrentStatus()
+    utils.checkCurrentStatus(true)
       .then(output => {
         console.log(output)
       })

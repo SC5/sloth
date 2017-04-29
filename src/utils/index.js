@@ -230,7 +230,7 @@ class Utils {
         profile,
         {
           status_text: ssidConfig.status,
-          status_emoji: ssidConfig.icon
+          status_emoji: `:${ssidConfig.icon}:`
         }
       )
     };
@@ -268,8 +268,10 @@ class Utils {
 
   /**
    * Checks the status and updates it if all the conditions are matched.
+   * 
+   * @param {Boolean} forced - Force update.
    */
-  checkCurrentStatus() {
+  checkCurrentStatus(forced = false) {
     this.checkToken();
 
     const parent = this;
@@ -285,9 +287,12 @@ class Utils {
         parent.getSsidConfig()
           .then(ssidConfig => {
             if (
+              (
               ssidConfig
-              && (ssidConfig.icon !== status_emoji || ssidConfig.status !== status_text)
+              && (`:${ssidConfig.icon}:` !== status_emoji || ssidConfig.status !== status_text)
               && (process.env.FORCE_UPDATE || parent.config.forceUpdate || !parent.isStatusPredefined(status_text, ssidConfig.ssid))
+              )
+              || (ssidConfig && forced)
             ) {
               parent.setNewStatus(ssidConfig, data.profile)
                 .then(response => resolve(response))
