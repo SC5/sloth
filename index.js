@@ -98,7 +98,7 @@ const createWindow = () => {
 
   // Create the browser window.
   win = new BrowserWindow({
-    width: 450,
+    width: 600,
     height: 650,
     autoHideMenuBar: true,
     useContentSize: true,
@@ -110,7 +110,7 @@ const createWindow = () => {
   win.focus();
 
   // Open the DevTools.
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
 
   // Emitted when the window is closed.
   win.on('closed', () => {

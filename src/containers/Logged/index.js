@@ -169,24 +169,11 @@ class Logged extends React.Component {
           },
           modal: {
             title: `Create configuration for "${record.ssid}"`,
-            data: [],
-            visible: true,
-            handleOk: () => this.handleModalSaveNew(),
-            handleCancel: () => this.handleModalCancel(),
-          }
-        });
-        break;
-      }
-      case 'add': {
-        this.setState({
-          edit: {
-            ssid: record.ssid,
-            icon: null,
-            status: null,
-          },
-          modal: {
-            title: 'Create new configuration',
-            data: [],
+            data: {
+              ssid: record.ssid,
+              icon: null,
+              status: null,
+            },
             visible: true,
             handleOk: () => this.handleModalSaveNew(),
             handleCancel: () => this.handleModalCancel(),
@@ -196,6 +183,7 @@ class Logged extends React.Component {
       }
       case 'edit': {
         const config = this.props.configurations.find(conf => conf.ssid.toLowerCase() === record.ssid.toLowerCase());
+
         this.setState({
           edit: {
             ssid: config.ssid,

@@ -182,7 +182,8 @@
   & .ant-table-row td {
     display: flex;
     flex: 1;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
 
     &.icon {
       width: 50px;
@@ -191,11 +192,18 @@
 
     &.status {
       word-break: break-word;
+      max-width: 200px;
     }
 
     &.action {
       align-items: flex-end;
+      flex-direction: column;
+      max-width: 100px;
     }
+  }
+
+  & .ant-table-row td {
+    height: 63px;
   }
 }
 
