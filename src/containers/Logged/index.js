@@ -341,7 +341,7 @@ class Logged extends React.Component {
     );
 
     const getConfig = ssid => (
-      this.props.configurations.find(c => c.ssid === ssid)
+      this.props.configurations.find(c => c.ssid.toLowerCase() === ssid.toLowerCase())
     )
 
     return ([
