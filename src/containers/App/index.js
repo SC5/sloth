@@ -36,14 +36,10 @@ class App extends React.Component {
       time: null,
       fetching: false
     },
-    current: {
+    connections: {
+      fetching: true,
       fetched: false,
-      connections: [],
-      time: null,
-    },
-    available: {
-      fetched: false,
-      connections: [],
+      data: [],
       time: null,
     },
     configurations: [],
@@ -59,13 +55,11 @@ class App extends React.Component {
       .then(() => {
         this.hasToken();
 
-        const currentConnections    = this.getCurrentConnections();
-        const availableConnections  = this.getAvailableConnections();
-        const crontab               = this.getCrontab();        
+        const connections   = this.getConnections();
+        const crontab       = this.getCrontab();        
 
-        intervals.push(setInterval(() => this.getCurrentConnections(),    MINUTE * 3));
-        intervals.push(setInterval(() => this.getAvailableConnections(),  MINUTE * 1));
-        intervals.push(setInterval(() => this.getCrontab(),               HALF_MINUTE));
+        intervals.push(setInterval(() => this.getConnections(), MINUTE));
+        intervals.push(setInterval(() => this.getCrontab(),     HALF_MINUTE));
         
       })
       .catch(error => { throw new Error(error) })
@@ -113,6 +107,14 @@ class App extends React.Component {
     })
   )
 
+  /**
+   * @param {Object} config - Configuration
+   */
+  saveToConfig = config => {
+    utils.saveToConfig(config);
+    this.getConfig().then(config => this.setConfig(config));
+  }
+
   hasToken = () => {
     if (this.state.token) {
       intervals.push(setInterval(() => this.getCurrentStatus(), MINUTE * this.state.interval));
@@ -138,28 +140,27 @@ class App extends React.Component {
     this.setState({ crontab });
   }
 
-  getCurrentConnections = () => {
-    return utils.getCurrentConnections().then(connections => {
-      this.setState({
-        current: {
-          connections: connections,
-          fetched: true,
-          time: new Date(),
-        }
-      });
-    });
-  }
+  getConnections = () => {
+    const current = utils.getCurrentConnections();
+    const available = utils.scanConnections();
 
-  getAvailableConnections = () => {
-    return utils.scanConnections().then(connections => {
+    Promise.all([
+      current,
+      available
+    ])
+    .then(values => {
       this.setState({
-        available: {
-          connections: connections,
+        connections: {
+          data: [
+            ...utils.alphabeticSortByProperty(values[0], 'ssid'),
+            ...utils.alphabeticSortByProperty(values[1], 'ssid')
+          ],
           fetched: true,
-          time: new Date(),
+          fetching: false,
+          time: new Date,
         }
       });
-    });
+    }); 
   }
 
   getCurrentStatus = () => {
@@ -219,13 +220,6 @@ class App extends React.Component {
     this.setState({
       defaultCollapsed: keys,
     })
-  }
-
-  /**
-   * @param {Object} config - Configuration
-   */
-  saveToConfig = config => {
-    utils.saveToConfig(config);
   }
 
 

@@ -4,6 +4,7 @@ import React from 'react';
 
 import Emoji from '../../components/Emoji';
 import Authorise from '../Authorise';
+import Configuration from '../../components/Configuration';
 
 import Utils from '../../utils';
 const utils = new Utils();
@@ -22,16 +23,33 @@ import {
   Dropdown,
   Popover,
   Modal,
+  Form,
+  Input,
+  Select,
 } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
 const Panel = Collapse.Panel;
 const confirm = Modal.confirm;
+
+const NOOP = () => { };
 
 class Logged extends React.Component {
   state = {
     install: false,
     reinstall: false,
     uninstall: false,
+    modal: {
+      title: 'Create new configuration',
+      data: [],
+      visible: false,
+      handleOk: NOOP,
+      handleCancel: NOOP,
+    },
+    edit: {
+      ssid: null,
+      icon: null,
+      status: null,
+    }
   }
 
   componentDidMount = () => {
@@ -108,6 +126,32 @@ class Logged extends React.Component {
     }
   }
 
+  handleModalSaveNew = () => {
+    this.props.saveToConfig({
+      ssids: [
+        ...this.props.configurations,
+        this.state.edit
+      ]
+    });
+    this.closeModal();
+  }
+
+  handleModalSaveOld = () => {
+    this.props.saveToConfig({
+      ssids: this.props.configurations.map(config => {
+        if (config.ssid.toLowerCase() === this.state.edit.ssid.toLowerCase()) {
+          return this.state.edit;
+        }
+        return config;
+      })
+    });
+    this.closeModal();
+  }
+
+  handleModalCancel = () => {
+    this.closeModal();
+  }
+
   /**
    * @param {String} action - Which action should we trigger.
    * @param {Object} record - Configuration row data.
@@ -117,23 +161,54 @@ class Logged extends React.Component {
 
     switch (action) {
       case 'create': {
-        this.props.openMessage({
-          type: 'info',
-          message: 'Creating.'
+        this.setState({
+          edit: {
+            ssid: record.ssid,
+            icon: null,
+            status: null,
+          },
+          modal: {
+            title: `Create configuration for "${record.ssid}"`,
+            data: [],
+            visible: true,
+            handleOk: () => this.handleModalSaveNew(),
+            handleCancel: () => this.handleModalCancel(),
+          }
         });
         break;
       }
       case 'add': {
-        this.props.openMessage({
-          type: 'info',
-          message: 'Adding.'
+        this.setState({
+          edit: {
+            ssid: record.ssid,
+            icon: null,
+            status: null,
+          },
+          modal: {
+            title: 'Create new configuration',
+            data: [],
+            visible: true,
+            handleOk: () => this.handleModalSaveNew(),
+            handleCancel: () => this.handleModalCancel(),
+          }
         });
         break;
       }
       case 'edit': {
-        this.props.openMessage({
-          type: 'info',
-          message: 'Editing.'
+        const config = this.props.configurations.find(conf => conf.ssid.toLowerCase() === record.ssid.toLowerCase());
+        this.setState({
+          edit: {
+            ssid: config.ssid,
+            icon: config.icon,
+            status: config.status,
+          },
+          modal: {
+            title: `Edit configuration for "${record.ssid}"`,
+            data: config,
+            visible: true,
+            handleOk: () => this.handleModalSaveOld(),
+            handleCancel: () => this.handleModalCancel(),
+          }
         });
         break;
       }
@@ -141,9 +216,8 @@ class Logged extends React.Component {
         confirm({
           title: `Are you sure delete configurations for "${record.ssid}"?`,
           onOk() {
-            parent.props.openMessage({
-              type: 'info',
-              message: 'Deleting.'
+            parent.props.saveToConfig({
+              ssids: parent.props.configurations.filter(config => config.ssid.toLowerCase() !== record.ssid.toLowerCase())
             });
           },
           onCancel() {
@@ -157,6 +231,26 @@ class Logged extends React.Component {
         break;
       }
     }
+  }
+
+  closeModal = () => {
+    this.setState({
+      modal: {
+        ...this.state.modal,
+        visible: false,
+        handleOk: NOOP,
+        handleCancel: NOOP,
+      }
+    });
+  }
+
+  updateData = (property, value) => {
+    this.setState({
+      edit: {
+        ...this.state.edit,
+        [property]: value,
+      }
+    });
   }
 
   /**
@@ -244,10 +338,14 @@ class Logged extends React.Component {
           <td>{Math.abs(ssidConfig.signal_level)} dB</td>
         </tr>
       </table>
+    );
+
+    const getConfig = ssid => (
+      this.props.configurations.find(c => c.ssid === ssid)
     )
 
-    return (
-      [{
+    return ([
+      {
         title: 'SSID',
         dataIndex: 'ssid',
           render: (text, record) => (
@@ -255,14 +353,40 @@ class Logged extends React.Component {
               {text}
             </Popover>
           ),
-      }, {
+      },
+      {
+        title: 'Icon',
+        className: 'icon',
+        dataIndex: 'icon',
+        render: (text, record) => {
+          const config = getConfig(record.ssid);
+          if (config) {
+            return (
+              <Emoji emojis={this.props.emojis.data} emoji={config.icon} />
+            );
+          }
+        },
+      },
+      {
+        title: 'Status',
+        className: 'status',
+        dataIndex: 'status',
+        render: (text, record) => {
+          const config = getConfig(record.ssid);
+          if (config && config.status) {
+            return config.status;
+          }
+          return '';
+        }
+      },
+      {
         title: 'Action',
         key: 'action',
         className: 'action',
         rowKey: record => `connected-action-${record.ssid}`,
         render: (text, record) => this.tableButton(record)
-      }]
-    );
+      }
+    ]);
   }
 
   getProfile = () => {
@@ -362,40 +486,24 @@ class Logged extends React.Component {
       <Table
         columns={this.getConfigurationColumns()}
         dataSource={utils.alphabeticSortByProperty(this.props.configurations, 'ssid')}
-        pagination={this.props.current.connections.length < 10 ? false : true}
+        pagination={this.props.configurations.length < 10 ? false : true}
         rowKey={record => `configuration-ssid-${record.ssid}`}
       />
     );
   }
 
-  renderCurrentConnectionsTable = () => {
-    if (!this.props.current.connections || this.props.current.connections.length < 1) {
-      return <span>Nothing here.</span>;
+  renderConnectionsTable = () => {
+    if (this.props.connections.fetched && (!this.props.connections.data || this.props.connections.data.length < 1)) {
+      return <span>No Data</span>;
     }
 
     return (
       <Table
-        loading={!this.props.current.fetched}
+        loading={this.props.connections.fetching}
         columns={this.getConnectionColumns()}
-        dataSource={utils.alphabeticSortByProperty(this.props.current.connections, 'ssid')}
-        pagination={this.props.current.connections.length < 10 ? false : true}
-        rowKey={record => `current-ssid-${record.ssid}`}
-      />
-    );
-  }
-
-  renderAvailableConnectionsTable = () => {
-    if (!this.props.available.connections || this.props.available.connections.length < 1) {
-      return <span>Nothing here.</span>;
-    }
-
-    return (
-      <Table
-        loading={!this.props.available.fetched}
-        columns={this.getConnectionColumns()}
-        dataSource={utils.alphabeticSortByProperty(this.props.available.connections, 'ssid')}
-        pagination={this.props.available.connections.length < 10 ? false : true}
-        rowKey={record => `available-ssid-${record.ssid}`}
+        dataSource={this.props.connections.data}
+        pagination={this.props.connections.data.length < 10 ? false : true}
+        rowKey={record => `connections-ssid-${record.ssid}`}
       />
     );
   }
@@ -472,7 +580,7 @@ class Logged extends React.Component {
       <Panel
         header={
           <div className="header-text">
-            Current configurations
+            Configurations
             {this.configurationStatusIcon()}
           </div>
         }
@@ -483,36 +591,51 @@ class Logged extends React.Component {
     )
   }
 
-  renderCurrentConnections = () => {
+  renderLastUpdate = time => {
+    if (time === null) {
+      return null;
+    }
+
+    return (
+      <div className="update"><span>Last update: {this.props.lastUpdate(time)}</span></div>
+    );
+  }
+
+  renderConnections = () => {
     return (
       <Panel
         header={
           <div className="header-text">
-            Current connections
-            <div className="update"><span>Last update: {this.props.lastUpdate(this.props.current.time)}</span></div>
+            Connections
+            {this.renderLastUpdate(this.props.connections.time)}
           </div>
         }
         key="3"
       >
-        {this.renderCurrentConnectionsTable()}
+        {this.renderConnectionsTable()}
       </Panel>
     )
   }
 
-  renderAvailableConnections = () => {
+  renderModal = () => {
+    if (!this.state.modal.visible) {
+      return null;
+    }
+
     return (
-      <Panel
-        header={
-          <div className="header-text">
-            Available connections
-            <div className="update"><span>Last update: {this.props.lastUpdate(this.props.available.time)}</span></div>
-          </div>
-        }
-        key="4"
+      <Modal
+        title={this.state.modal.title}
+        visible={this.state.modal.visible}
+        onOk={this.state.modal.handleOk}
+        onCancel={this.state.modal.handleCancel}
       >
-        {this.renderAvailableConnectionsTable()}
-      </Panel>
-    )
+        <Configuration
+          data={this.state.modal.data}
+          emojis={this.props.emojis.data}
+          updateData={this.updateData}
+        />
+      </Modal>
+    );
   }
 
   render = () => {
@@ -533,9 +656,9 @@ class Logged extends React.Component {
           <Collapse defaultActiveKey={this.props.defaultCollapsed} onChange={keys => this.props.saveToConfig({defaultCollapsed: keys})}>
             {this.renderAutomation()}
             {this.renderConfigurations()}
-            {this.renderCurrentConnections()}
-            {this.renderAvailableConnections()}
+            {this.renderConnections()}
           </Collapse>
+          {this.renderModal()}
         </Content>
         <Footer>
           <a href="http://github.com/kirbo" onClick={utils.electronOpenLinkInBrowser.bind(this)}>Kimmo Saari ©2017</a>

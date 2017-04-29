@@ -113,6 +113,13 @@ class Utils {
 
   /**
    * 
+   */
+  standardEmojis() {
+    return emoji.search('');
+  }
+
+  /**
+   * 
    * @param {String} text - Emoji.
    */
   getEmoji(text) {
