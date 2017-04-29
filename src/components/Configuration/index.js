@@ -17,31 +17,6 @@ import {
 } from 'antd';
 
 const FormItem = Form.Item;
-const Option = Select.Option;
-
-const residences = [{
-  value: 'zhejiang',
-  label: 'Zhejiang',
-  children: [{
-    value: 'hangzhou',
-    label: 'Hangzhou',
-    children: [{
-      value: 'xihu',
-      label: 'West Lake',
-    }],
-  }],
-}, {
-  value: 'jiangsu',
-  label: 'Jiangsu',
-  children: [{
-    value: 'nanjing',
-    label: 'Nanjing',
-    children: [{
-      value: 'zhonghuamen',
-      label: 'Zhong Hua Men',
-    }],
-  }],
-}];
 
 class ConfigurationForm extends React.Component {
   state = {
@@ -60,7 +35,7 @@ class ConfigurationForm extends React.Component {
     });
 
     this.setState({
-      emojis: emojis
+      emojis: utils.alphabeticSortByProperty(emojis, 'key')
     });
   }
 

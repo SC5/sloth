@@ -345,7 +345,11 @@ class Utils {
    * @param {String} property - Property to sort by.
    */
   alphabeticSortByProperty(data, property) {
-    return data.sort((a,b) => a[property].toLowerCase() > b[property].toLowerCase())
+    return data.sort((a,b) => {
+      if (a[property].toLowerCase() < b[property].toLowerCase()) return -1;
+      if (a[property].toLowerCase() > b[property].toLowerCase()) return 1;
+      return 0;
+    })
   }
 
   electronOpenLinkInBrowser(url, event) {
