@@ -215,6 +215,16 @@
     flex-direction: row;
     align-items: center;
 
+    &.connected {
+      @font-size: 12px;
+      @padding: 2px;
+
+      font-size: @font-size;
+      width: calc(@font-size + (2 * @padding));
+      padding: 0 0 0 @padding;
+      flex: 0 1 auto;
+    }
+
     &.icon {
       width: 50px;
       flex: 0 1 auto;

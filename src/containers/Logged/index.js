@@ -1,6 +1,7 @@
 import './Logged.less';
 
 import React from 'react';
+import { Icon as FaIcon } from 'react-fa';
 
 import Emoji from '../../components/Emoji';
 import Authorise from '../Authorise';
@@ -330,8 +331,27 @@ class Logged extends React.Component {
     return null;
   }
 
+  /**
+   * @param {Object} record - Current row.
+   */
+  isConnected = record => {
+    if (
+      this.props.connections.current
+      && this.props.connections.current.ssid
+      && record.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
+    ) {
+      return <FaIcon name="wifi" />;
+    }
+
+    return null;
+  }
+
   getConfigurationColumns = () => (
     [{
+      title: '',
+      className: 'connected',
+      render: (text, record) => this.isConnected(record),
+    }, {
       title: 'SSID',
       dataIndex: 'ssid',
     }, {
@@ -367,10 +387,6 @@ class Logged extends React.Component {
           <th>Security:</th>
           <td>{ssidConfig.security.toUpperCase()}</td>
         </tr>
-        <tr>
-          <th>Signal level:</th>
-          <td>{Math.abs(ssidConfig.signal_level)} dB</td>
-        </tr>
       </table>
     );
 
@@ -380,10 +396,14 @@ class Logged extends React.Component {
 
     return ([
       {
+        title: '',
+        className: 'connected',
+        render: (text, record) => this.isConnected(record),
+      }, {
         title: 'SSID',
         dataIndex: 'ssid',
           render: (text, record) => (
-            <Popover content={ssidTooltip(record)}>
+            <Popover placement="topLeft" content={ssidTooltip(record)}>
               {text}
             </Popover>
           ),
