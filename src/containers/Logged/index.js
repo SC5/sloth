@@ -47,6 +47,7 @@ class Logged extends React.Component {
       handleCancel: NOOP,
     },
     edit: {
+      name: null,
       ssid: null,
       mac: null,
       icon: null,
@@ -136,7 +137,10 @@ class Logged extends React.Component {
       ]
     })
     .then(() => {
-      if (this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()) {
+      if (
+        this.state.edit.mac.toLowerCase() === this.props.connections.current.mac.toLowerCase()
+        || this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
+      ) {
         this.updateStatus();
       } else {
         this.props.openMessage({
@@ -191,6 +195,7 @@ class Logged extends React.Component {
       case 'add': {
         this.setState({
           edit: {
+            name: '',
             ssid: '',
             mac: '',
             icon: '',
@@ -199,6 +204,7 @@ class Logged extends React.Component {
           modal: {
             title: 'Create new configuration',
             data: {
+              name: '',
               ssid: '',
               mac: '',
               icon: '',
@@ -214,7 +220,8 @@ class Logged extends React.Component {
       case 'create': {
         this.setState({
           edit: {
-            ssid: '',
+            name: '',
+            ssid: record.ssid,
             mac: record.mac,
             icon: '',
             status: null,
@@ -222,7 +229,8 @@ class Logged extends React.Component {
           modal: {
             title: `Create configuration for "${record.ssid}"`,
             data: {
-              ssid: '',
+              name: '',
+              ssid: record.ssid,
               mac: record.mac,
               icon: '',
               status: null,
@@ -236,12 +244,12 @@ class Logged extends React.Component {
       }
       case 'edit': {
         const config = this.props.configurations.find(conf => (
-          conf.mac.toLowerCase() === record.mac.toLowerCase()
-          || conf.ssid.toLowerCase() === record.ssid.toLowerCase()
+          conf.name.toLowerCase() === record.name.toLowerCase()
         ));
 
         this.setState({
           edit: {
+            name: config.name,
             ssid: config.ssid,
             mac: config.mac,
             icon: config.icon,
@@ -263,8 +271,7 @@ class Logged extends React.Component {
           onOk() {
             parent.props.saveToConfig({
               ssids: parent.props.configurations.filter(config => (
-                config.mac.toLowerCase() !== record.mac.toLowerCase()
-                && config.ssid.toLowerCase() !== record.ssid.toLowerCase()
+                config.name.toLowerCase() !== record.name.toLowerCase()
               ))
             })
             .then(() => {
@@ -380,31 +387,55 @@ class Logged extends React.Component {
     return null;
   }
 
-  getConfigurationColumns = () => (
-    [{
-      title: '',
-      className: 'connected',
-      render: (text, record) => this.isConnected(record),
-    }, {
-      title: 'SSID',
-      dataIndex: 'ssid',
-    }, {
-      title: 'Icon',
-      className: 'icon',
-      dataIndex: 'icon',
-      render: (text, record) => <Emoji emojis={this.props.emojis.data} emoji={record.icon} />,
-    }, {
-      title: 'Status',
-      className: 'status',
-      dataIndex: 'status',
-    }, {
-      title: 'Action',
-      key: 'action',
-      className: 'action',
-      rowKey: record => `connected-action-${record.ssid}`,
-      render: (text, record) => this.tableButton(record)
-    }]
-  )
+  getConfigurationColumns = () => {
+    const ssidTooltip = ssidConfig => (
+      <table className="tooltip-table">
+        <tr>
+          <th>SSID:</th>
+          <td>{ssidConfig.ssid.toUpperCase()}</td>
+        </tr>
+        <tr>
+          <th>BSSID:</th>
+          <td>{ssidConfig.mac.toUpperCase()}</td>
+        </tr>
+      </table>
+    );
+
+    return ([
+      {
+        title: '',
+        className: 'connected',
+        render: (text, record) => this.isConnected(record),
+      },
+      {
+        title: 'Name',
+        dataIndex: 'name',
+        render: (text, record) => (
+          <Popover placement="topLeft" content={ssidTooltip(record)}>
+            {text}
+          </Popover>
+        ),
+      },
+      {
+        title: 'Icon',
+        className: 'icon',
+        dataIndex: 'icon',
+        render: (text, record) => <Emoji emojis={this.props.emojis.data} emoji={record.icon} />,
+      },
+      {
+        title: 'Status',
+        className: 'status',
+        dataIndex: 'status',
+      },
+      {
+        title: 'Action',
+        key: 'action',
+        className: 'action',
+        rowKey: record => `connected-action-${record.ssid}`,
+        render: (text, record) => this.tableButton(record)
+      }
+    ])
+  }
 
   getConnectionColumns = () => {
     const ssidTooltip = ssidConfig => (
@@ -416,10 +447,6 @@ class Logged extends React.Component {
         <tr>
           <th>BSSID:</th>
           <td>{ssidConfig.mac.toUpperCase()}</td>
-        </tr>
-        <tr>
-          <th>Security:</th>
-          <td>{ssidConfig.security.toUpperCase()}</td>
         </tr>
       </table>
     );
@@ -436,14 +463,15 @@ class Logged extends React.Component {
         title: '',
         className: 'connected',
         render: (text, record) => this.isConnected(record),
-      }, {
+      },
+      {
         title: 'SSID',
         dataIndex: 'ssid',
-          render: (text, record) => (
-            <Popover placement="topLeft" content={ssidTooltip(record)}>
-              {text}
-            </Popover>
-          ),
+        render: (text, record) => (
+          <Popover placement="topLeft" content={ssidTooltip(record)}>
+            {text}
+          </Popover>
+        ),
       },
       {
         title: 'Icon',
@@ -611,7 +639,7 @@ class Logged extends React.Component {
         columns={this.getConfigurationColumns()}
         dataSource={utils.alphabeticSortByProperty(this.props.configurations, 'ssid')}
         pagination={this.props.configurations.length < 10 ? false : true}
-        rowKey={record => `configuration-ssid-${record.ssid}-${record.mac}`}
+        rowKey={record => `configuration-ssid-${record.name}-${record.ssid}-${record.mac}`}
       />
     );
   }

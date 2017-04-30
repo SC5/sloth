@@ -59,8 +59,8 @@ class ConfigurationForm extends React.Component {
           label="Name"
           hasFeedback
         >
-          {getFieldDecorator('ssid', {
-            initialValue: this.props.data.ssid,
+          {getFieldDecorator('name', {
+            initialValue: this.props.data.name,
             rules: [{
               required: true,
               message: 'Please input Name!',
@@ -68,7 +68,26 @@ class ConfigurationForm extends React.Component {
           })(
             <Input
               type="text"
-              placeholder={(this.props.data.mac || this.props.edit.mac ? 'Connection name, e.g.: Home or Helsinki office' : 'SSID of the WiFi access point')}
+              placeholder="Connection name, e.g.: Home or Helsinki office"
+              onChange={e => { this.props.updateData('name', e.target.value) }}
+            />
+            )}
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label="SSID"
+          hasFeedback
+        >
+          {getFieldDecorator('ssid', {
+            initialValue: this.props.data.ssid,
+            rules: [{
+              required: true,
+              message: 'Please input SSID!',
+            }],
+          })(
+            <Input
+              type="text"
+              placeholder="SSID of the WiFi access point"
               onChange={e => { this.props.updateData('ssid', e.target.value) }}
             />
             )}

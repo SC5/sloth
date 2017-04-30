@@ -223,12 +223,13 @@ class Utils {
         parent.getCurrentSsidNames(),
       ])
       .then(values => {
-        const currentBssids = values[0];
-        const currentSsids = values[1];
+        const currentBssids = values[0] || [];
+        const currentSsids = values[1] || [];
+
         resolve(
           (
             parent.config.ssids.find(s => currentBssids.includes(s.mac.toLowerCase()))
-            || parent.config.ssids.find(s => connectedSsids.includes(s.ssid.toLowerCase()))
+            || parent.config.ssids.find(s => currentSsids.includes(s.ssid.toLowerCase()))
           ) || undefined
          )
         ;
