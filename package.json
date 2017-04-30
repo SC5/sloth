@@ -17,8 +17,9 @@
     "start": "./node_modules/.bin/electron .",
     "dev": "DEV=true ./node_modules/.bin/electron .",
     "watch": "./node_modules/.bin/webpack --watch",
+    "build": "./node_modules/.bin/webpack --optimize-minimize",
     "electron-rebuild": "./node_modules/.bin/electron-rebuild",
-    "build-and-run-electron": "./node_modules/.bin/webpack --optimize-minimize && npm run start"
+    "build-and-run-electron": "npm run build && npm run start"
   },
   "repository": {
     "url": "https://github.com/kirbo/ssid-to-slack-status.git",
