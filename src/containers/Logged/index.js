@@ -244,7 +244,8 @@ class Logged extends React.Component {
       }
       case 'edit': {
         const config = this.props.configurations.find(conf => (
-          conf.name.toLowerCase() === record.name.toLowerCase()
+          conf.mac.toLowerCase() === record.mac.toLowerCase()
+          || conf.ssid.toLowerCase() === record.ssid.toLowerCase()
         ));
 
         this.setState({
