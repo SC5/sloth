@@ -321,7 +321,25 @@ class Logged extends React.Component {
       let menu = undefined;
       let edit = undefined;
 
-      if (this.props.configurations && this.props.configurations.length > 0) {
+      if (this.props.configurations && this.props.configurations.length > 0 && config && config.mac !== record.mac) {
+        menu = (
+          <Menu onClick={e => this.handleConfigurationButton(e.key, record, config)}>
+            <Menu.Item key="edit">
+              Edit
+            </Menu.Item>
+            <Menu.Item key="delete">
+              Delete
+            </Menu.Item>
+          </Menu>
+        );
+
+        edit = (
+          <Dropdown.Button trigger="hover" onClick={() => this.handleConfigurationButton('create', record, config)} overlay={menu}>
+            Create
+          </Dropdown.Button>
+        );
+      }
+      else if (this.props.configurations && this.props.configurations.length > 0) {
         menu = (
         <Menu onClick={e => this.handleConfigurationButton(e.key, record, config)}>
             <Menu.Item key="delete">
@@ -426,7 +444,7 @@ class Logged extends React.Component {
         key: 'action',
         className: 'action',
         rowKey: record => `connected-action-${record.uuid}`,
-        render: (text, record) => this.tableButton(record, true)
+        render: (text, record) => this.tableButton(record, record)
       }
     ])
   }
