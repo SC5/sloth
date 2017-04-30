@@ -178,7 +178,10 @@ class App extends React.Component {
       }
     })
 
-    const ssidConfig = this.state.configurations.find(s => s.ssid.toLowerCase() === this.state.connections.current.ssid.toLowerCase());
+    const ssidConfig = this.state.configurations.find(s => 
+      s.mac.toLowerCase() === this.state.connections.current.mac.toLowerCase()
+      || s.ssid.toLowerCase() === this.state.connections.current.ssid.toLowerCase()
+    );
 
     return new Promise((resolve, reject) => {
       utils.setNewStatus(ssidConfig, this.state.profile.data)

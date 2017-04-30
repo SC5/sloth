@@ -31,7 +31,6 @@ const formItemLayout = {
 
 class ConfigurationForm extends React.Component {
   state = {
-    confirmDirty: false,
     emojis: []
   };
 
@@ -50,46 +49,47 @@ class ConfigurationForm extends React.Component {
     });
   }
 
-  handleConfirmBlur = (e) => {
-    const value = e.target.value;
-    this.setState({ confirmDirty: this.state.confirmDirty || !!value });
-  }
-
-  renderSsid = () => {
-    if (this.props.data.ssid) {
-      return null;
-    }
-
-    const { getFieldDecorator } = this.props.form;
-
-    return (
-      <FormItem
-        {...formItemLayout}
-        label="SSID"
-        hasFeedback
-      >
-        {getFieldDecorator('ssid', {
-          initialValue: this.props.data.ssid,
-          rules: [{
-            required: true,
-            message: 'Please input SSID!',
-          }],
-        })(
-          <Input
-            type="text"
-            onChange={e => { this.props.updateData('ssid', e.target.value) }}
-          />
-          )}
-      </FormItem>
-    );
-  }
-
   render() {
     const { getFieldDecorator } = this.props.form;
     
     return (
       <Form onSubmit={this.handleSubmit}>
-        {this.renderSsid()}
+        <FormItem
+          {...formItemLayout}
+          label="Name"
+          hasFeedback
+        >
+          {getFieldDecorator('ssid', {
+            initialValue: this.props.data.ssid,
+            rules: [{
+              required: true,
+              message: 'Please input Name!',
+            }],
+          })(
+            <Input
+              type="text"
+              onChange={e => { this.props.updateData('ssid', e.target.value) }}
+            />
+            )}
+        </FormItem>
+        <FormItem
+          {...formItemLayout}
+          label="BSSID"
+          hasFeedback
+        >
+          {getFieldDecorator('bssid', {
+            initialValue: this.props.data.mac.toUpperCase(),
+            rules: [{
+              required: !!this.props.data.ssid,
+              message: 'Please input BSSID!',
+            }],
+          })(
+            <Input
+              type="text"
+              onChange={e => { this.props.updateData('mac', e.target.value) }}
+            />
+            )}
+        </FormItem>
         <FormItem
           {...formItemLayout}
           label="Icon"

@@ -153,7 +153,6 @@ class Utils {
         if (error) {
             reject();
         }
-        //resolve(parent.uniqueObjectsFromArray(connections, 'ssid'));
         resolve(parent.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
       });
     })
@@ -175,7 +174,6 @@ class Utils {
         if (error) {
             reject();
         }
-        //resolve(parent.uniqueObjectsFromArray(connections, 'ssid'));
         resolve(parent.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
       });
     })
@@ -200,13 +198,40 @@ class Utils {
   }
 
   /**
+   * Tries to get the BSSID names for the current WiFi connections.
+   * 
+   * @returns {Array} - Array of all the currently connected SSID names.
+   */
+  getCurrentBssidNames() {
+    const parent = this;
+    return new Promise((resolve, reject) => {
+      parent.getCurrentConnections()
+        .then(connections => {
+          resolve(connections.map(connection => connection.mac.toLowerCase()) || []);
+        })
+    })
+  }
+
+  /**
    * @returns {Object} - If configuration for SSID is found, return it.
    */
   getSsidConfig() {
     const parent = this;
     return new Promise((resolve, reject) => {
-      parent.getCurrentSsidNames().then(connectedSsids => {
-        resolve(parent.config.ssids.find(s => connectedSsids.includes(s.ssid.toLowerCase())) || undefined);
+      Promise.all([
+        parent.getCurrentBssidNames(),
+        parent.getCurrentSsidNames(),
+      ])
+      .then(values => {
+        const currentBssids = values[0];
+        const currentSsids = values[1];
+        resolve(
+          (
+            parent.config.ssids.find(s => currentBssids.includes(s.mac.toLowerCase()))
+            || parent.config.ssids.find(s => connectedSsids.includes(s.ssid.toLowerCase()))
+          ) || undefined
+         )
+        ;
       })
     })
   }
@@ -288,7 +313,10 @@ class Utils {
       (
         s.status === profile.status_text
         && `:${s.icon}:` === profile.status_emoji
-        && s.ssid.toLowerCase() === currentSsid.ssid.toLowerCase()
+        && (
+          s.mac.toLowerCase() === currentSsid.mac.toLowerCase()
+          || s.ssid.toLowerCase() === currentSsid.ssid.toLowerCase()
+        )
       )
     );
   }

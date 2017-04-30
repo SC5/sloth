@@ -48,6 +48,7 @@ class Logged extends React.Component {
     },
     edit: {
       ssid: null,
+      mac: null,
       icon: null,
       status: null,
     }
@@ -150,14 +151,20 @@ class Logged extends React.Component {
   handleModalSaveOld = () => {
     this.props.saveToConfig({
       ssids: this.props.configurations.map(config => {
-        if (config.ssid.toLowerCase() === this.state.edit.ssid.toLowerCase()) {
+        if (
+          config.mac.toLowerCase() === this.state.edit.mac.toLowerCase()
+          || config.ssid.toLowerCase() === this.state.edit.ssid.toLowerCase()
+        ) {
           return this.state.edit;
         }
         return config;
       })
     })
     .then(() => {
-      if (this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()) {
+      if (
+        this.state.edit.mac.toLowerCase() === this.props.connections.current.mac.toLowerCase()
+        || this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
+      ) {
         this.updateStatus();
       } else {
         this.props.openMessage({
@@ -184,14 +191,16 @@ class Logged extends React.Component {
       case 'add': {
         this.setState({
           edit: {
-            ssid: null,
+            ssid: '',
+            mac: '',
             icon: null,
             status: null,
           },
           modal: {
             title: 'Create new configuration',
             data: {
-              ssid: null,
+              ssid: '',
+              mac: '',
               icon: null,
               status: null,
             },
@@ -206,6 +215,7 @@ class Logged extends React.Component {
         this.setState({
           edit: {
             ssid: record.ssid,
+            mac: record.mac,
             icon: null,
             status: null,
           },
@@ -213,6 +223,7 @@ class Logged extends React.Component {
             title: `Create configuration for "${record.ssid}"`,
             data: {
               ssid: record.ssid,
+              mac: record.mac,
               icon: null,
               status: null,
             },
@@ -224,11 +235,15 @@ class Logged extends React.Component {
         break;
       }
       case 'edit': {
-        const config = this.props.configurations.find(conf => conf.ssid.toLowerCase() === record.ssid.toLowerCase());
+        const config = this.props.configurations.find(conf => (
+          conf.mac.toLowerCase() === record.mac.toLowerCase()
+          || conf.ssid.toLowerCase() === record.ssid.toLowerCase()
+        ));
 
         this.setState({
           edit: {
             ssid: config.ssid,
+            mac: config.mac,
             icon: config.icon,
             status: config.status,
           },
@@ -247,7 +262,10 @@ class Logged extends React.Component {
           title: `Are you sure delete configurations for "${record.ssid}"?`,
           onOk() {
             parent.props.saveToConfig({
-              ssids: parent.props.configurations.filter(config => config.ssid.toLowerCase() !== record.ssid.toLowerCase())
+              ssids: parent.props.configurations.filter(config => (
+                config.mac.toLowerCase() !== record.mac.toLowerCase()
+                && config.ssid.toLowerCase() !== record.ssid.toLowerCase()
+              ))
             })
             .then(() => {
               parent.props.openMessage({
@@ -336,11 +354,24 @@ class Logged extends React.Component {
    */
   isConnected = record => {
     if (
-      this.props.connections.current
-      && this.props.connections.current.ssid
-      && record.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
+      record
+      && this.props.connections.current
+      && (
+        (
+          this.props.connections.current.mac
+          && record.mac.toLowerCase() === this.props.connections.current.mac.toLowerCase()
+        )
+        || (
+          this.props.connections.current.ssid
+          && record.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
+        )
+      )
     ) {
-      return <FaIcon name="wifi" />;
+      return (
+        <Popover placement="topLeft" content="Currently connected">
+          <FaIcon name="wifi" />
+        </Popover>
+      );
     }
 
     return null;
@@ -380,7 +411,7 @@ class Logged extends React.Component {
           <td>{ssidConfig.ssid}</td>
         </tr>
         <tr>
-          <th>MAC:</th>
+          <th>BSSID:</th>
           <td>{ssidConfig.mac.toUpperCase()}</td>
         </tr>
         <tr>
@@ -390,8 +421,11 @@ class Logged extends React.Component {
       </table>
     );
 
-    const getConfig = ssid => (
-      this.props.configurations.find(c => c.ssid.toLowerCase() === ssid.toLowerCase())
+    const getConfig = record => (
+      this.props.configurations.find(c => (
+        c.mac.toLowerCase() === record.mac.toLowerCase()
+        || c.ssid.toLowerCase() === record.ssid.toLowerCase()
+      ))
     )
 
     return ([
@@ -413,7 +447,7 @@ class Logged extends React.Component {
         className: 'icon',
         dataIndex: 'icon',
         render: (text, record) => {
-          const config = getConfig(record.ssid);
+          const config = getConfig(record);
           if (config) {
             return (
               <Emoji emojis={this.props.emojis.data} emoji={config.icon} />
@@ -426,7 +460,7 @@ class Logged extends React.Component {
         className: 'status',
         dataIndex: 'status',
         render: (text, record) => {
-          const config = getConfig(record.ssid);
+          const config = getConfig(record);
           if (config && config.status) {
             return config.status;
           }
@@ -574,7 +608,7 @@ class Logged extends React.Component {
         columns={this.getConfigurationColumns()}
         dataSource={utils.alphabeticSortByProperty(this.props.configurations, 'ssid')}
         pagination={this.props.configurations.length < 10 ? false : true}
-        rowKey={record => `configuration-ssid-${record.ssid}`}
+        rowKey={record => `configuration-ssid-${record.ssid}-${record.mac}`}
       />
     );
   }
@@ -590,7 +624,7 @@ class Logged extends React.Component {
         columns={this.getConnectionColumns()}
         dataSource={this.props.connections.data}
         pagination={this.props.connections.data.length < 10 ? false : true}
-        rowKey={record => `connections-ssid-${record.ssid}`}
+        rowKey={record => `connections-ssid-${record.ssid}-${record.mac}`}
       />
     );
   }
