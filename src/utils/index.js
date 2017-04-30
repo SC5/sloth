@@ -257,13 +257,36 @@ class Utils {
   /**
    * Checks if the current status text is not predefined in config or not.
    * 
-   * @param {String} status - Current status text.
+   * @param {Object} profile - Current profile.
    * @param {String} currentSsid - Current SSID config.
    * 
    * @returns {Boolean} - true = Predefined, false = Custom
    */
-  isStatusPredefined(status, currentSsid) {
-    return !this.config.ssids.find(s => s.status === status && s.ssid !== currentSsid);
+  isStatusPredefined(profile, currentSsid) {
+    return !!this.config.ssids.find(s => 
+      (
+        s.status === profile.status_text
+        && `:${s.icon}:` === profile.status_emoji
+      )
+    );
+  }
+
+  /**
+   * Checks if the current status text is not predefined in config or not.
+   * 
+   * @param {Object} profile - Current profile.
+   * @param {String} currentSsid - Current SSID config.
+   * 
+   * @returns {Boolean} - true = Predefined, false = Custom
+   */
+  isCurrentSsid(profile, currentSsid) {
+    return !!this.config.ssids.find(s => 
+      (
+        s.status === profile.status_text
+        && `:${s.icon}:` === profile.status_emoji
+        && s.ssid.toLowerCase() === currentSsid.ssid.toLowerCase()
+      )
+    );
   }
 
   /**
@@ -287,12 +310,12 @@ class Utils {
         parent.getSsidConfig()
           .then(ssidConfig => {
             if (
-              (
-              ssidConfig
-              && (`:${ssidConfig.icon}:` !== status_emoji || ssidConfig.status !== status_text)
-              && (process.env.FORCE_UPDATE || parent.config.forceUpdate || !parent.isStatusPredefined(status_text, ssidConfig.ssid))
+              (ssidConfig && forced)
+              || (
+                ssidConfig
+                && (`:${ssidConfig.icon}:` !== status_emoji || ssidConfig.status !== status_text)
+                && (process.env.FORCE_UPDATE || parent.config.forceUpdate || (parent.isStatusPredefined(data.profile, ssidConfig) && !parent.isCurrentSsid(data.profile, ssidConfig)))
               )
-              || (ssidConfig && forced)
             ) {
               parent.setNewStatus(ssidConfig, data.profile)
                 .then(response => resolve(response))
