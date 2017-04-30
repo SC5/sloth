@@ -68,6 +68,7 @@ class ConfigurationForm extends React.Component {
           })(
             <Input
               type="text"
+              placeholder={(this.props.data.mac || this.props.edit.mac ? 'Connection name, e.g.: Home or Helsinki office' : 'SSID of the WiFi access point')}
               onChange={e => { this.props.updateData('ssid', e.target.value) }}
             />
             )}
@@ -86,6 +87,7 @@ class ConfigurationForm extends React.Component {
           })(
             <Input
               type="text"
+              placeholder="BSSID (MAC address) for this access point"
               onChange={e => { this.props.updateData('mac', e.target.value) }}
             />
             )}
@@ -136,6 +138,7 @@ class ConfigurationForm extends React.Component {
           })(
             <Input
               type="textarea"
+              placeholder="Status, e.g.: Working remotely, At the Helsinki office, ..."
               onChange={e => { this.props.updateData('status', e.target.value) }}
             />
           )}

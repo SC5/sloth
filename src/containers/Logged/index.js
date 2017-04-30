@@ -193,7 +193,7 @@ class Logged extends React.Component {
           edit: {
             ssid: '',
             mac: '',
-            icon: null,
+            icon: '',
             status: null,
           },
           modal: {
@@ -201,7 +201,7 @@ class Logged extends React.Component {
             data: {
               ssid: '',
               mac: '',
-              icon: null,
+              icon: '',
               status: null,
             },
             visible: true,
@@ -214,17 +214,17 @@ class Logged extends React.Component {
       case 'create': {
         this.setState({
           edit: {
-            ssid: record.ssid,
+            ssid: '',
             mac: record.mac,
-            icon: null,
+            icon: '',
             status: null,
           },
           modal: {
             title: `Create configuration for "${record.ssid}"`,
             data: {
-              ssid: record.ssid,
+              ssid: '',
               mac: record.mac,
-              icon: null,
+              icon: '',
               status: null,
             },
             visible: true,
@@ -316,7 +316,10 @@ class Logged extends React.Component {
       let edit = undefined;
 
       if (this.props.configurations && this.props.configurations.length > 0) {
-        hasConfig = this.props.configurations.find(conf => conf.ssid.toLowerCase() === record.ssid.toLowerCase());
+        hasConfig = this.props.configurations.find(conf => (
+          conf.mac.toLowerCase() === record.mac.toLowerCase()
+          || conf.ssid.toLowerCase() === record.ssid.toLowerCase()
+        ));
 
         menu = (
           <Menu onClick={e => this.handleConfigurationButton(e.key, record)}>
@@ -780,6 +783,7 @@ class Logged extends React.Component {
       >
         <Configuration
           data={this.state.modal.data}
+          edit={this.state.edit}
           emojis={this.props.emojis.data}
           updateData={this.updateData}
         />
