@@ -110,8 +110,8 @@
             display: flex;
             line-height: calc(@header-height / 2);
 
-            & > div {
-              padding-right: 5px;
+            & > .emoji {
+              margin-right: 5px;
             }
           }
         }
@@ -254,4 +254,19 @@
 .tooltip-table,
 .tooltip-table * {
   background: transparent !important;
+}
+
+.ant-select {
+  height: 32px;
+
+  & .ant-select-selection-selected-value div.option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    & .emoji {
+      margin-right: 5px;
+      font-size: 18px;
+    }
+  }
 }

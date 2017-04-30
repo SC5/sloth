@@ -134,12 +134,13 @@ class Logged extends React.Component {
       ]
     })
     .then(() => {
-      this.props.openMessage({
-        type: 'info',
-        message: 'Succesfully created'
-      });
       if (this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()) {
         this.updateStatus();
+      } else {
+        this.props.openMessage({
+          type: 'info',
+          message: 'Succesfully created'
+        });
       }
       this.closeModal();
     });
@@ -155,12 +156,13 @@ class Logged extends React.Component {
       })
     })
     .then(() => {
-      this.props.openMessage({
-        type: 'info',
-        message: 'Succesfully edited'
-      });
       if (this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()) {
         this.updateStatus();
+      } else {
+        this.props.openMessage({
+          type: 'info',
+          message: 'Succesfully edited'
+        });
       }
       this.closeModal();
     });

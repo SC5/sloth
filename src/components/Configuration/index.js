@@ -92,7 +92,9 @@ class ConfigurationForm extends React.Component {
             >
               {this.state.emojis.map(icon => (
                 <Option value={icon.key}>
-                  <Emoji emojis={this.props.emojis} emoji={icon.key} /> - {icon.key}
+                  <div className="option">
+                    <Emoji emojis={this.props.emojis} emoji={icon.key} /> - {icon.key}
+                  </div>
                 </Option>
               ))}
             </Select>
