@@ -178,10 +178,19 @@ class App extends React.Component {
       }
     })
 
-    const ssidConfig = this.state.configurations.find(s => 
-      s.mac.toLowerCase() === this.state.connections.current.mac.toLowerCase()
-      || s.ssid.toLowerCase() === this.state.connections.current.ssid.toLowerCase()
-    );
+    const viaMac = this.state.configurations.find(s =>s.mac.toLowerCase() === this.state.connections.current.mac.toLowerCase());
+    const viaSsid = this.state.configurations.find(s => s.ssid.toLowerCase() === this.state.connections.current.ssid.toLowerCase());
+
+    let ssidConfig;
+    if (viaMac) {
+      ssidConfig = viaMac;
+    }
+    else if (viaSsid) {
+      ssidConfig = viaSsid;
+    }
+    else {
+      ssidConfig = undefined;
+    }
 
     return new Promise((resolve, reject) => {
       utils.setNewStatus(ssidConfig, this.state.profile.data)
