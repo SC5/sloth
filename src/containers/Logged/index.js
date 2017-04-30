@@ -180,6 +180,27 @@ class Logged extends React.Component {
     const parent = this;
 
     switch (action) {
+      case 'add': {
+        this.setState({
+          edit: {
+            ssid: null,
+            icon: null,
+            status: null,
+          },
+          modal: {
+            title: 'Create new configuration',
+            data: {
+              ssid: null,
+              icon: null,
+              status: null,
+            },
+            visible: true,
+            handleOk: () => this.handleModalSaveNew(),
+            handleCancel: () => this.handleModalCancel(),
+          }
+        });
+        break;
+      }
       case 'create': {
         this.setState({
           edit: {
@@ -491,19 +512,36 @@ class Logged extends React.Component {
   }
 
   updateStatus = () => {
-    this.props.updateStatus();
-    this.props.openMessage({
-      type: 'info',
-      message: 'Status succesfully updated.'
-    });
+    this.props.updateStatus()
+      .then(() => {
+        this.props.openMessage({
+          type: 'info',
+          message: 'Status succesfully updated.'
+        });
+      })
+      .catch(reason => {
+        this.props.openMessage({
+          type: 'error',
+          message: reason,
+        });
+      })
   };
 
   reloadStatus = () => {
-    this.props.getCurrentStatus();
-    this.props.openMessage({
-      type: 'info',
-      message: 'Status succesfully refreshed.'
-    });
+    this.props.getCurrentStatus()
+      .then(() => {
+        this.props.openMessage({
+          type: 'info',
+          message: 'Status succesfully refreshed.'
+        });
+      })
+      .catch(reason => {
+        this.props.openMessage({
+          type: 'error',
+          message: reason,
+        });
+      })
+    ;
   };
 
   renderConfigurationsTable = () => {
@@ -551,7 +589,7 @@ class Logged extends React.Component {
             type="primary"
             onClick={() => this.updateStatus()}
             loading={this.props.profile.fetching}
-            disabled={this.props.profile.fetching}
+            disabled={this.props.profile.fetching || this.props.configurations.length < 1}
           >
             Update
           </Button>
@@ -635,7 +673,15 @@ class Logged extends React.Component {
         }
         key="2"
       >
-        {this.renderConfigurationsTable()}
+        <div className="configuration-content">
+          {this.renderConfigurationsTable()}
+          <Button
+            type="primary"
+            onClick={() => this.handleConfigurationButton('add', {})}
+          >
+            Add new
+          </Button>
+        </div>
       </Panel>
     )
   }

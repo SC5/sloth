@@ -180,20 +180,31 @@ class App extends React.Component {
 
     const ssidConfig = this.state.configurations.find(s => s.ssid.toLowerCase() === this.state.connections.current.ssid.toLowerCase());
 
-    utils.setNewStatus(ssidConfig, this.state.profile.data)
-      .then(response => {
-        utils.getCurrentStatus().then(profile => {
+    return new Promise((resolve, reject) => {
+      utils.setNewStatus(ssidConfig, this.state.profile.data)
+        .then(response => {
+          utils.getCurrentStatus().then(profile => {
+            this.setState({
+              profile: {
+                data: profile,
+                time: new Date(),
+                fetching: false,
+              }
+            });
+            resolve();
+          });
+        })
+        .catch(reason => {
           this.setState({
             profile: {
-              data: profile,
-              time: new Date(),
+              ...this.state.profile,
               fetching: false,
             }
           });
-        });
-      })
-      .catch(reason => console.error(reason))
-    ;
+          reject(reason);
+        })
+      ;
+    });
   }
 
   getCurrentStatus = () => {

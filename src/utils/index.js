@@ -224,33 +224,37 @@ class Utils {
 
     const parent = this;
 
-    const payload = {
-      token: this.config.token,
-      profile: Object.assign({},
-        profile,
-        {
-          status_text: ssidConfig.status,
-          status_emoji: `:${ssidConfig.icon}:`
-        }
-      )
-    };
-
     return new Promise((resolve, reject) => {
-      slack.users.profile.set(payload, (error, data) => {
-        if (error) {
-          reject(error);
-          return;
-        }
+      if (ssidConfig && ssidConfig.status && ssidConfig.icon) {
+        const payload = {
+          token: parent.config.token,
+          profile: Object.assign({},
+            profile,
+            {
+              status_text: ssidConfig.status,
+              status_emoji: `:${ssidConfig.icon}:`
+            }
+          )
+        };
 
-        let response;
-        const newStatus = `new status: ${parent.getEmoji(ssidConfig.icon)}  ${ssidConfig.status}`;
-        if (data.ok) {
-          response = `Succesfully set ${newStatus}\nOld was: ${parent.getEmoji(profile.status_emoji)}  ${profile.status_text}`;
-        } else {
-          response = `Failed to set new status: ${newStatus}`;
-        }
-        resolve(response);
-      });
+        slack.users.profile.set(payload, (error, data) => {
+          if (error) {
+            reject(error);
+            return;
+          }
+
+          let response;
+          const newStatus = `new status: ${parent.getEmoji(ssidConfig.icon)}  ${ssidConfig.status}`;
+          if (data.ok) {
+            response = `Succesfully set ${newStatus}\nOld was: ${parent.getEmoji(profile.status_emoji)}  ${profile.status_text}`;
+          } else {
+            response = `Failed to set new status: ${newStatus}`;
+          }
+          resolve(response);
+        });
+      } else {
+        reject('Config not found');
+      }
     });
   }
 

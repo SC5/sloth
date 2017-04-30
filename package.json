@@ -15,6 +15,7 @@
     "crontab-uninstall": "node --harmony src/utils/crontab.js uninstall",
     "crontab-reinstall": "node --harmony src/utils/crontab.js reinstall",
     "start": "./node_modules/.bin/electron .",
+    "dev": "DEV=true ./node_modules/.bin/electron .",
     "watch": "./node_modules/.bin/webpack --watch",
     "electron-rebuild": "./node_modules/.bin/electron-rebuild",
     "build-and-run-electron": "./node_modules/.bin/webpack && npm run start"
@@ -26,7 +27,7 @@
   "author": "kimmo.saari@sc5.io",
   "license": "MIT",
   "devDependencies": {
-    "antd": "2.9.2",
+    "antd": "2.9.3",
     "babel": "6.23.0",
     "babel-core": "6.24.1",
     "babel-loader": "7.0.0",

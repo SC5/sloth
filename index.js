@@ -110,7 +110,9 @@ const createWindow = () => {
   win.focus();
 
   // Open the DevTools.
-  // win.webContents.openDevTools();
+  if (process.env.DEV) {
+    win.webContents.openDevTools();
+  }
 
   // Emitted when the window is closed.
   win.on('closed', () => {

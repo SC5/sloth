@@ -18,6 +18,17 @@ import {
 
 const FormItem = Form.Item;
 
+const formItemLayout = {
+  labelCol: {
+    xs: { span: 6 },
+    sm: { span: 6 },
+  },
+  wrapperCol: {
+    xs: { span: 14 },
+    sm: { span: 14 },
+  },
+};
+
 class ConfigurationForm extends React.Component {
   state = {
     confirmDirty: false,
@@ -44,34 +55,41 @@ class ConfigurationForm extends React.Component {
     this.setState({ confirmDirty: this.state.confirmDirty || !!value });
   }
 
-  render() {
+  renderSsid = () => {
+    if (this.props.data.ssid) {
+      return null;
+    }
+
     const { getFieldDecorator } = this.props.form;
 
-    const formItemLayout = {
-      labelCol: {
-        xs: { span: 6 },
-        sm: { span: 6 },
-      },
-      wrapperCol: {
-        xs: { span: 14 },
-        sm: { span: 14 },
-      },
-    };
-    const tailFormItemLayout = {
-      wrapperCol: {
-        xs: {
-          span: 14,
-          offset: 0,
-        },
-        sm: {
-          span: 14,
-          offset: 6,
-        },
-      },
-    };
+    return (
+      <FormItem
+        {...formItemLayout}
+        label="SSID"
+        hasFeedback
+      >
+        {getFieldDecorator('ssid', {
+          initialValue: this.props.data.ssid,
+          rules: [{
+            required: true,
+            message: 'Please input SSID!',
+          }],
+        })(
+          <Input
+            type="text"
+            onChange={e => { this.props.updateData('ssid', e.target.value) }}
+          />
+          )}
+      </FormItem>
+    );
+  }
 
+  render() {
+    const { getFieldDecorator } = this.props.form;
+    
     return (
       <Form onSubmit={this.handleSubmit}>
+        {this.renderSsid()}
         <FormItem
           {...formItemLayout}
           label="Icon"
@@ -105,7 +123,7 @@ class ConfigurationForm extends React.Component {
           label="Status"
           hasFeedback
         >
-          {getFieldDecorator('password', {
+          {getFieldDecorator('status', {
             initialValue: this.props.data.status,
             rules: [{
               required: true,
