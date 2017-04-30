@@ -2,6 +2,7 @@ import './Logged.less';
 
 import React from 'react';
 import { Icon as FaIcon } from 'react-fa';
+import { v4 as uuid } from 'uuid';
 
 import Emoji from '../../components/Emoji';
 import Authorise from '../Authorise';
@@ -188,13 +189,14 @@ class Logged extends React.Component {
    * @param {String} action - Which action should we trigger.
    * @param {Object} record - Configuration row data.
    */
-  handleConfigurationButton = (action, record = undefined) => {
+  handleConfigurationButton = (action, record = undefined, config = undefined) => {
     const parent = this;
 
     switch (action) {
       case 'add': {
         this.setState({
           edit: {
+            uuid: uuid(),
             name: '',
             ssid: '',
             mac: '',
@@ -204,6 +206,7 @@ class Logged extends React.Component {
           modal: {
             title: 'Create new configuration',
             data: {
+              uuid: uuid(),
               name: '',
               ssid: '',
               mac: '',
@@ -220,6 +223,7 @@ class Logged extends React.Component {
       case 'create': {
         this.setState({
           edit: {
+            uuid: uuid(),
             name: '',
             ssid: record.ssid,
             mac: record.mac,
@@ -229,6 +233,7 @@ class Logged extends React.Component {
           modal: {
             title: `Create configuration for "${record.ssid}"`,
             data: {
+              uuid: uuid(),
               name: '',
               ssid: record.ssid,
               mac: record.mac,
@@ -243,13 +248,9 @@ class Logged extends React.Component {
         break;
       }
       case 'edit': {
-        const config = this.props.configurations.find(conf => (
-          conf.mac.toLowerCase() === record.mac.toLowerCase()
-          || conf.ssid.toLowerCase() === record.ssid.toLowerCase()
-        ));
-
         this.setState({
           edit: {
+            uuid: config.uuid,
             name: config.name,
             ssid: config.ssid,
             mac: config.mac,
@@ -271,9 +272,7 @@ class Logged extends React.Component {
           title: `Are you sure delete configurations for "${record.ssid}"?`,
           onOk() {
             parent.props.saveToConfig({
-              ssids: parent.props.configurations.filter(config => (
-                config.name.toLowerCase() !== record.name.toLowerCase()
-              ))
+              ssids: parent.props.configurations.filter(conf => conf.uuid !== config.uuid)
             })
             .then(() => {
               parent.props.openMessage({
@@ -317,20 +316,14 @@ class Logged extends React.Component {
   /**
    * @param {Object} record - Configuration row data.
    */
-  tableButton = (record = undefined) => {
+  tableButton = (record = undefined, config) => {
     if (record) {
-      let hasConfig = undefined;
       let menu = undefined;
       let edit = undefined;
 
       if (this.props.configurations && this.props.configurations.length > 0) {
-        hasConfig = this.props.configurations.find(conf => (
-          conf.mac.toLowerCase() === record.mac.toLowerCase()
-          || conf.ssid.toLowerCase() === record.ssid.toLowerCase()
-        ));
-
         menu = (
-          <Menu onClick={e => this.handleConfigurationButton(e.key, record)}>
+        <Menu onClick={e => this.handleConfigurationButton(e.key, record, config)}>
             <Menu.Item key="delete">
               Delete
             </Menu.Item>
@@ -338,7 +331,7 @@ class Logged extends React.Component {
         );
 
         edit = (
-          <Dropdown.Button trigger="hover" onClick={() => this.handleConfigurationButton('edit', record)} overlay={menu}>
+          <Dropdown.Button trigger="hover" onClick={() => this.handleConfigurationButton('edit', record, config)} overlay={menu}>
             Edit
           </Dropdown.Button>
         );
@@ -352,7 +345,7 @@ class Logged extends React.Component {
 
       return (
         <span>
-          {hasConfig ? edit : create}
+          {config ? edit : create}
         </span>
       );
     }
@@ -432,8 +425,8 @@ class Logged extends React.Component {
         title: 'Action',
         key: 'action',
         className: 'action',
-        rowKey: record => `connected-action-${record.ssid}`,
-        render: (text, record) => this.tableButton(record)
+        rowKey: record => `connected-action-${record.uuid}`,
+        render: (text, record) => this.tableButton(record, true)
       }
     ])
   }
@@ -452,12 +445,24 @@ class Logged extends React.Component {
       </table>
     );
 
-    const getConfig = record => (
-      this.props.configurations.find(c => (
-        c.mac.toLowerCase() === record.mac.toLowerCase()
-        || c.ssid.toLowerCase() === record.ssid.toLowerCase()
-      ))
-    )
+    const getConfig = record => {
+      const viaMacAndSsid = this.props.configurations.find(c => c.mac.toLowerCase() === record.mac.toLowerCase() && c.ssid.toLowerCase() === record.ssid.toLowerCase());
+      if (viaMacAndSsid) {
+        return viaMacAndSsid;
+      }
+
+      const viaMac = this.props.configurations.find(c => c.mac.toLowerCase() === record.mac.toLowerCase());
+      if (viaMac) {
+        return viaMac;
+      }
+
+      const viaSsid = this.props.configurations.find(c => c.ssid.toLowerCase() === record.ssid.toLowerCase());
+      if (viaSsid) {
+        return viaSsid;
+      }
+
+      return undefined;
+    }
 
     return ([
       {
@@ -503,8 +508,8 @@ class Logged extends React.Component {
         title: 'Action',
         key: 'action',
         className: 'action',
-        rowKey: record => `connected-action-${record.ssid}`,
-        render: (text, record) => this.tableButton(record)
+        rowKey: record => `connected-action-${record.ssid}-${record.mac}`,
+        render: (text, record) => this.tableButton(record, getConfig(record))
       }
     ]);
   }
@@ -640,7 +645,7 @@ class Logged extends React.Component {
         columns={this.getConfigurationColumns()}
         dataSource={utils.alphabeticSortByProperty(this.props.configurations, 'ssid')}
         pagination={this.props.configurations.length < 10 ? false : true}
-        rowKey={record => `configuration-ssid-${record.name}-${record.ssid}-${record.mac}`}
+        rowKey={record => `configuration-ssid-${record.uuid}`}
       />
     );
   }
