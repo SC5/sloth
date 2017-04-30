@@ -1,4 +1,4 @@
-import './Logged.css';
+import './Logged.less';
 
 import React from 'react';
 
@@ -132,8 +132,17 @@ class Logged extends React.Component {
         ...this.props.configurations,
         this.state.edit
       ]
+    })
+    .then(() => {
+      this.props.openMessage({
+        type: 'info',
+        message: 'Succesfully created'
+      });
+      if (this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()) {
+        this.updateStatus();
+      }
+      this.closeModal();
     });
-    this.closeModal();
   }
 
   handleModalSaveOld = () => {
@@ -144,8 +153,17 @@ class Logged extends React.Component {
         }
         return config;
       })
+    })
+    .then(() => {
+      this.props.openMessage({
+        type: 'info',
+        message: 'Succesfully edited'
+      });
+      if (this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()) {
+        this.updateStatus();
+      }
+      this.closeModal();
     });
-    this.closeModal();
   }
 
   handleModalCancel = () => {
@@ -206,13 +224,18 @@ class Logged extends React.Component {
           onOk() {
             parent.props.saveToConfig({
               ssids: parent.props.configurations.filter(config => config.ssid.toLowerCase() !== record.ssid.toLowerCase())
-            });
+            })
+            .then(() => {
+              parent.props.openMessage({
+                type: 'info',
+                message: 'Succesfully deleted'
+              });
+            })
           },
           onCancel() {
             
           },
         });
-
         break;
       }
       default: {
@@ -465,6 +488,22 @@ class Logged extends React.Component {
     }
   }
 
+  updateStatus = () => {
+    this.props.updateStatus();
+    this.props.openMessage({
+      type: 'info',
+      message: 'Status succesfully updated.'
+    });
+  };
+
+  reloadStatus = () => {
+    this.props.getCurrentStatus();
+    this.props.openMessage({
+      type: 'info',
+      message: 'Status succesfully refreshed.'
+    });
+  };
+
   renderConfigurationsTable = () => {
     if (!this.props.configurations || this.props.configurations.length < 1) {
       return <span>Nothing here.</span>;
@@ -504,6 +543,26 @@ class Logged extends React.Component {
     return (
       <div className="update">
         <span>Fetched: {this.props.lastUpdate(this.props.profile.time)}</span>
+        <div className="buttons">
+          <Button
+            icon="play-circle"
+            type="primary"
+            onClick={() => this.updateStatus()}
+            loading={this.props.profile.fetching}
+            disabled={this.props.profile.fetching}
+          >
+            Update
+          </Button>
+          <Button
+            icon="reload"
+            type="dashed"
+            onClick={() => this.reloadStatus()}
+            loading={this.props.profile.fetching}
+            disabled={this.props.profile.fetching}
+          >
+            Refresh
+          </Button>
+        </div>
       </div>
     );
   }

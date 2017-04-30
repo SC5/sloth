@@ -1,5 +1,5 @@
 import '../../../antd.less';
-import './App.css';
+import './App.less';
 
 import React from 'react';
 import { FormattedRelative } from 'react-intl';
@@ -41,6 +41,7 @@ class App extends React.Component {
       fetched: false,
       data: [],
       time: null,
+      current: null,
     },
     configurations: [],
     initialised: false,
@@ -111,8 +112,13 @@ class App extends React.Component {
    * @param {Object} config - Configuration
    */
   saveToConfig = config => {
-    utils.saveToConfig(config);
-    this.getConfig().then(config => this.setConfig(config));
+    return new Promise((resolve, reject) => {
+      utils.saveToConfig(config);
+      this.getConfig()
+        .then(config => this.setConfig(config))
+        .then(() => resolve())
+      ;
+    })
   }
 
   hasToken = () => {
@@ -155,12 +161,39 @@ class App extends React.Component {
             ...utils.alphabeticSortByProperty(values[0], 'ssid'),
             ...utils.alphabeticSortByProperty(values[1], 'ssid')
           ],
+          current: values[0][0],
           fetched: true,
           fetching: false,
           time: new Date,
         }
       });
     }); 
+  }
+
+  updateStatus = () => {
+    this.setState({
+      profile: {
+        ...this.state.profile,
+        fetching: true,
+      }
+    })
+
+    const ssidConfig = this.state.configurations.find(s => s.ssid.toLowerCase() === this.state.connections.current.ssid.toLowerCase());
+
+    utils.setNewStatus(ssidConfig, this.state.profile.data)
+      .then(response => {
+        utils.getCurrentStatus().then(profile => {
+          this.setState({
+            profile: {
+              data: profile,
+              time: new Date(),
+              fetching: false,
+            }
+          });
+        });
+      })
+      .catch(reason => console.error(reason))
+    ;
   }
 
   getCurrentStatus = () => {
@@ -254,6 +287,7 @@ class App extends React.Component {
         lastUpdate={this.lastUpdate}
         saveToConfig={this.saveToConfig}
         setCrontab={this.setCrontab}
+        updateStatus={this.updateStatus}
       />
     )
   }

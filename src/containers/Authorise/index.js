@@ -1,4 +1,4 @@
-import './Authorise.css';
+import './Authorise.less';
 
 import React from 'react';
 

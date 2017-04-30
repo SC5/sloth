@@ -1,4 +1,4 @@
-@import '../../main.css';
+@import '../../main.less';
 
 #logged {
   display: flex;
@@ -51,6 +51,24 @@
           position: absolute;
           top: 5px;
           right: 5px;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+
+          & > .buttons {
+            display: flex;
+            flex-direction: column;
+
+            & > button {
+              margin-top: 4px;
+              opacity: 0.5;
+              
+
+              &:hover {
+                opacity: 1;
+              }
+            }
+          }
         }
       }
 

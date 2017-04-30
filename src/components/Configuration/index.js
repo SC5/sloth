@@ -1,4 +1,4 @@
-import './Configuration.css';
+import './Configuration.less';
 
 import React from 'react';
 

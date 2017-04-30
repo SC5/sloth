@@ -1,4 +1,4 @@
-import './Emoji.css';
+import './Emoji.less';
 
 import React from 'react';
 
