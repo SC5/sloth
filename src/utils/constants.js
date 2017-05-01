@@ -22,7 +22,8 @@ const HALF_SECOND     = 2     * QUARTER_SECOND;
 const SECOND          = 2     * HALF_SECOND;
 const QUARTER_MINUTE  = 15    * SECOND;
 const HALF_MINUTE     = 2     * QUARTER_MINUTE;
-const MINUTE          = 2     * HALF_MINUTE;
+const MINUTE          =
+ 2     * HALF_MINUTE;
 const QUARTER_HOUR    = 15    * MINUTE;
 const HALF_HOUR       = 2     * QUARTER_HOUR;
 const HOUR            = 2     * HALF_HOUR;

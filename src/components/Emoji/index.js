@@ -2,8 +2,7 @@ import './Emoji.less';
 
 import React from 'react';
 
-import Utils from '../../utils';
-const utils = new Utils();
+import Emojis from '../../utils/Emojis';
 
 class Emoji extends React.Component {
   render = () => {
@@ -25,7 +24,7 @@ class Emoji extends React.Component {
       }
     }
 
-    return <span className="emoji">{utils.getEmoji(this.props.emoji)}</span>;
+    return <span className="emoji">{Emojis.get(this.props.emoji)}</span>;
   }
 }
 

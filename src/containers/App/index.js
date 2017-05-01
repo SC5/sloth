@@ -11,10 +11,14 @@ import Emoji from '../../components/Emoji';
 import Logged from '../Logged';
 import Authorise from '../Authorise';
 
-import Utils from '../../utils';
-const utils = new Utils();
+import Configs from '../../utils/Configs';
+import Crontab from '../../utils/Crontab';
+import Slack from '../../utils/Slack';
+import Emojis from '../../utils/Emojis';
+import Utils from '../../utils/Utils';
+import Wifi from '../../utils/Wifi';
 
-import * as constants from '../../utils/constants';
+import * as constants from '../../utils/Constants';
 const {
   QUARTER_SECOND,
   SECOND,
@@ -87,7 +91,7 @@ class App extends React.Component {
 
   getConfig = () => (
     new Promise((resolve, reject) => {
-      resolve(utils.getConfig());
+      resolve(Configs.load());
     })
   )
 
@@ -113,7 +117,7 @@ class App extends React.Component {
    */
   saveToConfig = config => {
     return new Promise((resolve, reject) => {
-      utils.saveToConfig(config);
+      Configs.save(config);
       this.getConfig()
         .then(config => this.setConfig(config))
         .then(() => resolve())
@@ -147,8 +151,8 @@ class App extends React.Component {
   }
 
   getConnections = () => {
-    const current = utils.getCurrentConnections();
-    const available = utils.scanConnections();
+    const current = Wifi.getCurrentConnections();
+    const available = Wifi.scanConnections();
 
     Promise.all([
       current,
@@ -158,8 +162,8 @@ class App extends React.Component {
       this.setState({
         connections: {
           data: [
-            ...utils.alphabeticSortByProperty(values[0], 'ssid'),
-            ...utils.alphabeticSortByProperty(values[1], 'ssid')
+            ...Utils.alphabeticSortByProperty(values[0], 'ssid'),
+            ...Utils.alphabeticSortByProperty(values[1], 'ssid')
           ],
           current: values[0][0],
           fetched: true,
@@ -193,9 +197,9 @@ class App extends React.Component {
     }
 
     return new Promise((resolve, reject) => {
-      utils.setNewStatus(ssidConfig, this.state.profile.data)
+      Slack.setStatus(ssidConfig, this.state.profile.data)
         .then(response => {
-          utils.getCurrentStatus().then(profile => {
+          Wifi.getCurrentStatus().then(profile => {
             this.setState({
               profile: {
                 data: profile,
@@ -226,7 +230,7 @@ class App extends React.Component {
         fetching: true,
       }
     })
-    return utils.getCurrentStatus().then(profile => {
+    return Slack.loadStatus().then(profile => {
       this.setState({
         profile: {
           data: profile,
@@ -243,7 +247,7 @@ class App extends React.Component {
         fetching: true,
       }
     })
-    return utils.getEmojis().then(emojis => {
+    return Slack.getEmojis().then(emojis => {
       this.setState({
         emojis: {
           data: emojis,
@@ -255,7 +259,7 @@ class App extends React.Component {
   }
 
   getCrontab = () => {
-    this.setState({ crontab: !!utils.checkCrontab() });
+    this.setState({ crontab: !!Crontab.check() });
   }
 
   /**

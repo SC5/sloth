@@ -5,8 +5,7 @@ import React from 'react';
 import { Layout } from 'antd';
 const { Header, Content, Footer } = Layout;
 
-import Utils from '../../utils';
-const utils = new Utils();
+import Utils from '../../utils/Utils';
 
 class Authorise extends React.Component {
   
@@ -26,14 +25,14 @@ class Authorise extends React.Component {
           <p className="authorise">
             <a
               href="#"
-              onClick={utils.electronOpenLinkInBrowser.bind(this, 'https://slack.com/oauth/authorize?client_id=2174365688.170810616229&scope=users.profile:write,users.profile:read,emoji:read&redirect_uri=http://localhost:5000/auth')}
+              onClick={Utils.electronOpenLinkInBrowser.bind(this, 'https://slack.com/oauth/authorize?client_id=2174365688.170810616229&scope=users.profile:write,users.profile:read,emoji:read&redirect_uri=http://localhost:5000/auth')}
             >
               <img src="sign_in_with_slack.png" />
             </a>
           </p>
         </Content>
         <Footer>
-          <a href="http://github.com/kirbo" onClick={utils.electronOpenLinkInBrowser.bind(this)}>Kimmo Saari ©2017</a>
+          <a href="http://github.com/kirbo" onClick={Utils.electronOpenLinkInBrowser.bind(this)}>Kimmo Saari ©2017</a>
         </Footer>
       </Layout>
     );

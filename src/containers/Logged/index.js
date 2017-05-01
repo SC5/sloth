@@ -8,10 +8,10 @@ import Emoji from '../../components/Emoji';
 import Authorise from '../Authorise';
 import Configuration from '../../components/Configuration';
 
-import Utils from '../../utils';
-const utils = new Utils();
+import Utils from '../../utils/Utils';
+import Slack from '../../utils/Slack';
 
-import * as constants from '../../utils/constants';
+import * as constants from '../../utils/Constants';
 const { SECOND, MINUTE } = constants.TIMES;
 
 import {
@@ -58,7 +58,7 @@ class Logged extends React.Component {
 
   componentDidMount = () => {
     if (this.props.token) {
-      utils.checkCurrentStatus()
+      Slack.checkStatus()
       .then(output => {
         if (!output.match(/^Already up-to-date/)) {
           this.props.getCurrentStatus();
@@ -70,7 +70,7 @@ class Logged extends React.Component {
   handleInstall = () => {
     if (!this.state.install) {
       this.setState({ install: true });
-      const status = utils.installCrontab();
+      const status = Crontab.install();
 
       if (
         status.match(/^Installed in crontab/)
@@ -91,7 +91,7 @@ class Logged extends React.Component {
   handleReinstall = () => {
     if (!this.state.reinstall) {
       this.setState({ reinstall: true });
-      const status = utils.reinstallCrontab();
+      const status = Crontab.reinstall();
 
       if (
         status.match(/^Reinstalled in crontab/)
@@ -112,7 +112,7 @@ class Logged extends React.Component {
   handleUninstall = () => {
     if (!this.state.uninstall) {
       this.setState({ uninstall: true });
-      const status = utils.uninstallCrontab();
+      const status = Crontab.uninstall();
 
       if (
         status.match(/^Uninstalled from crontab/)
@@ -661,7 +661,7 @@ class Logged extends React.Component {
     return (
       <Table
         columns={this.getConfigurationColumns()}
-        dataSource={utils.alphabeticSortByProperty(this.props.configurations, 'ssid')}
+        dataSource={Utils.alphabeticSortByProperty(this.props.configurations, 'ssid')}
         pagination={this.props.configurations.length < 10 ? false : true}
         rowKey={record => `configuration-ssid-${record.uuid}`}
       />
@@ -866,7 +866,7 @@ class Logged extends React.Component {
           {this.renderModal()}
         </Content>
         <Footer>
-          <a href="http://github.com/kirbo" onClick={utils.electronOpenLinkInBrowser.bind(this)}>Kimmo Saari ©2017</a>
+          <a href="http://github.com/kirbo" onClick={Utils.electronOpenLinkInBrowser.bind(this)}>Kimmo Saari ©2017</a>
         </Footer>
       </Layout>
     );

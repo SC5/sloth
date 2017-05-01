@@ -1,9 +1,8 @@
-const Utils = require('./index');
-const utils = new Utils();
+const Slack = require('../utils/Slack');
 
 switch (process.argv[2]) {
   case 'update': {
-    utils.checkCurrentStatus()
+    Slack.checkStatus()
       .then(output => {
         console.log(output)
       })
@@ -13,7 +12,7 @@ switch (process.argv[2]) {
     break;
   }
   case 'force-update': {
-    utils.checkCurrentStatus(true)
+    Slack.checkStatus(true)
       .then(output => {
         console.log(output)
       })

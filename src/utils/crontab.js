@@ -1,25 +1,40 @@
-const Utils = require('./index');
-const utils = new Utils();
+const Configs = require('./Configs');
+const Utils = require('./Utils');
 
-const argument = process.argv[2] || 'install';
+class Crontab {
+  constructor() {
+    this.config = Configs.load();
+  }
 
-switch (argument) {
-  case 'install': {
-    output = utils.installCrontab();
-    break;
+  check() {
+    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && echo 'Already installed in crontab' || exit 0";
+    const output = Utils.parseOutput(command);
+
+    return output || null;
   }
-  case 'uninstall': {
-    output = utils.uninstallCrontab();
-    break;
+  install() {
+    const command = `crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && echo 'Already installed in crontab' || ((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * $(pwd)/src/executables/crontab.sh >/dev/null 2>&1 # ssid-to-slack-status") | crontab - && echo 'Installed in crontab')`;
+    const output = Utils.parseOutput(command);
+
+    return output;
   }
-  case 'reinstall': {
-    output = utils.reinstallCrontab();
-    break;
+  uninstall() {
+    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && crontab -l 2>/dev/null | grep -v '# ssid-to-slack-status' | crontab - && echo 'Uninstalled from crontab' || echo 'Was not installed in crontab'";
+    const output = Utils.parseOutput(command);
+
+    return output;
   }
-  default: {
-    output = `No such option "${argument}"`;
-    break;
+  reinstall() {
+    const unistall = this.uninstall();
+    const install = this.install();
+
+    let output = "Reinstalled in crontab";
+    if (unistall === 'Was not installed in crontab') {
+      output = 'Installed in crontab';
+    }
+
+    return output;
   }
 }
 
-console.log(output);
+module.exports = new Crontab();

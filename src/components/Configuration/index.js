@@ -4,10 +4,10 @@ import React from 'react';
 
 import Emoji from '../Emoji';
 
-import Utils from '../../utils';
-const utils = new Utils();
+import Emojis from '../../utils/Emojis';
+import Utils from '../../utils/Utils';
 
-import * as constants from '../../utils/constants';
+import * as constants from '../../utils/Constants';
 const { SECOND, MINUTE } = constants.TIMES;
 
 import {
@@ -35,7 +35,7 @@ class ConfigurationForm extends React.Component {
   };
 
   componentDidMount = () => {
-    const emojis = utils.standardEmojis();
+    const emojis = Emojis.loadStandard();
 
     Object.keys(this.props.emojis).map(key => {
       emojis.push({
@@ -45,7 +45,7 @@ class ConfigurationForm extends React.Component {
     });
 
     this.setState({
-      emojis: utils.alphabeticSortByProperty(emojis, 'key')
+      emojis: Utils.alphabeticSortByProperty(emojis, 'key')
     });
   }
 

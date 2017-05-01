@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const { app: electron, BrowserWindow, Menu, shell } = require('electron');
 const path = require('path');
-const url = require('url');
 const request = require('request');
 const express = require('express');
 const app = express();
@@ -11,8 +10,8 @@ const session = require('express-session');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
-const Utils = require('./src/utils');
-const utils = new Utils();
+const Configs = require('./src/utils/Configs');
+const Slack = require('./src/utils/Slack');
 
 if (process.env.NODE_ENV !== 'production') {
   require('electron-react-devtools');
@@ -21,7 +20,7 @@ if (process.env.NODE_ENV !== 'production') {
 const {
   MENU_TEMPLATE,
   PRODUCT
-} = require('./src/utils/constants');
+} = require('./src/utils/Constants');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -39,7 +38,7 @@ const startExpress = () => {
   	resave: true
   }));
   app.get('/auth', (req, res) => {
-    if (utils.checkToken(true)) {
+    if (Slack.checkToken(true)) {
       res.sendFile(path.join(__dirname, '/views/already_authorised.html'));
     } else {
       var options = {
@@ -57,10 +56,10 @@ const startExpress = () => {
         }
         else{
           const config = Object.assign({},
-            utils.getConfig(),
+            Configs.load(),
             {token: JSONresponse.access_token}
           );
-          utils.saveToConfig(config);
+          Configs.save(config);
 
           res.sendFile(path.join(__dirname, '/views/authorised.html'));
         }
