@@ -70,17 +70,12 @@ const startExpress = () => {
             ).status(200).end();
           }
           else{
-            Configs.load()
-            .then(data => {
-              const config = Object.assign({},
-                data,
-                {token: JSONresponse.access_token}
-              );
-              Configs.save(config)
-              .then(() => {
-                res.sendFile(path.join(__dirname, '/views/authorised.html'));
-              });
-            });
+            const config = Object.assign({},
+              Configs.load(),
+              {token: JSONresponse.access_token}
+            );
+            Configs.save(config);
+            res.sendFile(path.join(__dirname, '/views/authorised.html'));
           }
         });
       }

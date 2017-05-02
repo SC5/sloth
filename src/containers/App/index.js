@@ -93,13 +93,7 @@ class App extends React.Component {
 
   getConfig = () => {
     return new Promise((resolve, reject) => {
-      Configs.load()
-      .then(data => {
-        resolve(data);
-      })
-      .catch(reason => {
-        reject(reason);
-      })
+      resolve(Configs.load());
     })
   }
 
@@ -126,12 +120,7 @@ class App extends React.Component {
    */
   saveToConfig = config => (
     new Promise((resolve, reject) => {
-      Configs.save(config).then(data => {
-        this.getConfig()
-          .then(config => this.setConfig(config))
-          .then(() => resolve())
-        ;
-      })
+      resolve(this.setConfig(Configs.save(config)));
     })
   )
 

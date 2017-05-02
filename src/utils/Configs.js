@@ -13,23 +13,14 @@ class Configs {
   }
 
   load() {
-    const parent = this;
-
-    return new Promise((resolve, reject) => {
-      parent.config.load();
-      resolve(parent.config.settings);
-    })
+    this.config.load();
+    return this.config.settings;
   }
 
   save(data) {
-    const parent = this;
-
-    return new Promise((resolve, reject) => {
-      parent.config.settings = Object.assign({}, parent.config.settings, data);
-      parent.config.save();
-      parent.config.load();
-      resolve(parent.config.settings);
-    });
+    this.config.settings = Object.assign({}, this.config.settings, data);
+    this.config.save();
+    return this.load();
   }
 }
 

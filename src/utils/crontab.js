@@ -4,9 +4,7 @@ const Utils = require('./Utils');
 class Crontab {
   constructor() {
     this.appPath = Utils.appPath();
-    Configs.load().then(data => {
-      this.config = data;
-    })
+    this.config = Configs.load();
   }
 
   check() {

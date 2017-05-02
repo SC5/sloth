@@ -8,34 +8,26 @@ const Wifi = require('./Wifi');
 
 class Slack {
   constructor() {
-    Configs.load().then(data => {
-      this.config = data;
-    })
+    this.config = Configs.load();
   }
 
   checkToken(bool) {
     return new Promise((resolve, reject) => {
       bool = bool ||  null;
-      Configs.load().then(data => {
-        this.config = data;
+      this.config = Configs.load();
 
-        if (!this.config || !this.config.token || this.config.token.length < 1) {
-          if (process.env.APP_ENV === 'browser' || bool) {
-            resolve(false);
-            return;
-          }
-          else {
-            throw new Error('Token not set');
-          }
+      if (!this.config || !this.config.token || this.config.token.length < 1) {
+        if (process.env.APP_ENV === 'browser' || bool) {
+          resolve(false);
+          return;
         }
+        else {
+          throw new Error('Token not set');
+        }
+      }
 
-        resolve(true);
-        return;
-      })
-      .catch(reason => {
-        console.error(reason);
-        reject(reason);
-      })
+      resolve(true);
+      return;
     });
   }
 

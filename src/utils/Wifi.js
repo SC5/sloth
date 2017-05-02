@@ -7,13 +7,11 @@ const Utils = require('./Utils');
 
 class Wifi {
   constructor() {
-    Configs.load().then(data => {
-      this.config = data;
+    this.config = Configs.load();
 
-      wifi.init({
-        iface: this.config.iface || null,
-      });
-    })
+    wifi.init({
+      iface: this.config.iface || null,
+    });
   }
 
   /**
