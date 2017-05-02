@@ -2,10 +2,11 @@ const path = require('path');
 const { resolve } = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const BabiliPlugin = require("babili-webpack-plugin");
 
 const port = 8080;
 
-module.exports = {
+const webpackConfig = {
   target: 'electron',
   entry: './entry.js',
   output: {
@@ -40,3 +41,25 @@ module.exports = {
     new ExtractTextPlugin("styles.css"),
   ],
 }
+
+if (process.env.NODE_ENV === 'production') {
+  webpackConfig.plugins.push(
+    new BabiliPlugin({
+      test: /\.js$|\.jsx$/,
+      babili: {
+        presets: [
+          [
+            require('babel-preset-babili'),
+            {
+              mangle: { topLevel: true },
+              deadcode: false,
+              removeConsole: true,
+            },
+          ],
+        ],
+      },
+    })
+  );
+}
+
+module.exports = webpackConfig;

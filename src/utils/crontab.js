@@ -5,6 +5,7 @@ class Crontab {
   constructor() {
     this.appPath = Utils.appPath();
     this.config = Configs.load();
+    this.scriptPath = `${this.appPath}/executables/crontab.sh`;
   }
 
   check() {
@@ -13,11 +14,27 @@ class Crontab {
 
     return output || null;
   }
+  checkScriptPath() {
+    const command = "crontab -l 2> /dev/null | grep '# ssid-to-slack-status' || exit 0";
+    let output = Utils.parseOutput(command);
+
+    if (output) {
+      const regex = new RegExp(/"(.*)"/);
+      const matches = regex.exec(output);
+
+      if (matches[1] !== this.scriptPath) {
+        return false;
+      }
+      return true;
+    }
+
+    return output || null;
+  }
   install() {
     let output = this.check();
 
     if (!output || !output.match(/Already installed in crontab/i)) {
-      const command = `((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * \\"${this.appPath}/executables/crontab.sh\\" >/dev/null 2>&1 # ssid-to-slack-status") | crontab - && echo 'Installed in crontab')`;
+      const command = `((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * \\"${this.scriptPath}\\" >/dev/null 2>&1 # ssid-to-slack-status") | crontab - && echo 'Installed in crontab')`;
       output = Utils.parseOutput(command);
     }
 

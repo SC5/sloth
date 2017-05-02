@@ -1,12 +1,18 @@
 {
   "presets": [
-    "es2015",
+    [ "es2015", { "modules": false } ],
+    "es2017",
     "react",
     "stage-0"
   ],
   "plugins": [
-    [
-      "import", { "libraryName": "antd" }
-    ]
-  ]
+    [ "import", { "libraryName": "antd" } ]
+  ],
+  "env": {
+    "production": {
+      "presets": [
+        "babili"
+      ]
+    }
+  }
 }

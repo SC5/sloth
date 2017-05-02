@@ -101,6 +101,8 @@ class Logged extends React.Component {
         this.props.setCrontab(true);
       }
 
+      this.props.closeNotification('notification-crontab-fail');
+
       this.setState({ reinstall: false });
       this.props.openMessage({
         type: 'success',
@@ -574,6 +576,22 @@ class Logged extends React.Component {
         </div>
       );
     }
+    else if (this.props.crontab && Crontab.checkScriptPath() === false) {
+      this.props.openNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Crontab has wrong path for the executable, please click "Reinstall" button below to fix this issue!',
+        duration: 0,
+        button: this.renderCrontabButtonsReinstall(),
+        key: 'notification-crontab-fail',
+      });
+
+      return (
+        <div className="status not-installed">
+          <Icon type="exclamation-circle" /> Wrong path, please reinstall!
+        </div>
+      );
+    }
 
     return (
       <div className="status installed">
@@ -583,7 +601,14 @@ class Logged extends React.Component {
   }
 
   crontabStatusIcon = () => {
-    if (this.props.crontab) {
+    if (this.props.crontab && Crontab.checkScriptPath() === false) {
+      return (
+        <div className="status not-installed">
+          <Icon type="exclamation-circle" />
+        </div>
+      );
+    }
+    else if (this.props.crontab) {
       return (
         <div className="status installed">
           <Icon type="check-circle" />
@@ -728,6 +753,14 @@ class Logged extends React.Component {
     )
   }
 
+  renderCrontabButtonsUninstall = disableable => (
+    <Button icon="close" disabled={this.isButtonsDisabled('uninstall')} loading={this.state.uninstall} onClick={() => this.handleUninstall()} type="danger">Uninstall</Button>
+  )
+
+  renderCrontabButtonsReinstall = disableable => (
+    <Button type={Crontab.checkScriptPath() === false ? 'primary' : ''} icon="reload" disabled={disableable && this.isButtonsDisabled('reinstall')} loading={this.state.reinstall} onClick={() => this.handleReinstall()}>Reinstall</Button>
+  )
+
   renderCrontabButtons = () => {
     if (!this.props.crontab) {
       return (
@@ -739,8 +772,8 @@ class Logged extends React.Component {
 
     return (
       <div className="buttons">
-        <Button icon="close" disabled={this.isButtonsDisabled('uninstall')} loading={this.state.uninstall} onClick={() => this.handleUninstall()} type="danger">Uninstall</Button>
-        <Button icon="reload" disabled={this.isButtonsDisabled('reinstall')} loading={this.state.reinstall} onClick={() => this.handleReinstall()}>Reinstall</Button>
+        {this.renderCrontabButtonsUninstall()}
+        {this.renderCrontabButtonsReinstall()}
       </div>
     );
   }

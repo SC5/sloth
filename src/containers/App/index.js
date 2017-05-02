@@ -279,8 +279,15 @@ class App extends React.Component {
     notification[data.type]({
       message: data.title,
       description: data.message,
-      duration: 4.5
+      duration: data.duration !== undefined ? data.duration : 4.5,
+      btn: data.button,
+      key: data.key,
+      onClose: data.onClose,
     });
+  };
+
+  closeNotification = key => {
+    notification.close(key);
   };
 
   openMessage = data => {
@@ -307,6 +314,7 @@ class App extends React.Component {
         {...this.state}
         getCurrentStatus={this.getCurrentStatus}
         openNotification={this.openNotification}
+        closeNotification={this.closeNotification}
         openMessage={this.openMessage}
         lastUpdate={this.lastUpdate}
         saveToConfig={this.saveToConfig}
