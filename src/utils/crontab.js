@@ -3,7 +3,10 @@ const Utils = require('./Utils');
 
 class Crontab {
   constructor() {
-    this.config = Configs.load();
+    this.appPath = Utils.appPath();
+    Configs.load().then(data => {
+      this.config = data;
+    })
   }
 
   check() {
@@ -13,8 +16,12 @@ class Crontab {
     return output || null;
   }
   install() {
-    const command = `crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && echo 'Already installed in crontab' || ((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * $(pwd)/src/executables/crontab.sh >/dev/null 2>&1 # ssid-to-slack-status") | crontab - && echo 'Installed in crontab')`;
-    const output = Utils.parseOutput(command);
+    let output = this.check();
+
+    if (!output || !output.match(/Already installed in crontab/i)) {
+      const command = `((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * \\"${this.appPath}/executables/crontab.sh\\" >/dev/null 2>&1 # ssid-to-slack-status") | crontab - && echo 'Installed in crontab')`;
+      output = Utils.parseOutput(command);
+    }
 
     return output;
   }

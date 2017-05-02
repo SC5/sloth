@@ -7,11 +7,13 @@ const Utils = require('./Utils');
 
 class Wifi {
   constructor() {
-    this.config = Configs.load();
+    Configs.load().then(data => {
+      this.config = data;
 
-    wifi.init({
-      iface: this.config.iface || null,
-    });
+      wifi.init({
+        iface: this.config.iface || null,
+      });
+    })
   }
 
   /**
@@ -30,7 +32,7 @@ class Wifi {
 
   /**
    * Fetches the current WiFi connections information.
-   * 
+   *
    * @returns {Array} - Connections information.
    */
   getCurrentConnections() {
@@ -51,7 +53,7 @@ class Wifi {
 
   /**
    * Fetches the current WiFi connections information.
-   * 
+   *
    * @returns {Array} - Connections information.
    */
   scanConnections() {
@@ -72,7 +74,7 @@ class Wifi {
 
   /**
    * Tries to get the SSID names for the current WiFi connections.
-   * 
+   *
    * @returns {Array} - Array of all the currently connected SSID names.
    */
   getCurrentSsidNames() {
@@ -87,7 +89,7 @@ class Wifi {
 
   /**
    * Tries to get the BSSID names for the current WiFi connections.
-   * 
+   *
    * @returns {Array} - Array of all the currently connected SSID names.
    */
   getCurrentBssidNames() {
@@ -132,10 +134,10 @@ class Wifi {
 
   /**
    * Checks if the current status text is not predefined in config or not.
-   * 
+   *
    * @param {Object} profile - Current profile.
    * @param {String} currentSsid - Current SSID config.
-   * 
+   *
    * @returns {Boolean} - true = Predefined, false = Custom
    */
   isCurrentSsid(profile, currentSsid) {

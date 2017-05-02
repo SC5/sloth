@@ -7,6 +7,7 @@ const socket = require('socket.io-client/lib/index')('http://localhost:5000');
 
 import { Layout, notification, message } from 'antd';
 
+import Loading from '../../components/Loading';
 import Emoji from '../../components/Emoji';
 import Logged from '../Logged';
 import Authorise from '../Authorise';
@@ -52,6 +53,7 @@ class App extends React.Component {
     token: false,
     crontab: false,
     interval: 5,
+    confLoaded: false,
   }
 
   componentWillMount = () => {
@@ -61,11 +63,11 @@ class App extends React.Component {
         this.hasToken();
 
         const connections   = this.getConnections();
-        const crontab       = this.getCrontab();        
+        const crontab       = this.getCrontab();
 
         intervals.push(setInterval(() => this.getConnections(), MINUTE));
         intervals.push(setInterval(() => this.getCrontab(),     HALF_MINUTE));
-        
+
       })
       .catch(error => { throw new Error(error) })
     ;
@@ -89,11 +91,17 @@ class App extends React.Component {
     });
   }
 
-  getConfig = () => (
-    new Promise((resolve, reject) => {
-      resolve(Configs.load());
+  getConfig = () => {
+    return new Promise((resolve, reject) => {
+      Configs.load()
+      .then(data => {
+        resolve(data);
+      })
+      .catch(reason => {
+        reject(reason);
+      })
     })
-  )
+  }
 
   /**
    * @param {Object} config - Configs.
@@ -105,6 +113,7 @@ class App extends React.Component {
         configurations: config.ssids,
         defaultCollapsed: config.defaultCollapsed,
         interval: config.interval || this.state.interval,
+        confLoaded: true,
       });
       setTimeout(() => {
         resolve();
@@ -115,15 +124,16 @@ class App extends React.Component {
   /**
    * @param {Object} config - Configuration
    */
-  saveToConfig = config => {
-    return new Promise((resolve, reject) => {
-      Configs.save(config);
-      this.getConfig()
-        .then(config => this.setConfig(config))
-        .then(() => resolve())
-      ;
+  saveToConfig = config => (
+    new Promise((resolve, reject) => {
+      Configs.save(config).then(data => {
+        this.getConfig()
+          .then(config => this.setConfig(config))
+          .then(() => resolve())
+        ;
+      })
     })
-  }
+  )
 
   hasToken = () => {
     if (this.state.token) {
@@ -132,7 +142,7 @@ class App extends React.Component {
       const emojis  = this.getEmojis();
       const profile = this.getCurrentStatus();
 
-      Promise.all([
+      return Promise.all([
         emojis
       ])
       .then(values => (
@@ -171,7 +181,7 @@ class App extends React.Component {
           time: new Date,
         }
       });
-    }); 
+    });
   }
 
   updateStatus = () => {
@@ -180,7 +190,7 @@ class App extends React.Component {
         ...this.state.profile,
         fetching: true,
       }
-    })
+    });
 
     const viaMac = this.state.configurations.find(s =>s.mac.toLowerCase() === this.state.connections.current.mac.toLowerCase());
     const viaSsid = this.state.configurations.find(s => s.ssid.toLowerCase() === this.state.connections.current.ssid.toLowerCase());
@@ -199,14 +209,7 @@ class App extends React.Component {
     return new Promise((resolve, reject) => {
       Slack.setStatus(ssidConfig, this.state.profile.data)
         .then(response => {
-          Wifi.getCurrentStatus().then(profile => {
-            this.setState({
-              profile: {
-                data: profile,
-                time: new Date(),
-                fetching: false,
-              }
-            });
+          this.getCurrentStatus().then(() => {
             resolve();
           });
         })
@@ -296,6 +299,11 @@ class App extends React.Component {
   };
 
   render = () => {
+    if (!this.state.confLoaded) {
+      return (
+        <Loading />
+      )
+    }
     if (!this.state.token) {
       return (
         <Authorise
@@ -304,7 +312,7 @@ class App extends React.Component {
         />
       );
     }
-    
+
     return (
       <Logged
         {...this.state}

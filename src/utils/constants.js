@@ -1,20 +1,19 @@
 const PACKAGE = require('../../package.json');
 
-const CONFIG = {
+const DEFAULT_CONFIG = {
   token: '',
   interval: 5,
   forceUpdate: false,
   iface: null,
   ssids: [],
-  defaultCollapsed: ['1', '2', '3', '4']
+  defaultCollapsed: ['1', '2', '3']
 };
 
-const PRODUCT = Object.assign({},
-  PACKAGE.product,
-  {url: PACKAGE.product.url !== "" ? PACKAGE.product.url : PACKAGE.repository.url}
-);
+const PRODUCT_NAME = PACKAGE.productName;
+const PRODUCT_URL = PACKAGE.productUrl;
 
-const CONFIG_FILENAME = 'data/config.json';
+const CONFIG_PATH = 'data';
+const CONFIG_FILENAME = `${CONFIG_PATH}/config.json`;
 
 const MILLISECOND     = 1;
 const QUARTER_SECOND  = 250   * MILLISECOND;
@@ -73,7 +72,7 @@ const MENU_TEMPLATE = [
 
 if (process.platform === 'darwin') {
   MENU_TEMPLATE.unshift({
-    label: PRODUCT.name,
+    label: PRODUCT_NAME,
     submenu: [
       {role: 'about'},
       {type: 'separator'},
@@ -99,8 +98,10 @@ if (process.platform === 'darwin') {
 
 module.exports = {
   TIMES,
-  CONFIG,
+  DEFAULT_CONFIG,
+  CONFIG_PATH,
   CONFIG_FILENAME,
   MENU_TEMPLATE,
-  PRODUCT,
+  PRODUCT_NAME,
+  PRODUCT_URL
 };

@@ -1,7 +1,17 @@
-require('dotenv').config();
-
-const { app: electron, BrowserWindow, Menu, shell } = require('electron');
+const dotenv = require('dotenv');
+const { app: electron, BrowserWindow, Menu, shell, remote } = require('electron');
 const path = require('path');
+
+let envPath;
+
+if (process.env.APP_ENV === 'browser') {
+  envPath = path.normalize(remote.app.getAppPath());
+} else {
+  envPath = path.join(__dirname);
+}
+
+dotenv.config({ path: `${envPath}/.env` });
+
 const request = require('request');
 const express = require('express');
 const app = express();
@@ -13,13 +23,12 @@ const io = require('socket.io')(server);
 const Configs = require('./src/utils/Configs');
 const Slack = require('./src/utils/Slack');
 
-if (process.env.NODE_ENV !== 'production') {
-  require('electron-react-devtools');
-}
+require('electron-react-devtools');
 
 const {
   MENU_TEMPLATE,
-  PRODUCT
+  PRODUCT_NAME,
+  PRODUCT_URL
 } = require('./src/utils/Constants');
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -27,7 +36,7 @@ const {
 let win
 
 const startExpress = () => {
-  app.use(express.static(__dirname + '/dist'));
+  app.use(express.static(__dirname + '/bundles'));
   app.use(express.static(__dirname + '/views'));
   app.use(express.static(__dirname + '/assets'));
   app.use(bodyParser.json());
@@ -38,33 +47,44 @@ const startExpress = () => {
   	resave: true
   }));
   app.get('/auth', (req, res) => {
-    if (Slack.checkToken(true)) {
-      res.sendFile(path.join(__dirname, '/views/already_authorised.html'));
-    } else {
-      var options = {
-        uri: 'https://slack.com/api/oauth.access?code='
-        +req.query.code+
-        '&client_id='+process.env.CLIENT_ID+
-        '&client_secret='+process.env.CLIENT_SECRET+
-        '&redirect_uri=http://localhost:5000/auth',
-        method: 'GET'
-      };
-      request(options, (error, response, body) => {
-        var JSONresponse = JSON.parse(body);
-        if (!JSONresponse.ok){
-          res.send("Error encountered: \n"+JSON.stringify(JSONresponse)).status(200).end();
-        }
-        else{
-          const config = Object.assign({},
-            Configs.load(),
-            {token: JSONresponse.access_token}
-          );
-          Configs.save(config);
-
-          res.sendFile(path.join(__dirname, '/views/authorised.html'));
-        }
-      });
-    }
+    Slack.checkToken(true)
+    .then(tokenSet => {
+      if (tokenSet) {
+        res.sendFile(path.join(__dirname, '/views/already_authorised.html'));
+      } else {
+        var options = {
+          uri: 'https://slack.com/api/oauth.access?code='
+          +req.query.code+
+          '&client_id='+process.env.CLIENT_ID+
+          '&client_secret='+process.env.CLIENT_SECRET+
+          '&redirect_uri=http://localhost:5000/auth',
+          method: 'GET'
+        };
+        request(options, (error, response, body) => {
+          var JSONresponse = JSON.parse(body);
+          if (!JSONresponse.ok){
+            res.send("Error encountered: \n"
+            + JSON.stringify(JSONresponse) + "\n"
+            + "Process.env:\n"
+            + "<pre>" + JSON.stringify(process.env)+"</pre>"
+            ).status(200).end();
+          }
+          else{
+            Configs.load()
+            .then(data => {
+              const config = Object.assign({},
+                data,
+                {token: JSONresponse.access_token}
+              );
+              Configs.save(config)
+              .then(() => {
+                res.sendFile(path.join(__dirname, '/views/authorised.html'));
+              });
+            });
+          }
+        });
+      }
+    });
   });
 
   io.on('connection', client => {
@@ -83,7 +103,7 @@ const createWindow = () => {
     submenu: [
       {
         label: 'Github',
-        click () { shell.openExternal(PRODUCT.url) }
+        click () { shell.openExternal(PRODUCT_URL) }
       }
     ]
   });
@@ -103,7 +123,7 @@ const createWindow = () => {
     useContentSize: true,
     resizable: false,
   });
-  win.setTitle(PRODUCT.name);
+  win.setTitle(PRODUCT_NAME);
 
   win.loadURL('http://localhost:5000/index.html');
   win.focus();
@@ -112,6 +132,7 @@ const createWindow = () => {
   if (process.env.DEV) {
     win.webContents.openDevTools();
   }
+
 
   // Emitted when the window is closed.
   win.on('closed', () => {

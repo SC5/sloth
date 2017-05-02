@@ -9,7 +9,7 @@ module.exports = {
   target: 'electron',
   entry: './entry.js',
   output: {
-    path: path.join(__dirname, './dist'),
+    path: path.join(__dirname, './bundles'),
     filename: 'bundle.js'
   },
   devtool: 'inline-source-map',
@@ -32,7 +32,8 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify('production'),
-        APP_ENV: JSON.stringify('browser')
+        APP_ENV: JSON.stringify('browser'),
+        HOME: JSON.stringify(process.env.HOME),
       }
     }),
 

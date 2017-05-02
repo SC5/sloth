@@ -1,4 +1,4 @@
-const Slack = require('../utils/Slack');
+const Slack = require('../src/utils/Slack');
 
 switch (process.argv[2]) {
   case 'update': {

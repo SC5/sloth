@@ -1,59 +1,35 @@
-const fs = require('fs');
 const path = require('path');
-const { app: electron, remote } = require('electron');
+const config = require('./UserAppData');
+const PACKAGE = require('../../package.json');
 
-const {
-  CONFIG,
-  CONFIG_FILENAME
-} = require('./Constants');
+const Utils = require('./Utils');
 
+const { DEFAULT_CONFIG } = require('./Constants');
 
 class Configs {
   constructor() {
-    this.config = CONFIG;
-    this.loadedConfig = this.load();
-
-    if (this.loadedConfig !== undefined) {
-      this.config = Object.assign({}, CONFIG, this.loadedConfig);
-    } else {
-      this.config = this.save(this.config);
-    }
+    this.config = new config({ appname: PACKAGE.name, defaultSettings: DEFAULT_CONFIG });
+    this.config.load();
   }
 
   load() {
-    let loadedConfig = undefined;
+    const parent = this;
 
-    if (process.env.APP_ENV === 'browser') {
-      const configPath = path.join(path.normalize(remote.app.getAppPath()), `./${CONFIG_FILENAME}`);
-      if (fs.existsSync(configPath)) {
-        loadedConfig = JSON.parse(fs.readFileSync(configPath).toString());
-      }
-    } else {
-      if (fs.existsSync(path.join(__dirname, `../../${CONFIG_FILENAME}`))) {
-        loadedConfig = require(path.join(__dirname, `../../${CONFIG_FILENAME}`));
-      }
-    }
-
-    return loadedConfig;
+    return new Promise((resolve, reject) => {
+      parent.config.load();
+      resolve(parent.config.settings);
+    })
   }
 
   save(data) {
-    let config;
-    let configFile = path.join(__dirname, `../../${CONFIG_FILENAME}`);
+    const parent = this;
 
-    if (process.env.APP_ENV === 'browser') {
-      configFile = path.join(path.normalize(remote.app.getAppPath()), `./${CONFIG_FILENAME}`);
-    }
-
-    config = Object.assign({},
-      CONFIG,
-      this.load(),
-      data
-    );
-
-    fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
-
-    return config;
+    return new Promise((resolve, reject) => {
+      parent.config.settings = Object.assign({}, parent.config.settings, data);
+      parent.config.save();
+      parent.config.load();
+      resolve(parent.config.settings);
+    });
   }
 }
 

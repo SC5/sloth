@@ -1,6 +1,8 @@
 node_modules/*
 yarn.lock
 dist/**
+build/**
+bundles/**
 .env
 **config.json
 settings.json

@@ -4,10 +4,12 @@ import React from 'react';
 import { Icon as FaIcon } from 'react-fa';
 import { v4 as uuid } from 'uuid';
 
+import Loading from '../../components/Loading';
 import Emoji from '../../components/Emoji';
 import Authorise from '../Authorise';
 import Configuration from '../../components/Configuration';
 
+import Crontab from '../../utils/Crontab';
 import Utils from '../../utils/Utils';
 import Slack from '../../utils/Slack';
 
@@ -19,7 +21,6 @@ import {
   Menu,
   Table,
   Icon,
-  Spin,
   Collapse,
   Button,
   Dropdown,
@@ -282,7 +283,7 @@ class Logged extends React.Component {
             })
           },
           onCancel() {
-            
+
           },
         });
         break;
@@ -535,9 +536,7 @@ class Logged extends React.Component {
   getProfile = () => {
     if (!this.props.profile.data) {
       return (
-        <div className="loading">
-          <Spin />
-        </div>
+        <Loading />
       );
     }
 
@@ -846,9 +845,7 @@ class Logged extends React.Component {
   render = () => {
     if (!this.props.initialised) {
       return (
-        <div className="loading">
-          <Spin />
-        </div>
+        <Loading />
       );
     }
 

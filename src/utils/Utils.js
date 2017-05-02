@@ -1,4 +1,6 @@
-const { shell } = require('electron');
+const fs = require('fs');
+const path = require('path');
+const { shell, remote } = require('electron');
 const execSync = require('child_process').execSync;
 
 const isElectronRenderer = function () {
@@ -16,19 +18,30 @@ const isElectronRenderer = function () {
 
 
 class Utils {
+  appPath() {
+    let configPath;
+    if (process.env.APP_ENV === 'browser') {
+      configPath = path.normalize(remote.app.getAppPath());
+    } else {
+      configPath = path.normalize(__dirname);
+    }
+
+    return configPath;
+  }
+
   /**
-   * 
+   *
    * @param {Array} array - Array to sort.
    * @param {String} property - Property sort by.
    */
   uniqueObjectsFromArray(array, property) {
-    return Array.from(array.reduce((m, o) => 
+    return Array.from(array.reduce((m, o) =>
       m.set(o[property], o), new Map()).values()
     )
   }
 
   /**
-   * 
+   *
    * @param {Array} data - Data to sort.
    * @param {String} property - Property to sort by.
    */
@@ -48,7 +61,7 @@ class Utils {
 
     return null;
   }
-  
+
   electronOpenLinkInBrowser(url, event) {
     if (isElectronRenderer()) {
       if (url && url.preventDefault) {

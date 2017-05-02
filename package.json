@@ -1,15 +1,34 @@
 {
   "name": "ssid-to-slack-status",
-  "product": {
-    "name": "SSID to Slack status",
-    "url": ""
+  "description": "Changes your Slack status based on the SSID you're currently connected to.",
+  "productName": "SSID to Slack status",
+  "productUrl": "",
+  "build": {
+    "appId": "com.electron.ssid-to-slack-status",
+    "asar": false,
+    "files": [
+      "**/*",
+      "!*.*",
+      "!data/",
+      "!dist/",
+      "!build/",
+      "!src/",
+      ".env",
+      "executables/**",
+      "src/utils/**",
+      "index.js",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities"
+    }
   },
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./index.js",
   "scripts": {
     "upgrade": "npm install && npm prune && echo 'Dependencies upgraded' && crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && npm run crontab-reinstall || exit 0",
-    "update": "node --harmony src/executables/update.js update",
-    "force-update": "FORCE_UPDATE=true node --harmony src/executables/update.js force-update",
+    "update": "node --harmony executables/update.js update",
+    "force-update": "FORCE_UPDATE=true node --harmony executables/update.js force-update",
     "crontab": "node --harmony src/executables/crontab.js",
     "crontab-install": "node --harmony src/executables/crontab.js install",
     "crontab-uninstall": "node --harmony src/executables/crontab.js uninstall",
@@ -17,9 +36,14 @@
     "start": "./node_modules/.bin/electron .",
     "dev": "DEV=true ./node_modules/.bin/electron .",
     "watch": "./node_modules/.bin/webpack --watch",
-    "build": "./node_modules/.bin/webpack --optimize-minimize",
+    "build": "NODE_ENV=production ./node_modules/.bin/webpack --optimize-minimize",
+    "build-fast": "NODE_ENV=production ./node_modules/.bin/webpack",
     "electron-rebuild": "./node_modules/.bin/electron-rebuild",
-    "build-and-run-electron": "npm run build && npm run start"
+    "build-and-run-electron": "npm run build && npm run start",
+    "pack": "build --dir",
+    "dist": "build",
+    "create-app": "npm run build && npm run pack",
+    "create-app-dist": "npm run build && npm run dist"
   },
   "repository": {
     "url": "https://github.com/kirbo/ssid-to-slack-status.git",
@@ -36,31 +60,35 @@
     "babel-preset-es2015": "6.24.1",
     "babel-preset-react": "6.24.1",
     "babel-preset-stage-0": "6.24.1",
-    "body-parser": "1.17.1",
     "css-loader": "0.28.0",
-    "dotenv": "4.0.0",
     "electron": "1.6.6",
-    "electron-react-devtools": "0.4.0",
+    "electron-builder": "17.1.1",
     "electron-rebuild": "1.5.7",
-    "express": "4.15.2",
-    "express-session": "1.15.2",
     "extract-text-webpack-plugin": "2.1.0",
     "file-loader": "0.11.1",
     "less": "2.7.2",
     "less-loader": "4.0.3",
-    "node-emoji": "1.5.1",
-    "node-wifi": "git+https://github.com/kirbo/node-wifi.git",
     "react": "15.5.4",
     "react-dom": "15.5.4",
     "react-fa": "4.1.2",
     "react-intl": "2.2.3",
+    "style-loader": "0.16.1",
+    "url-loader": "0.5.8",
+    "webpack": "2.4.1"
+  },
+  "dependencies": {
+    "asar": "0.13.0",
+    "body-parser": "1.17.1",
+    "dotenv": "4.0.0",
+    "electron-react-devtools": "0.4.0",
+    "express": "4.15.2",
+    "express-session": "1.15.2",
+    "node-emoji": "1.5.1",
+    "node-wifi": "git+https://github.com/kirbo/node-wifi.git",
     "request": "2.81.0",
     "slack": "8.3.0",
     "socket.io": "1.7.3",
     "socket.io-client": "1.7.3",
-    "style-loader": "0.16.1",
-    "url-loader": "0.5.8",
-    "uuid": "3.0.1",
-    "webpack": "2.4.1"
+    "uuid": "3.0.1"
   }
 }

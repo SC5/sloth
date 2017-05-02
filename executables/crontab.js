@@ -1,4 +1,4 @@
-const Crontab = require('../utils/Crontab');
+const Crontab = require('../src/utils/Crontab');
 
 const argument = process.argv[2] || 'install';
 
