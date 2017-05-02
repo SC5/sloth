@@ -1,28 +1,13 @@
 const Slack = require('../src/utils/Slack');
+const Configs = require('../src/utils/Configs').load();
 
-switch (process.argv[2]) {
-  case 'update': {
-    Slack.checkStatus()
-      .then(output => {
-        console.log(output)
-      })
-      .catch(error => {
-        console.error(error)
-      });
-    break;
-  }
-  case 'force-update': {
-    Slack.checkStatus(true)
-      .then(output => {
-        console.log(output)
-      })
-      .catch(error => {
-        console.error(error)
-      });
-    break;
-  }
-  default: {
-    console.log('Command not found');
-    break;
-  }
+let forceUpdate = Configs.forceUpdate;
+
+if (process.argv[2]) {
+  forceUpdate = process.argv[2] === 'force-update' ? true : false;
 }
+
+Slack.checkStatus(forceUpdate)
+  .then(output => console.log(output))
+  .catch(error => console.error(error))
+;

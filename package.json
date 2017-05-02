@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0-alpha",
+  "version": "0.1.1-alpha",
   "name": "ssid-to-slack-status",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "SSID to Slack status",
@@ -26,25 +26,19 @@
   },
   "main": "./index.js",
   "scripts": {
-    "upgrade": "npm install && npm prune && echo 'Dependencies upgraded' && crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && npm run crontab-reinstall || exit 0",
     "update": "node --harmony executables/update.js update",
-    "force-update": "FORCE_UPDATE=true node --harmony executables/update.js force-update",
-    "crontab": "node --harmony src/executables/crontab.js",
-    "crontab-install": "node --harmony src/executables/crontab.js install",
-    "crontab-uninstall": "node --harmony src/executables/crontab.js uninstall",
-    "crontab-reinstall": "node --harmony src/executables/crontab.js reinstall",
+    "force-update": "node --harmony executables/update.js force-update",
     "start": "./node_modules/.bin/electron .",
     "dev": "DEV=true ./node_modules/.bin/electron .",
     "watch": "./node_modules/.bin/webpack --watch",
     "build": "NODE_ENV=production ./node_modules/.bin/webpack",
     "build-fast": "./node_modules/.bin/webpack",
-    "build-and-run-electron": "npm run build && npm run start",
     "pack": "build --dir",
     "dist": "build",
-    "release": "build",
-    "create-app": "npm run build && npm run pack",
-    "create-app-dist": "npm run build && npm run dist",
-    "create-app-release": "export $(cat .env | xargs) && npm run build && npm run release"
+    "create": "npm run build && npm run pack",
+    "create-dist": "npm run build && npm run dist",
+    "create-release": "export $(cat .env | xargs) && npm run build && npm run dist",
+    "postinstall": "./executables/postinstall.sh"
   },
   "repository": {
     "url": "https://github.com/kirbo/ssid-to-slack-status.git",
