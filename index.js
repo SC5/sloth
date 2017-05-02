@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 const { app: electron, BrowserWindow, Menu, shell, remote, protocol, ipcMain } = require('electron');
 const { autoUpdater } = require('electron-updater');
+const log = require('electron-log');
 const path = require('path');
 const request = require('request');
 const express = require('express');
@@ -10,6 +11,10 @@ const session = require('express-session');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 require('electron-react-devtools');
+
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+log.info('App starting...');
 
 let envPath;
 if (process.env.APP_ENV === 'browser') {
@@ -154,6 +159,7 @@ const createWindow = () => {
   })
 
   const sendStatusToWindow = (type, text, notification) => {
+    log.info(text);
     win.webContents.send('updates', {type, message: text, notification});
   }
 
@@ -167,6 +173,7 @@ const createWindow = () => {
     sendStatusToWindow('success', 'Software is up-to-date.');
   })
   autoUpdater.on('error', (ev, err) => {
+    log.error(err);
     sendStatusToWindow('error', 'Error in auto-updater.');
   })
   autoUpdater.on('download-progress', (ev, progressObj) => {
