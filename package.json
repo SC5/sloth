@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1-alpha",
+  "version": "0.1.2-alpha",
   "name": "ssid-to-slack-status",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "SSID to Slack status",
@@ -39,6 +39,7 @@
     "create": "npm run build && npm run pack",
     "create-dist": "npm run build && npm run dist",
     "create-release": "export $(cat .env | xargs) && npm run build && npm run release",
+    "copy-latest": "cp -R dist/github versions && git commit -am 'Latest versions updated' && git push",
     "postinstall": "./executables/postinstall.sh"
   },
   "repository": {

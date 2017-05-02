@@ -1,5 +1,5 @@
 const dotenv = require('dotenv');
-const { app: electron, BrowserWindow, Menu, shell, remote } = require('electron');
+const { app: electron, BrowserWindow, Menu, shell, remote, autoUpdater } = require('electron');
 const path = require('path');
 
 let envPath;
@@ -122,6 +122,27 @@ const createWindow = () => {
 
   win.loadURL('http://localhost:5000/index.html');
   win.focus();
+
+  autoUpdater.addListener("update-available", function (event) {
+  });
+  autoUpdater.addListener("update-downloaded", function (event, releaseNotes, releaseName, releaseDate, updateURL) {
+    appUpdater.quitAndInstall();
+  });
+  autoUpdater.addListener("error", function (error) {
+  });
+  autoUpdater.addListener("checking-for-update", function (event) {
+  });
+  autoUpdater.addListener("update-not-available", function (event) {
+  });
+
+  /*
+  const updateFeed = 'https://raw.githubusercontent.com/kirbo/ssid-to-slack-status/electron/versions';
+  const platform = process.platform === 'darwin' ? 'mac' : process.platform.replace(/\d+/, '');
+  const feedURL = path.join(updateFeed, `latest-${platform}.json`);
+
+  autoUpdater.setFeedURL(feedURL);
+  */
+  autoUpdater.checkForUpdates();
 
   // Open the DevTools.
   if (process.env.DEV) {
