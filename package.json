@@ -35,9 +35,10 @@
     "build-fast": "./node_modules/.bin/webpack",
     "pack": "build --dir",
     "dist": "build",
+    "release": "build",
     "create": "npm run build && npm run pack",
     "create-dist": "npm run build && npm run dist",
-    "create-release": "export $(cat .env | xargs) && npm run build && npm run dist",
+    "create-release": "export $(cat .env | xargs) && npm run build && npm run release",
     "postinstall": "./executables/postinstall.sh"
   },
   "repository": {
