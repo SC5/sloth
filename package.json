@@ -42,10 +42,10 @@
     "build-and-run-electron": "npm run build && npm run start",
     "pack": "build --dir",
     "dist": "build",
-    "release": "GH_TOKEN=bba284a2bbda043cb831378068a9857188f3eb23 build",
+    "release": "build",
     "create-app": "npm run build && npm run pack",
     "create-app-dist": "npm run build && npm run dist",
-    "create-app-release": "npm run build && npm run release"
+    "create-app-release": "export $(cat .env | xargs) && npm run build && npm run release"
   },
   "repository": {
     "url": "https://github.com/kirbo/ssid-to-slack-status.git",
