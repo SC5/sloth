@@ -1,17 +1,7 @@
 const dotenv = require('dotenv');
-const { app: electron, BrowserWindow, Menu, shell, remote, autoUpdater } = require('electron');
+const { app: electron, BrowserWindow, Menu, shell, remote, protocol, ipcMain } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
-
-let envPath;
-
-if (process.env.APP_ENV === 'browser') {
-  envPath = path.normalize(remote.app.getAppPath());
-} else {
-  envPath = path.join(__dirname);
-}
-
-dotenv.config({ path: `${envPath}/.env` });
-
 const request = require('request');
 const express = require('express');
 const app = express();
@@ -19,11 +9,18 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
+require('electron-react-devtools');
+
+let envPath;
+if (process.env.APP_ENV === 'browser') {
+  envPath = path.normalize(remote.app.getAppPath());
+} else {
+  envPath = path.join(__dirname);
+}
+dotenv.config({ path: `${envPath}/.env` });
 
 const Configs = require('./src/utils/Configs');
 const Slack = require('./src/utils/Slack');
-
-require('electron-react-devtools');
 
 const {
   MENU_TEMPLATE,
@@ -31,8 +28,6 @@ const {
   PRODUCT_URL
 } = require('./src/utils/Constants');
 
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
 let win
 
 const startExpress = () => {
@@ -83,6 +78,8 @@ const startExpress = () => {
   });
 
   io.on('connection', client => {
+    autoUpdater.checkForUpdates();
+
     client
       .on('authorised', data => {
         io.emit('authorised', data);
@@ -93,14 +90,40 @@ const startExpress = () => {
 }
 
 const createWindow = () => {
+  if (process.platform === 'darwin') {
+    MENU_TEMPLATE.unshift({
+      label: PRODUCT_NAME,
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        {
+          label: 'Check for updates',
+          click() { autoUpdater.checkForUpdates() }
+        },
+        { role: 'services', submenu: [] },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideothers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    })
+  }
+  const submenu = [];
+  if (process.platform !== 'darwin') {
+    submenu.push({
+      label: 'Check for updates',
+      click() { autoUpdater.checkForUpdates() }
+    });
+  }
+  submenu.push({
+    label: 'Github',
+    click() { shell.openExternal(PRODUCT_URL) }
+  });
   MENU_TEMPLATE.push({
     role: 'help',
-    submenu: [
-      {
-        label: 'Github',
-        click () { shell.openExternal(PRODUCT_URL) }
-      }
-    ]
+    submenu: submenu
   });
 
   const menu = Menu.buildFromTemplate(MENU_TEMPLATE);
@@ -110,7 +133,6 @@ const createWindow = () => {
 
   startExpress();
 
-  // Create the browser window.
   win = new BrowserWindow({
     width: 600,
     height: 650,
@@ -123,63 +145,52 @@ const createWindow = () => {
   win.loadURL('http://localhost:5000/index.html');
   win.focus();
 
-  autoUpdater.addListener("update-available", function (event) {
-  });
-  autoUpdater.addListener("update-downloaded", function (event, releaseNotes, releaseName, releaseDate, updateURL) {
-    appUpdater.quitAndInstall();
-  });
-  autoUpdater.addListener("error", function (error) {
-  });
-  autoUpdater.addListener("checking-for-update", function (event) {
-  });
-  autoUpdater.addListener("update-not-available", function (event) {
-  });
-
-  /*
-  const updateFeed = 'https://raw.githubusercontent.com/kirbo/ssid-to-slack-status/electron/versions';
-  const platform = process.platform === 'darwin' ? 'mac' : process.platform.replace(/\d+/, '');
-  const feedURL = path.join(updateFeed, `latest-${platform}.json`);
-
-  autoUpdater.setFeedURL(feedURL);
-  */
-  autoUpdater.checkForUpdates();
-
-  // Open the DevTools.
   if (process.env.DEV) {
     win.webContents.openDevTools();
   }
 
-
-  // Emitted when the window is closed.
   win.on('closed', () => {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
     win = null
+  })
+
+  const sendStatusToWindow = (type, text, notification) => {
+    win.webContents.send('updates', {type, message: text, notification});
+  }
+
+  autoUpdater.on('checking-for-update', () => {
+    sendStatusToWindow('info', 'Checking for updates...');
+  })
+  autoUpdater.on('update-available', (ev, info) => {
+    sendStatusToWindow('warning', 'Updates available.', true);
+  })
+  autoUpdater.on('update-not-available', (ev, info) => {
+    sendStatusToWindow('success', 'Software is up-to-date.');
+  })
+  autoUpdater.on('error', (ev, err) => {
+    sendStatusToWindow('error', 'Error in auto-updater.');
+  })
+  autoUpdater.on('download-progress', (ev, progressObj) => {
+    sendStatusToWindow('info', 'Downloading updates...');
+  })
+  autoUpdater.on('update-downloaded', (ev, info) => {
+    sendStatusToWindow('success', 'Updates downloaded; will install in 5 seconds', true);
+  });
+
+  autoUpdater.on('update-downloaded', (ev, info) => {
+    setTimeout(function () {
+      autoUpdater.quitAndInstall();
+    }, 5000)
   })
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 electron.on('ready', createWindow)
 
-// Quit when all windows are closed.
 electron.on('window-all-closed', () => {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  //if (process.platform !== 'darwin') {
-    electron.quit()
-  //}
+  electron.quit()
 })
 
 electron.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (win === null) {
     createWindow()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

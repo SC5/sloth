@@ -4,6 +4,7 @@ import './App.less';
 import React from 'react';
 import { FormattedRelative } from 'react-intl';
 const socket = require('socket.io-client/lib/index')('http://localhost:5000');
+const { ipcRenderer } = require('electron');
 
 import { Layout, notification, message } from 'antd';
 
@@ -71,6 +72,19 @@ class App extends React.Component {
       })
       .catch(error => { throw new Error(error) })
     ;
+
+    ipcRenderer.on('updates', (event, data) => {
+      if (data.notification) {
+        notification[data.type]({
+          message: 'Updates',
+          description: data.message,
+          duration: 10,
+        });
+      }
+      else {
+        message[data.type](data.message);
+      }
+    })
 
     socket
       .on('authorised', data => {

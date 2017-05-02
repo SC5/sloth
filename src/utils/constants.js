@@ -71,23 +71,8 @@ const MENU_TEMPLATE = [
 ]
 
 if (process.platform === 'darwin') {
-  MENU_TEMPLATE.unshift({
-    label: PRODUCT_NAME,
-    submenu: [
-      {role: 'about'},
-      {type: 'separator'},
-      {role: 'services', submenu: []},
-      {type: 'separator'},
-      {role: 'hide'},
-      {role: 'hideothers'},
-      {role: 'unhide'},
-      {type: 'separator'},
-      {role: 'quit'}
-    ]
-  })
-
   // Window menu
-  MENU_TEMPLATE[2].submenu = [
+  MENU_TEMPLATE[1].submenu = [
     {role: 'close'},
     {role: 'minimize'},
     {role: 'zoom'},

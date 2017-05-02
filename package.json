@@ -1,11 +1,11 @@
 {
-  "version": "0.1.2-alpha",
+  "version": "0.1.3",
   "name": "ssid-to-slack-status",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "SSID to Slack status",
-  "productUrl": "",
+  "productUrl": "https://github.com/kirbo/ssid-to-slack-status/releases",
   "build": {
-    "appId": "com.electron.ssid-to-slack-status",
+    "appId": "com.github.kirbo.ssid-to-slack-status",
     "asar": false,
     "files": [
       "**/*",
@@ -39,7 +39,6 @@
     "create": "npm run build && npm run pack",
     "create-dist": "npm run build && npm run dist",
     "create-release": "export $(cat .env | xargs) && npm run build && npm run release",
-    "copy-latest": "cp -R dist/github versions && git commit -am 'Latest versions updated' && git push",
     "postinstall": "./executables/postinstall.sh"
   },
   "repository": {
@@ -61,7 +60,7 @@
     "babel-preset-stage-0": "6.24.1",
     "babili": "0.0.12",
     "babili-webpack-plugin": "0.0.11",
-    "css-loader": "0.28.0",
+    "css-loader": "0.28.1",
     "electron": "1.6.6",
     "electron-builder": "17.1.1",
     "extract-text-webpack-plugin": "2.1.0",
@@ -80,6 +79,7 @@
     "body-parser": "1.17.1",
     "dotenv": "4.0.0",
     "electron-react-devtools": "0.4.0",
+    "electron-updater": "1.14.2",
     "express": "4.15.2",
     "express-session": "1.15.2",
     "node-emoji": "1.5.1",
