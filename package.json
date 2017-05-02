@@ -1,4 +1,5 @@
 {
+  "version": "0.1.0",
   "name": "ssid-to-slack-status",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "SSID to Slack status",
@@ -23,7 +24,6 @@
       "category": "public.app-category.utilities"
     }
   },
-  "version": "1.0.0",
   "main": "./index.js",
   "scripts": {
     "upgrade": "npm install && npm prune && echo 'Dependencies upgraded' && crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && npm run crontab-reinstall || exit 0",
@@ -42,8 +42,10 @@
     "build-and-run-electron": "npm run build && npm run start",
     "pack": "build --dir",
     "dist": "build",
+    "release": "GH_TOKEN=bba284a2bbda043cb831378068a9857188f3eb23 build",
     "create-app": "npm run build && npm run pack",
-    "create-app-dist": "npm run build && npm run dist"
+    "create-app-dist": "npm run build && npm run dist",
+    "create-app-release": "npm run build && npm run release"
   },
   "repository": {
     "url": "https://github.com/kirbo/ssid-to-slack-status.git",
