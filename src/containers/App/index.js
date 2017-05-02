@@ -82,7 +82,7 @@ class App extends React.Component {
         });
       }
       else {
-        message[data.type](data.message);
+        message[data.type](data.message, 4.5);
       }
     })
 

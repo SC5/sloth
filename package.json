@@ -1,5 +1,5 @@
 {
-  "version": "0.1.3",
+  "version": "0.1.4",
   "name": "ssid-to-slack-status",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "SSID to Slack status",
