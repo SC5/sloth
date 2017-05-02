@@ -6,7 +6,12 @@ import { FormattedRelative } from 'react-intl';
 const socket = require('socket.io-client/lib/index')('http://localhost:5000');
 const { ipcRenderer } = require('electron');
 
-import { Layout, notification, message } from 'antd';
+import {
+  Layout,
+  Button,
+  notification,
+  message
+ } from 'antd';
 
 import Loading from '../../components/Loading';
 import Emoji from '../../components/Emoji';
@@ -27,6 +32,8 @@ const {
   HALF_MINUTE,
   MINUTE
 } = constants.TIMES;
+
+const PRODUCT_URL = constants.PRODUCT_URL;
 
 const intervals = [];
 
@@ -78,11 +85,13 @@ class App extends React.Component {
         notification[data.type]({
           message: 'Updates',
           description: data.message,
-          duration: 10,
+          duration: 0,
+          btn: this.renderUpdatesAvailableButton(),
+          key: 'updates',
         });
       }
       else {
-        message[data.type](data.message, 4.5);
+        message[data.type](data.message, data.duration);
       }
     })
 
@@ -103,6 +112,11 @@ class App extends React.Component {
     intervals.map(interval => {
       clearInterval(interval);
     });
+  }
+
+  handleViewReleases = event => {
+    Utils.electronOpenLinkInBrowser(PRODUCT_URL, event);
+    this.closeNotification('updates');
   }
 
   getConfig = () => {
@@ -307,6 +321,10 @@ class App extends React.Component {
   openMessage = data => {
     message[data.type || 'info'](data.message);
   };
+
+  renderUpdatesAvailableButton = () => (
+    <Button type="primary" icon="link" onClick={event => this.handleViewReleases(event)}>View releases</Button>
+  )
 
   render = () => {
     if (!this.state.confLoaded) {

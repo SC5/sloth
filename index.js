@@ -160,7 +160,8 @@ const createWindow = () => {
 
   const sendStatusToWindow = (type, text, notification) => {
     log.info(text);
-    win.webContents.send('updates', {type, message: text, notification});
+    const duration = ['error', 'warning'].includes(type) ? 5 : 1.5;
+    win.webContents.send('updates', {type, message: text, notification, duration});
   }
 
   autoUpdater.on('checking-for-update', () => {
