@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.0-alpha",
   "name": "ssid-to-slack-status",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "SSID to Slack status",
@@ -36,8 +36,8 @@
     "start": "./node_modules/.bin/electron .",
     "dev": "DEV=true ./node_modules/.bin/electron .",
     "watch": "./node_modules/.bin/webpack --watch",
-    "build": "NODE_ENV=production ./node_modules/.bin/webpack --optimize-minimize",
-    "build-fast": "NODE_ENV=production ./node_modules/.bin/webpack",
+    "build": "NODE_ENV=production ./node_modules/.bin/webpack",
+    "build-fast": "./node_modules/.bin/webpack",
     "build-and-run-electron": "npm run build && npm run start",
     "pack": "build --dir",
     "dist": "build",
