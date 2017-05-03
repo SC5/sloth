@@ -1,3 +1,5 @@
+const path = require('path');
+
 const Configs = require('./Configs');
 const Utils = require('./Utils');
 
@@ -5,7 +7,12 @@ class Crontab {
   constructor() {
     this.appPath = Utils.appPath();
     this.config = Configs.load();
-    this.scriptPath = `${this.appPath}/executables/crontab.sh`;
+
+    if (this.appPath.match(/app.asar/i)) {
+      this.scriptPath = path.join(this.appPath, '../../executables/crontab.sh');
+    } else {
+      this.scriptPath = `${this.appPath}/executables/crontab.sh`;
+    }
   }
 
   check() {
@@ -22,7 +29,7 @@ class Crontab {
       const regex = new RegExp(/"(.*)"/);
       const matches = regex.exec(output);
 
-      if (matches[1] !== this.scriptPath) {
+      if (!matches || matches[1] !== this.scriptPath) {
         return false;
       }
       return true;

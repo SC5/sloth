@@ -1,12 +1,12 @@
 {
-  "version": "0.1.5",
+  "version": "0.1.7",
   "name": "ssid-to-slack-status",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "SSID to Slack status",
   "productUrl": "https://github.com/kirbo/ssid-to-slack-status/releases",
   "build": {
     "appId": "com.github.kirbo.ssid-to-slack-status",
-    "asar": false,
+    "asar": true,
     "files": [
       "**/*",
       "!*.*",
@@ -15,10 +15,13 @@
       "!build/",
       "!src/",
       ".env",
-      "executables/**",
       "src/utils/**",
       "index.js",
       "package.json"
+    ],
+    "extraFiles": [
+      "executables/**",
+      "utils/**"
     ],
     "mac": {
       "category": "public.app-category.utilities"
@@ -28,17 +31,26 @@
   "scripts": {
     "update": "node --harmony executables/update.js update",
     "force-update": "node --harmony executables/update.js force-update",
+
     "start": "./node_modules/.bin/electron .",
     "dev": "DEV=true ./node_modules/.bin/electron .",
     "watch": "./node_modules/.bin/webpack --watch",
+
+    "copy-utils": "cp -R src/utils utils",
+    "delete-utils": "rm -rf utils",
+
     "build": "NODE_ENV=production ./node_modules/.bin/webpack",
     "build-fast": "./node_modules/.bin/webpack",
-    "pack": "build --dir",
-    "dist": "build",
-    "release": "export $(cat .env | xargs) && build",
+
+    "pack": "npm run copy-utils && build --dir && npm run delete-utils",
+    "dist": "npm run copy-utils && build && npm run delete-utils",
+    "release": "npm run copy-utils && export $(cat .env | xargs) && build && npm run delete-utils",
+
     "create": "npm run build && npm run pack",
+    "create-fast": "npm run build-fast && npm run pack",
     "create-dist": "npm run build && npm run dist",
     "create-release": "export $(cat .env | xargs) && npm run build && npm run release",
+
     "postinstall": "./executables/postinstall.sh"
   },
   "repository": {

@@ -34,7 +34,6 @@ const webpackConfig = {
       'process.env': {
         NODE_ENV: JSON.stringify('production'),
         APP_ENV: JSON.stringify('browser'),
-        HOME: JSON.stringify(process.env.HOME),
       }
     }),
 

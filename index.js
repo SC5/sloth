@@ -12,6 +12,8 @@ const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 require('electron-react-devtools');
 
+global.process_env = process.env;
+
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 log.info('App starting...');
@@ -87,6 +89,7 @@ const startExpress = () => {
 
     client
       .on('authorised', data => {
+        win.focus();
         io.emit('authorised', data);
       })
   });
@@ -104,6 +107,10 @@ const createWindow = () => {
         {
           label: 'Check for updates',
           click() { autoUpdater.checkForUpdates() }
+        },
+        {
+          label: 'Open Dev Tools',
+          click() { win.webContents.openDevTools() }
         },
         { role: 'services', submenu: [] },
         { type: 'separator' },

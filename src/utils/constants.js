@@ -1,5 +1,3 @@
-const PACKAGE = require('../../package.json');
-
 const DEFAULT_CONFIG = {
   token: '',
   interval: 5,
@@ -9,8 +7,8 @@ const DEFAULT_CONFIG = {
   defaultCollapsed: ['1', '2', '3']
 };
 
-const PRODUCT_NAME = PACKAGE.productName;
-const PRODUCT_URL = PACKAGE.productUrl;
+const PRODUCT_NAME = 'SSID to Slack status';
+const PRODUCT_URL = 'https://github.com/kirbo/ssid-to-slack-status/releases';
 
 const CONFIG_PATH = 'data';
 const CONFIG_FILENAME = `${CONFIG_PATH}/config.json`;

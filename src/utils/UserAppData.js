@@ -5,16 +5,28 @@ var fs = require("fs");
 var path = require("path");
 const { shell, remote } = require('electron');
 
+let PROCESS_ENV = Object.assign({},
+  process.env,
+  {platform: process.platform}
+);
+
+if (remote) {
+  PROCESS_ENV = Object.assign({},
+    PROCESS_ENV,
+    remote.getGlobal('process_env')
+  );
+}
+
 var linuxHome = function () {
-  return process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
+  return PROCESS_ENV.HOME || PROCESS_ENV.HOMEPATH || PROCESS_ENV.USERPROFILE;
 };
 
 var osxHome = function () {
-  return path.join(process.env.HOME, 'Library/Preferences');
+  return path.join(PROCESS_ENV.HOME, 'Library/Preferences');
 };
 
 var home = function () {
-  return process.env.APPDATA || (process.platform === 'darwin' ? osxHome() : linuxHome());
+  return PROCESS_ENV.APPDATA || (PROCESS_ENV.platform === 'darwin' ? osxHome() : linuxHome());
 };
 
 var UserAppData = function (config) {
@@ -23,7 +35,7 @@ var UserAppData = function (config) {
   }
 
   this.settings = config.defaultSettings || {};
-  if (process.env.APP_ENV === 'browser') {
+  if (PROCESS_ENV.APP_ENV === 'browser') {
     this.appFolder = remote.app.getAppPath();
   } else {
     this.appFolder = path.dirname(require.main.filename);

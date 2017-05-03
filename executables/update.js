@@ -1,5 +1,5 @@
-const Slack = require('../src/utils/Slack');
-const Configs = require('../src/utils/Configs').load();
+const Slack = require('../utils/Slack');
+const Configs = require('../utils/Configs').load();
 
 let forceUpdate = Configs.forceUpdate;
 

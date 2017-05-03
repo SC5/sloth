@@ -1,6 +1,5 @@
 const path = require('path');
 const config = require('./UserAppData');
-const PACKAGE = require('../../package.json');
 
 const Utils = require('./Utils');
 
@@ -8,7 +7,7 @@ const { DEFAULT_CONFIG } = require('./Constants');
 
 class Configs {
   constructor() {
-    this.config = new config({ appname: PACKAGE.name, defaultSettings: DEFAULT_CONFIG });
+    this.config = new config({appname: 'ssid-to-slack-status', defaultSettings: DEFAULT_CONFIG });
     this.config.load();
   }
 

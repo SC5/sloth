@@ -569,6 +569,7 @@ class Logged extends React.Component {
   }
 
   checkCrontabStatus = () => {
+    const crontabScriptPath = Crontab.checkScriptPath();
     if (!this.props.crontab) {
       return (
         <div className="status not-installed">
@@ -576,7 +577,7 @@ class Logged extends React.Component {
         </div>
       );
     }
-    else if (this.props.crontab && Crontab.checkScriptPath() === false) {
+    else if (this.props.crontab && crontabScriptPath === false) {
       this.props.openNotification({
         type: 'error',
         title: 'Error',
@@ -601,7 +602,8 @@ class Logged extends React.Component {
   }
 
   crontabStatusIcon = () => {
-    if (this.props.crontab && Crontab.checkScriptPath() === false) {
+    const crontabScriptPath = Crontab.checkScriptPath();
+    if (this.props.crontab && crontabScriptPath === false) {
       return (
         <div className="status not-installed">
           <Icon type="exclamation-circle" />
