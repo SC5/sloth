@@ -1,7 +1,7 @@
 const path = require('path');
 
-const Configs = require('./Configs');
-const Utils = require('./Utils');
+const Configs = require('./Configs.js');
+const Utils = require('./Utils.js');
 
 class Crontab {
   constructor() {

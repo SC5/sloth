@@ -14,14 +14,14 @@
       "!dist/",
       "!build/",
       "!src/",
+      "!Resources/",
       ".env",
       "src/utils/**",
       "index.js",
       "package.json"
     ],
     "extraFiles": [
-      "executables/**",
-      "utils/**"
+      "executables/**"
     ],
     "mac": {
       "category": "public.app-category.utilities"
@@ -31,26 +31,19 @@
   "scripts": {
     "update": "node --harmony executables/update.js update",
     "force-update": "node --harmony executables/update.js force-update",
-
     "start": "./node_modules/.bin/electron .",
     "dev": "DEV=true ./node_modules/.bin/electron .",
     "watch": "./node_modules/.bin/webpack --watch",
-
-    "copy-utils": "cp -R src/utils utils",
-    "delete-utils": "rm -rf utils",
-
-    "build": "NODE_ENV=production ./node_modules/.bin/webpack",
-    "build-fast": "./node_modules/.bin/webpack",
-
-    "pack": "npm run copy-utils && build --dir && npm run delete-utils",
-    "dist": "npm run copy-utils && build && npm run delete-utils",
-    "release": "npm run copy-utils && export $(cat .env | xargs) && build && npm run delete-utils",
-
+    "build": "NODE_ENV=production ./node_modules/.bin/webpack && npm run executables-dependencies",
+    "build-fast": "./node_modules/.bin/webpack && npm run executables-dependencies",
+    "executables-dependencies": "./executables/dependencies.sh",
+    "pack": "build --dir",
+    "dist": "build",
+    "release": "export $(cat .env | xargs) && build",
     "create": "npm run build && npm run pack",
     "create-fast": "npm run build-fast && npm run pack",
     "create-dist": "npm run build && npm run dist",
     "create-release": "export $(cat .env | xargs) && npm run build && npm run release",
-
     "postinstall": "./executables/postinstall.sh"
   },
   "repository": {
@@ -97,7 +90,7 @@
     "express": "4.15.2",
     "express-session": "1.15.2",
     "node-emoji": "1.5.1",
-    "node-wifi": "git+https://github.com/kirbo/node-wifi.git",
+    "node-wifi": "1.2.4",
     "request": "2.81.0",
     "slack": "8.3.0",
     "socket.io": "1.7.3",

@@ -1,0 +1,21 @@
+{
+  "name": "executables",
+  "version": "1.0.0",
+  "description": "Crontab executable dependencies",
+  "main": "update.js",
+  "scripts": {
+    "update": "$(which node) --harmony update.js"
+  },
+  "repository": {
+    "url": "https://github.com/kirbo/ssid-to-slack-status.git",
+    "type": "git"
+  },
+  "author": "kimmo.saari@sc5.io",
+  "license": "MIT",
+  "dependencies": {
+    "asar-require": "0.3.0",
+    "node-emoji": "1.5.1",
+    "node-wifi": "1.2.4",
+    "slack": "8.3.0"
+  }
+}

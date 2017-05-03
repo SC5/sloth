@@ -1,13 +1,17 @@
 const path = require('path');
-const config = require('./UserAppData');
 
-const Utils = require('./Utils');
+let UserAppData;
+try      { UserAppData = require('./UserAppData'); }
+catch(e) { UserAppData = require(path.resolve(__dirname, './UserAppData.js')); }
+let Constants;
+try      { Constants = require('./Constants'); }
+catch(e) { Constants = require(path.resolve(__dirname, './Constants.js')); }
 
-const { DEFAULT_CONFIG } = require('./Constants');
+const { DEFAULT_CONFIG } = Constants;
 
 class Configs {
   constructor() {
-    this.config = new config({appname: 'ssid-to-slack-status', defaultSettings: DEFAULT_CONFIG });
+    this.config = new UserAppData({appname: 'ssid-to-slack-status', defaultSettings: DEFAULT_CONFIG });
     this.config.load();
   }
 

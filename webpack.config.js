@@ -21,6 +21,7 @@ const webpackConfig = {
     'utf-8-validate': 'require("utf-8-validate")',
   },
   module: {
+    exprContextCritical: false,
     loaders: [
       { test: /\.js$/, loader: 'babel-loader', exclude: /node_modules/ },
       { test: /\.css$/, loader: 'style-loader!css-loader!less-loader' },

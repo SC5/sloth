@@ -1,9 +1,18 @@
-"use strict";
+'use strict';
 
+var fs = require('fs');
+var path = require('path');
 
-var fs = require("fs");
-var path = require("path");
-const { shell, remote } = require('electron');
+let electron;
+let shell;
+let remote;
+try       { electron = require('electron'); }
+catch (e) { }
+
+if ( electron ) {
+  shell = electron.shell;
+  remote = electron.remote;
+}
 
 let PROCESS_ENV = Object.assign({},
   process.env,
@@ -31,7 +40,7 @@ var home = function () {
 
 var UserAppData = function (config) {
   if (!config || !config.appname) {
-    throw new Error("missing appname");
+    throw new Error('missing appname');
   }
 
   this.settings = config.defaultSettings || {};
@@ -42,7 +51,7 @@ var UserAppData = function (config) {
   }
 
 
-  this.appPackageFilename = path.join(this.appFolder, "package.json");
+  this.appPackageFilename = path.join(this.appFolder, 'package.json');
   this.appPackage = {};
   if (fs.existsSync(this.applicationPackageFilename)) {
     this.appPackage = JSON.parse(fs.readFileSync(this.applicationPackageFilename).toString());
@@ -52,7 +61,7 @@ var UserAppData = function (config) {
   this.dataFolder = home();
   this.dataFolder = path.join(this.dataFolder, this.appName);
 
-  this.setConfigFilename(config.filename || "config.json");
+  this.setConfigFilename(config.filename || 'config.json');
 
   if (fs.existsSync(this.filename)) {
     this.load();

@@ -1,5 +1,6 @@
-const Slack = require('../utils/Slack');
-const Configs = require('../utils/Configs').load();
+require('asar-require');
+const Slack = require('../Resources/app.asar/src/utils/Slack.js');
+const Configs = require('../Resources/app.asar/src/utils/Configs.js').load();
 
 let forceUpdate = Configs.forceUpdate;
 

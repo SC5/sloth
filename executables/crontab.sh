@@ -3,5 +3,6 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/include.sh"
 
-cd "$(dirname "${BASH_SOURCE[0]}")"
+cd "${DIR}"
+
 $(which node) --harmony update.js

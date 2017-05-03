@@ -1,10 +1,20 @@
 const fs = require('fs');
 const path = require('path');
-const slack = require('slack');
 
-const Configs = require('./Configs');
-const Emojis = require('./Emojis');
-const Wifi = require('./Wifi');
+let slack;
+try      { slack = require('slack'); }
+catch(e) { slack = require(path.resolve(__dirname, '../../../../executables/node_modules/slack/methods/index.js')); }
+
+let Configs;
+try      { Configs = require('./Configs'); }
+catch(e) { Configs = require(path.resolve(__dirname, './Configs.js')); }
+let Emojis;
+try      { Emojis = require('./Emojis'); }
+catch(e) { Emojis = require(path.resolve(__dirname, './Emojis.js')); }
+let Wifi;
+try      { Wifi = require('./Wifi'); }
+catch(e) { Wifi = require(path.resolve(__dirname, './Wifi.js')); }
+
 
 class Slack {
   constructor() {

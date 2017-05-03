@@ -1,9 +1,13 @@
 const fs = require('fs');
 const path = require('path');
-const wifi = require('node-wifi');
 
-const Configs = require('./Configs');
-const Utils = require('./Utils');
+let wifi;
+try      { wifi = require('node-wifi'); }
+catch(e) { wifi = require(path.resolve(__dirname, '../../../../executables/node_modules/node-wifi/src/wifi.js')); }
+
+let Configs;
+try      { Configs = require('./Configs'); }
+catch(e) { Configs = require(path.resolve(__dirname, './Configs.js')); }
 
 class Wifi {
   constructor() {
@@ -12,6 +16,17 @@ class Wifi {
     wifi.init({
       iface: this.config.iface || null,
     });
+  }
+
+  /**
+   *
+   * @param {Array} array - Array to sort.
+   * @param {String} property - Property sort by.
+   */
+  uniqueObjectsFromArray(array, property) {
+    return Array.from(array.reduce((m, o) =>
+      m.set(o[property], o), new Map()).values()
+    )
   }
 
   /**
@@ -41,7 +56,7 @@ class Wifi {
         if (error) {
           reject();
         }
-        resolve(Utils.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
+        resolve(parent.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
       });
     })
       .catch(error => {
@@ -62,7 +77,7 @@ class Wifi {
         if (error) {
           reject();
         }
-        resolve(Utils.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
+        resolve(parent.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
       });
     })
       .catch(error => {

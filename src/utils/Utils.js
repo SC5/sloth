@@ -1,7 +1,15 @@
 const fs = require('fs');
 const path = require('path');
-const { shell, remote } = require('electron');
+const electron = require('electron');
 const execSync = require('child_process').execSync;
+
+let shell;
+let remote;
+
+if (electron) {
+  shell = electron.shell;
+  remote = electron.remote;
+}
 
 const isElectronRenderer = function () {
   // running in a web browser
@@ -79,7 +87,6 @@ class Utils {
       }
     }
   }
-
 }
 
 module.exports = new Utils();
