@@ -66,9 +66,7 @@ const startExpress = () => {
           var JSONresponse = JSON.parse(body);
           if (!JSONresponse.ok){
             res.send("Error encountered: \n"
-            + JSON.stringify(JSONresponse) + "\n"
-            + "Process.env:\n"
-            + "<pre>" + JSON.stringify(process.env)+"</pre>"
+              + "<pre>" + JSON.stringify(JSONresponse)+"</pre>"
             ).status(200).end();
           }
           else{
@@ -166,7 +164,6 @@ const createWindow = () => {
   })
 
   const sendStatusToWindow = (type, text, notification) => {
-    log.info(text);
     const duration = ['error', 'warning'].includes(type) ? 5 : 1.5;
     win.webContents.send('updates', {type, message: text, notification, duration});
   }
@@ -175,6 +172,7 @@ const createWindow = () => {
     sendStatusToWindow('info', 'Checking for updates...');
   })
   autoUpdater.on('update-available', (ev, info) => {
+    log.warn('Updates available.');
     sendStatusToWindow('warning', 'Updates available.', true);
   })
   autoUpdater.on('update-not-available', (ev, info) => {
@@ -182,7 +180,7 @@ const createWindow = () => {
   })
   autoUpdater.on('error', (ev, err) => {
     log.error(err);
-    sendStatusToWindow('error', 'Error in auto-updater.');
+    // sendStatusToWindow('error', 'Error in auto-updater.');
   })
   autoUpdater.on('download-progress', (ev, progressObj) => {
     sendStatusToWindow('info', 'Downloading updates...');

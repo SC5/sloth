@@ -1,8 +1,8 @@
 const path = require('path');
 const { resolve } = require('path');
 const webpack = require('webpack');
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
-const BabiliPlugin = require("babili-webpack-plugin");
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const BabiliPlugin = require('babili-webpack-plugin');
 
 const port = 8080;
 
