@@ -1,6 +1,10 @@
 # ssid-to-slack-status
 Set your Slack status based on the SSID you're currently connected in.
 
+# Desktop GUI application
+The Desktop version of this program can be [found here](https://github.com/kirbo/ssid-to-slack-status/releases).
+Currently only Mac version is available, but in the future I intend to do a Windows version as well.
+
 # Requirements
 
 * Node.js v7.0.0
@@ -16,13 +20,13 @@ https://nodejs.org/en/download/package-manager/
 
     # Clone this repository
     git clone https://github.com/kirbo/ssid-to-slack-status.git
-    
+
     # Change directory
     cd ssid-to-slack-status
- 
+
     # Install dependencies
     npm install
- 
+
     # Copy sample config file
     cp example-config.js config.js
 
