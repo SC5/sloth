@@ -1,15 +1,46 @@
 {
+  "version": "0.2.3",
   "name": "ssid-to-slack-status",
-  "version": "1.0.0",
-  "main": "index.js",
+  "description": "Changes your Slack status based on the SSID you're currently connected to.",
+  "productName": "SSID to Slack status",
+  "productUrl": "https://github.com/kirbo/ssid-to-slack-status/releases",
+  "build": {
+    "appId": "com.github.kirbo.ssid-to-slack-status",
+    "asar": true,
+    "files": [
+      "**/*",
+      "!*.*",
+      "!data/",
+      "!dist/",
+      "!build/",
+      "!src/",
+      "!Resources/",
+      ".env",
+      "src/utils/**",
+      "index.js",
+      "package.json"
+    ],
+    "extraFiles": [
+      "executables/**"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities"
+    }
+  },
+  "main": "./index.js",
   "scripts": {
-    "upgrade": "npm install && npm prune && echo 'Dependencies upgraded' && crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && npm run crontab-reinstall || exit 0",
-    "update": "node --harmony index.js",
-    "force-update": "FORCE_UPDATE=true $(which node) --harmony index.js",
-    "crontab": "node --harmony crontab.js",
-    "crontab-install": "node --harmony crontab.js install",
-    "crontab-uninstall": "node --harmony crontab.js uninstall",
-    "crontab-reinstall": "node --harmony crontab.js reinstall"
+    "executables-dependencies": "./executables/dependencies.sh",
+    "compile": "NODE_ENV=production ./node_modules/.bin/webpack && npm run executables-dependencies",
+    "compile-dev": "NODE_ENV=dev ./node_modules/.bin/webpack && npm run executables-dependencies",
+    "open": "open 'dist/mac/SSID to Slack status.app'",
+    "build": "npm run compile-dev && npm run pack",
+    "build-dist": "npm run compile && npm run dist",
+    "build-release": "export $(cat .env | xargs) && npm run compile && npm run release",
+    "pack": "build --dir",
+    "dist": "build",
+    "release": "export $(cat .env | xargs) && build",
+    "start": "npm run build && npm run open",
+    "postinstall": "./executables/postinstall.sh"
   },
   "repository": {
     "url": "https://github.com/kirbo/ssid-to-slack-status.git",
@@ -17,9 +48,49 @@
   },
   "author": "kimmo.saari@sc5.io",
   "license": "MIT",
+  "devDependencies": {
+    "antd": "2.10.0",
+    "babel-core": "6.24.1",
+    "babel-loader": "7.0.0",
+    "babel-plugin-import": "1.1.1",
+    "babel-polyfill": "6.23.0",
+    "babel-preset-babili": "0.0.12",
+    "babel-preset-es2015": "6.24.1",
+    "babel-preset-es2017": "6.24.1",
+    "babel-preset-react": "6.24.1",
+    "babel-preset-stage-0": "6.24.1",
+    "babili": "0.0.12",
+    "babili-webpack-plugin": "0.0.11",
+    "css-loader": "0.28.1",
+    "electron": "1.6.6",
+    "electron-builder": "17.3.1",
+    "extract-text-webpack-plugin": "2.1.0",
+    "file-loader": "0.11.1",
+    "less": "2.7.2",
+    "less-loader": "4.0.3",
+    "react": "15.5.4",
+    "react-dom": "15.5.4",
+    "react-fa": "4.2.0",
+    "react-intl": "2.2.3",
+    "style-loader": "0.17.0",
+    "url-loader": "0.5.8",
+    "webpack": "2.5.1"
+  },
   "dependencies": {
+    "body-parser": "1.17.1",
+    "debug": "2.6.6",
+    "dotenv": "4.0.0",
+    "electron-log": "2.2.4",
+    "electron-react-devtools": "0.4.0",
+    "electron-updater": "1.14.4",
+    "express": "4.15.2",
+    "express-session": "1.15.2",
     "node-emoji": "1.5.1",
     "node-wifi": "1.2.4",
-    "slack": "8.2.7"
+    "request": "2.81.0",
+    "slack": "8.3.0",
+    "socket.io": "1.7.3",
+    "socket.io-client": "1.7.3",
+    "uuid": "3.0.1"
   }
 }

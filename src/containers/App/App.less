@@ -1,0 +1,28 @@
+@import '../../main.less';
+
+#app {
+  background: #eee;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  & .ant-layout-footer {
+    text-align: center;
+  }
+}
+
+& table.updates {
+  width: 100%;
+  border-spacing: 0;
+
+  & tr {
+    background: #fff;
+
+    & th {
+      text-align: left;
+    }
+    & td {
+      text-align: right;
+    }
+  }
+}

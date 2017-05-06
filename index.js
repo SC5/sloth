@@ -1,137 +1,229 @@
-const slack = require('slack');
-const wifi = require('node-wifi');
-const emoji = require('node-emoji');
+const dotenv = require('dotenv');
+const { app: electron, BrowserWindow, Menu, shell, remote, protocol, ipcMain } = require('electron');
+const { autoUpdater } = require('electron-updater');
+const log = require('electron-log');
+const path = require('path');
+const request = require('request');
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const server = require('http').createServer(app);
+const io = require('socket.io')(server);
+require('electron-react-devtools');
+
+global.process_env = process.env;
+
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = 'info';
+log.info('App starting...');
+
+let envPath;
+if (process.env.APP_ENV === 'browser') {
+  envPath = path.normalize(remote.app.getAppPath());
+} else {
+  envPath = path.join(__dirname);
+}
+dotenv.config({ path: `${envPath}/.env` });
+
+const Configs = require('./src/utils/Configs');
+const Slack = require('./src/utils/Slack');
 
 const {
-  config,
-  ssids,
-} = require('./config');
+  MENU_TEMPLATE,
+  PRODUCT_NAME,
+  PRODUCT_URL
+} = require('./src/utils/Constants');
 
-wifi.init({
-  iface : config.iface || null,
-});
+let win
 
-
-/**
- * Fetches the current WiFi connections information.
- * 
- * @returns {Array} - Connections information.
- */
-const getCurrentConnections = async() => {
-  return new Promise((resolve, reject) => {
-    wifi.getCurrentConnections((error, connections) => {
-      if (error) {
-          reject();
+const startExpress = () => {
+  app.use(express.static(__dirname + '/bundles'));
+  app.use(express.static(__dirname + '/views'));
+  app.use(express.static(__dirname + '/assets'));
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({extended: false}));
+  app.use(session({
+  	secret: 'db69c11d-9ee1-4f22-b27c-e75b2e952f01',
+  	saveUninitialized: true,
+  	resave: true
+  }));
+  app.get('/auth', (req, res) => {
+    Slack.checkToken(true)
+    .then(tokenSet => {
+      if (tokenSet) {
+        res.sendFile(path.join(__dirname, '/views/already_authorised.html'));
+      } else {
+        var options = {
+          uri: 'https://slack.com/api/oauth.access?code='
+          +req.query.code+
+          '&client_id='+process.env.CLIENT_ID+
+          '&client_secret='+process.env.CLIENT_SECRET+
+          '&redirect_uri=http://localhost:5000/auth',
+          method: 'GET'
+        };
+        request(options, (error, response, body) => {
+          var JSONresponse = JSON.parse(body);
+          if (!JSONresponse.ok){
+            res.send("Error encountered: \n"
+              + "<pre>" + JSON.stringify(JSONresponse)+"</pre>"
+            ).status(200).end();
+          }
+          else{
+            const config = Object.assign({},
+              Configs.load(),
+              {token: JSONresponse.access_token}
+            );
+            Configs.save(config);
+            res.sendFile(path.join(__dirname, '/views/authorised.html'));
+          }
+        });
       }
-      resolve(connections);
     });
+  });
+
+  io.on('connection', client => {
+    autoUpdater.checkForUpdates();
+
+    client
+      .on('authorised', data => {
+        win.focus();
+        io.emit('authorised', data);
+      })
+  });
+
+  server.listen(5000, 'localhost');
+}
+
+const createWindow = () => {
+  if (process.platform === 'darwin') {
+    MENU_TEMPLATE.unshift({
+      label: PRODUCT_NAME,
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        {
+          label: 'Check for updates',
+          click() { autoUpdater.checkForUpdates() }
+        },
+        {
+          label: 'Open Dev Tools',
+          click() { win.webContents.openDevTools() }
+        },
+        { role: 'services', submenu: [] },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideothers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    })
+  }
+  const submenu = [];
+  if (process.platform !== 'darwin') {
+    submenu.push({
+      label: 'Check for updates',
+      click() { autoUpdater.checkForUpdates() }
+    });
+  }
+  submenu.push({
+    label: 'Github',
+    click() { shell.openExternal(PRODUCT_URL) }
+  });
+  MENU_TEMPLATE.push({
+    role: 'help',
+    submenu: submenu
+  });
+
+  const menu = Menu.buildFromTemplate(MENU_TEMPLATE);
+  Menu.setApplicationMenu(menu);
+
+  electron.commandLine.appendSwitch('js-flags', '--harmony');
+
+  startExpress();
+
+  win = new BrowserWindow({
+    width: 600,
+    height: 650,
+    autoHideMenuBar: true,
+    useContentSize: true,
+    resizable: false,
+  });
+  win.setTitle(PRODUCT_NAME);
+
+  win.loadURL('http://localhost:5000/index.html');
+  win.focus();
+
+  win.on('closed', () => {
+    win = null
   })
-  .catch(error => {
-    console.error('Error:', error);
+
+  const sendStatusToWindow = (type, message) => {
+    const duration = ['error', 'warning'].includes(type) ? 5 : 1.5;
+    win.webContents.send('updates', { type, message, duration });
+  }
+
+  const sendNotification = (type, title, message) => {
+    win.webContents.send('updates', { type, title, message, notification: true });
+  }
+
+  autoUpdater.on('checking-for-update', () => {
+    sendStatusToWindow('info', 'Checking for updates...');
+  })
+  autoUpdater.on('update-available', (ev, info) => {
+    log.warn('Updates available.');
+    const message = `
+      <table class="updates">
+        <tr>
+          <th>Current version</th>
+          <td>${electron.getVersion()}</td>
+        </tr>
+        <tr>
+          <th>Latest version</th>
+          <td>${ev.version}</td>
+        </tr>
+      </table>
+
+      <h4>Release date</h4>
+      ${new Date(ev.releaseDate)}
+      <br />
+      <br />
+
+      <h4>Release notes</h4>
+      ${ev.releaseNotes}
+    `;
+    sendNotification('warning', 'Update available', message);
+  })
+  autoUpdater.on('update-not-available', (ev, info) => {
+    sendStatusToWindow('success', 'Software is up-to-date.');
+  })
+  autoUpdater.on('error', (ev, err) => {
+    log.error(err);
+    // sendStatusToWindow('error', 'Error in auto-updater.');
+  })
+  autoUpdater.on('download-progress', (ev, progressObj) => {
+    sendStatusToWindow('info', 'Downloading updates...');
+  })
+  autoUpdater.on('update-downloaded', (ev, info) => {
+    sendNotification('success', 'Updates downloaded', 'Updates downloaded; will automatically install in 5 seconds');
   });
+
+  autoUpdater.on('update-downloaded', (ev, info) => {
+    setTimeout(function () {
+      autoUpdater.quitAndInstall();
+    }, 5000)
+  })
 }
 
-/**
- * Tries to get the SSID names for the current WiFi connections.
- * 
- * @returns {Array} - Array of all the currently connected SSID names.
- */
-const getCurrentSsidNames = async() => {
-  const connections = await getCurrentConnections();
-  return connections.map(connection => connection.ssid.toLowerCase()) || [];
-}
+electron.on('ready', createWindow)
 
-/**
- * @returns {Object} - If configuration for SSID is found, return it.
- */
-const getSsidConfig = async() => {
-  const connectedSsids = await getCurrentSsidNames();
-  return ssids.find(s => connectedSsids.includes(s.ssid.toLowerCase())) || undefined;
-}
+electron.on('window-all-closed', () => {
+  electron.quit()
+})
 
-/**
- * Update the status with predefined one for the current SSID.
- * 
- * @param {Object} ssidConfig - Current SSID config.
- * @param {Object} profile - Current profile in Slack.
- * 
- * @returns {String} - Current SSID name.
- */
-const setNewStatus = (ssidConfig, profile) => {
-  const payload = {
-    token: config.token,
-    profile: Object.assign({},
-      profile,
-      {
-        status_text: ssidConfig.status,
-        status_emoji: ssidConfig.icon
-      }
-    )
-  };
-
-  return new Promise((resolve, reject) => {
-    slack.users.profile.set(payload, async(error, data) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-
-      let response;
-      const newStatus = `new status: ${emoji.get(ssidConfig.icon)}  ${ssidConfig.status}`;
-      if (data.ok) {
-        response = `Succesfully set ${newStatus}\nOld was: ${emoji.get(profile.status_emoji)}  ${profile.status_text}`;
-      } else {
-        response = `Failed to set new status: ${newStatus}`;
-      }
-      resolve(response);
-    });
-  });
-}
-
-/**
- * Checks if the current status text is not predefined in config or not.
- * 
- * @param {String} status - Current status text.
- * @param {String} currentSsid - Current SSID config.
- * 
- * @returns {Boolean} - true = Predefined, false = Custom
- */
-const isStatusPredefined = (status, currentSsid) => (
-  !ssids.find(s => s.status === status && s.ssid !== currentSsid)
-)
-
-/**
- * Checks the status and updates it if all the conditions are matched.
- */
-const checkCurrentStatus = () => {
-  return new Promise((resolve, reject) => {
-    slack.users.profile.get({token: config.token}, async(error, data) => {
-      if (error) {
-        reject(error);
-        return;
-      }
-      const { status_emoji, status_text } = data.profile;
-
-      const ssidConfig = await getSsidConfig();
-
-      if (
-        ssidConfig
-        && (ssidConfig.icon !== status_emoji || ssidConfig.status !== status_text)
-        && (process.env.FORCE_UPDATE || config.forceUpdate || !isStatusPredefined(status_text, ssidConfig.ssid))
-      ) {
-        setNewStatus(ssidConfig, data.profile)
-          .then(response => resolve(response))
-          .catch(reason => reject(reason))
-        ;
-      } else {
-        resolve(`Already up-to-date, status: ${emoji.get(status_emoji)}  ${status_text}`);
-      }
-    });
-  });
-}
-
-// Execute the check.
-checkCurrentStatus()
-  .then(response => console.log(response))
-  .catch(reason => console.error('Error:', reason))
-;
+electron.on('activate', () => {
+  if (win === null) {
+    createWindow()
+  }
+})
