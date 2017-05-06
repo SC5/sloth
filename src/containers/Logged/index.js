@@ -338,7 +338,7 @@ class Logged extends React.Component {
         );
 
         edit = (
-          <Dropdown.Button trigger="hover" onClick={() => this.handleConfigurationButton('create', record, config)} overlay={menu}>
+          <Dropdown.Button trigger={['hover']} onClick={() => this.handleConfigurationButton('create', record, config)} overlay={menu}>
             Create
           </Dropdown.Button>
         );
@@ -353,7 +353,7 @@ class Logged extends React.Component {
         );
 
         edit = (
-          <Dropdown.Button trigger="hover" onClick={() => this.handleConfigurationButton('edit', record, config)} overlay={menu}>
+          <Dropdown.Button trigger={['hover']} onClick={() => this.handleConfigurationButton('edit', record, config)} overlay={menu}>
             Edit
           </Dropdown.Button>
         );
@@ -590,7 +590,7 @@ class Logged extends React.Component {
 
       return (
         <div className="status not-installed">
-          <Icon type="exclamation-circle" /> Wrong path, please reinstall!
+          <Icon type="exclamation-circle" /> Wrong path, please click Reinstall!
         </div>
       );
     }
@@ -614,7 +614,7 @@ class Logged extends React.Component {
       return (
         <div className={`status ${className}`}>
           <span className="ant-badge ant-badge-not-a-wrapper">
-            <sup dataShow="true" className="ant-scroll-number ant-badge-count">
+            <sup className="ant-scroll-number ant-badge-count">
               <span className="ant-scroll-number-only">
                 <p className={this.props.crontab && crontabScriptPath === false ? 'current' : ''}>
                   <Icon type="exclamation" />
@@ -714,7 +714,7 @@ class Logged extends React.Component {
       <Table
         loading={!this.props.connections.fetched && this.props.connections.fetching}
         columns={this.getConnectionColumns()}
-        dataSource={this.props.connections.data}
+        dataSource={Utils.uniqueObjectsFromArray(this.props.connections.data, 'mac')}
         pagination={this.props.connections.data.length < 10 ? false : true}
         rowKey={record => `connections-ssid-${record.ssid}-${record.mac}`}
       />

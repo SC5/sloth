@@ -155,17 +155,17 @@ const createWindow = () => {
   win.loadURL('http://localhost:5000/index.html');
   win.focus();
 
-  if (process.env.DEV) {
-    win.webContents.openDevTools();
-  }
-
   win.on('closed', () => {
     win = null
   })
 
-  const sendStatusToWindow = (type, text, notification) => {
+  const sendStatusToWindow = (type, message) => {
     const duration = ['error', 'warning'].includes(type) ? 5 : 1.5;
-    win.webContents.send('updates', {type, message: text, notification, duration});
+    win.webContents.send('updates', { type, message, duration });
+  }
+
+  const sendNotification = (type, title, message) => {
+    win.webContents.send('updates', { type, title, message, notification: true });
   }
 
   autoUpdater.on('checking-for-update', () => {
@@ -173,7 +173,27 @@ const createWindow = () => {
   })
   autoUpdater.on('update-available', (ev, info) => {
     log.warn('Updates available.');
-    sendStatusToWindow('warning', 'Updates available.', true);
+    const message = `
+      <table class="updates">
+        <tr>
+          <th>Current version</th>
+          <td>${electron.getVersion()}</td>
+        </tr>
+        <tr>
+          <th>Latest version</th>
+          <td>${ev.version}</td>
+        </tr>
+      </table>
+
+      <h4>Release date</h4>
+      ${new Date(ev.releaseDate)}
+      <br />
+      <br />
+
+      <h4>Release notes</h4>
+      ${ev.releaseNotes}
+    `;
+    sendNotification('warning', 'Update available', message);
   })
   autoUpdater.on('update-not-available', (ev, info) => {
     sendStatusToWindow('success', 'Software is up-to-date.');
@@ -186,7 +206,7 @@ const createWindow = () => {
     sendStatusToWindow('info', 'Downloading updates...');
   })
   autoUpdater.on('update-downloaded', (ev, info) => {
-    sendStatusToWindow('success', 'Updates downloaded; will install in 5 seconds', true);
+    sendNotification('success', 'Updates downloaded', 'Updates downloaded; will automatically install in 5 seconds');
   });
 
   autoUpdater.on('update-downloaded', (ev, info) => {

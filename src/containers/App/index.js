@@ -83,8 +83,8 @@ class App extends React.Component {
     ipcRenderer.on('updates', (event, data) => {
       if (data.notification) {
         notification[data.type]({
-          message: 'Updates',
-          description: data.message,
+          message: data.title,
+          description: <div dangerouslySetInnerHTML={{__html: data.message}} />,
           duration: 0,
           btn: this.renderUpdatesAvailableButton(),
           key: 'updates',

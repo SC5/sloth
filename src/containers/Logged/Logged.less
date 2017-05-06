@@ -263,6 +263,15 @@
       flex-direction: column;
       margin-right: 5px;
 
+      & sup {
+        width: @badge-width;
+
+        & span p {
+          width: @badge-width;
+          margin-left: -6px;
+        }
+      }
+
       &.installed {
         & sup {
           background: @installed;
