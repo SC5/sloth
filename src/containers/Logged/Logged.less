@@ -62,7 +62,7 @@
             & > button {
               margin-top: 4px;
               opacity: 0.5;
-              
+
 
               &:hover {
                 opacity: 1;
@@ -261,14 +261,32 @@
       align-items: flex-end;
       align-self: center;
       flex-direction: column;
-      margin-right: 12px;
+      margin-right: 5px;
 
       &.installed {
-        color: #0c0;
+        & sup {
+          background: @installed;
+
+          & span {
+            transform: translateY(-103%);
+          }
+        }
       }
 
       &.not-installed {
-        color: #c00;
+        & sup {
+          background: @not-installed;
+
+          & span {
+            transform: translateY(-3%);
+          }
+        }
+      }
+
+      &.info {
+        & sup {
+          background: @info;
+        }
       }
     }
   }

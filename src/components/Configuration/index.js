@@ -31,7 +31,8 @@ const formItemLayout = {
 
 class ConfigurationForm extends React.Component {
   state = {
-    emojis: []
+    reset: false,
+    emojis: [],
   };
 
   componentDidMount = () => {
@@ -49,9 +50,19 @@ class ConfigurationForm extends React.Component {
     });
   }
 
+  componentWillReceiveProps = (nextProps, nextState) => {
+    if (nextProps.visible === false) {
+      this.resetForm();
+    }
+  }
+
+  resetForm = () => {
+    this.props.form.resetFields();
+  }
+
   render() {
     const { getFieldDecorator } = this.props.form;
-    
+
     return (
       <Form onSubmit={this.handleSubmit}>
         <FormItem
@@ -99,10 +110,6 @@ class ConfigurationForm extends React.Component {
         >
           {getFieldDecorator('bssid', {
             initialValue: this.props.data.mac.toUpperCase(),
-            rules: [{
-              required: !!this.props.data.ssid,
-              message: 'Please input BSSID!',
-            }],
           })(
             <Input
               type="text"

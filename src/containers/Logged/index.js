@@ -29,6 +29,7 @@ import {
   Form,
   Input,
   Select,
+  Badge,
 } from 'antd';
 const { Header, Content, Footer, Sider } = Layout;
 const Panel = Collapse.Panel;
@@ -603,17 +604,27 @@ class Logged extends React.Component {
 
   crontabStatusIcon = () => {
     const crontabScriptPath = Crontab.checkScriptPath();
-    if (this.props.crontab && crontabScriptPath === false) {
-      return (
-        <div className="status not-installed">
-          <Icon type="exclamation-circle" />
-        </div>
-      );
+    let className = 'installed';
+
+    if (crontabScriptPath === false) {
+      className = 'not-installed';
     }
-    else if (this.props.crontab) {
+
+    if (this.props.crontab) {
       return (
-        <div className="status installed">
-          <Icon type="check-circle" />
+        <div className={`status ${className}`}>
+          <span className="ant-badge ant-badge-not-a-wrapper">
+            <sup dataShow="true" className="ant-scroll-number ant-badge-count">
+              <span className="ant-scroll-number-only">
+                <p className={this.props.crontab && crontabScriptPath === false ? 'current' : ''}>
+                  <Icon type="exclamation" />
+                </p>
+                <p className={this.props.crontab && crontabScriptPath === true ? 'current' : ''}>
+                  <Icon type="check" />
+                </p>
+              </span>
+            </sup>
+          </span>
         </div>
       );
     }
@@ -622,8 +633,8 @@ class Logged extends React.Component {
   configurationStatusIcon = () => {
     if (this.props.configurations && this.props.configurations.length > 0) {
       return (
-        <div className="status installed">
-          <Icon type="check-circle" />
+        <div className="status info">
+          <Badge count={this.props.configurations.length} />
         </div>
       );
     }
@@ -662,12 +673,12 @@ class Logged extends React.Component {
       })
   };
 
-  reloadStatus = () => {
-    this.props.getCurrentStatus()
+  reloadAll = () => {
+    this.props.reloadAll()
       .then(() => {
         this.props.openMessage({
           type: 'info',
-          message: 'Status succesfully refreshed.'
+          message: 'Everything reloaded.'
         });
       })
       .catch(reason => {
@@ -701,7 +712,7 @@ class Logged extends React.Component {
 
     return (
       <Table
-        loading={this.props.connections.fetching}
+        loading={!this.props.connections.fetched && this.props.connections.fetching}
         columns={this.getConnectionColumns()}
         dataSource={this.props.connections.data}
         pagination={this.props.connections.data.length < 10 ? false : true}
@@ -731,11 +742,11 @@ class Logged extends React.Component {
           <Button
             icon="reload"
             type="dashed"
-            onClick={() => this.reloadStatus()}
-            loading={this.props.profile.fetching}
-            disabled={this.props.profile.fetching}
+            onClick={() => this.reloadAll()}
+            loading={this.props.profile.fetching && this.props.emojis.fetching &&  this.props.connections.fetching}
+            disabled={this.props.profile.fetching && this.props.emojis.fetching &&  this.props.connections.fetching}
           >
-            Refresh
+            Refresh all
           </Button>
         </div>
       </div>
@@ -834,8 +845,12 @@ class Logged extends React.Component {
       return null;
     }
 
+    const connectionCount = [ ...new Set(this.props.connections.data.map(c => c.ssid)) ].length;
+
     return (
-      <div className="update"><span>Last update: {this.props.lastUpdate(time)}</span></div>
+      <div className="update info">
+        <Badge count={connectionCount} />
+      </div>
     );
   }
 
@@ -855,27 +870,22 @@ class Logged extends React.Component {
     )
   }
 
-  renderModal = () => {
-    if (!this.state.modal.visible) {
-      return null;
-    }
-
-    return (
-      <Modal
-        title={this.state.modal.title}
+  renderModal = () => (
+    <Modal
+      title={this.state.modal.title}
+      visible={this.state.modal.visible}
+      onOk={this.state.modal.handleOk}
+      onCancel={this.state.modal.handleCancel}
+    >
+      <Configuration
         visible={this.state.modal.visible}
-        onOk={this.state.modal.handleOk}
-        onCancel={this.state.modal.handleCancel}
-      >
-        <Configuration
-          data={this.state.modal.data}
-          edit={this.state.edit}
-          emojis={this.props.emojis.data}
-          updateData={this.updateData}
-        />
-      </Modal>
-    );
-  }
+        data={this.state.modal.data}
+        edit={this.state.edit}
+        emojis={this.props.emojis.data}
+        updateData={this.updateData}
+      />
+    </Modal>
+  )
 
   render = () => {
     if (!this.props.initialised) {

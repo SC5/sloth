@@ -119,11 +119,11 @@ class App extends React.Component {
     this.closeNotification('updates');
   }
 
-  getConfig = () => {
-    return new Promise((resolve, reject) => {
+  getConfig = () => (
+    new Promise((resolve, reject) => {
       resolve(Configs.load());
     })
-  }
+  )
 
   /**
    * @param {Object} config - Configs.
@@ -177,29 +177,39 @@ class App extends React.Component {
     this.setState({ crontab });
   }
 
-  getConnections = () => {
-    const current = Wifi.getCurrentConnections();
-    const available = Wifi.scanConnections();
-
-    Promise.all([
-      current,
-      available
-    ])
-    .then(values => {
+  getConnections = () => (
+    new Promise((resolve, reject) => {
       this.setState({
         connections: {
-          data: [
-            ...Utils.alphabeticSortByProperty(values[0], 'ssid'),
-            ...Utils.alphabeticSortByProperty(values[1], 'ssid')
-          ],
-          current: values[0][0],
-          fetched: true,
-          fetching: false,
-          time: new Date,
+          ...this.state.connections,
+          fetching: true,
         }
       });
-    });
-  }
+
+      const current = Wifi.getCurrentConnections();
+      const available = Wifi.scanConnections();
+
+      Promise.all([
+        current,
+        available
+      ])
+      .then(values => {
+        this.setState({
+          connections: {
+            data: [
+              ...Utils.alphabeticSortByProperty(values[0], 'ssid'),
+              ...Utils.alphabeticSortByProperty(values[1], 'ssid')
+            ],
+            current: values[0][0],
+            fetching: false,
+            fetched: true,
+            time: new Date,
+          }
+        });
+        resolve();
+      });
+    })
+  )
 
   updateStatus = () => {
     this.setState({
@@ -243,6 +253,40 @@ class App extends React.Component {
     });
   }
 
+  reloadAll = () => (
+    new Promise((resolve, reject) => {
+      this.setState({
+        connections: {
+          ...this.state.connections,
+          fetched: false,
+        }
+      });
+      this.getConfig()
+        .then(config => this.setConfig(config))
+        .then(() => {
+          const emojis = this.getEmojis();
+          const profile = this.getCurrentStatus();
+          const crontab = this.getCrontab();
+          const connections = this.getConnections();
+
+          return Promise
+            .all([
+              emojis,
+              profile,
+              crontab,
+              connections,
+            ])
+            .then(values => (
+              new Promise((resolve, reject) => {
+                resolve()
+              })
+            ))
+        })
+        .catch(error => { throw new Error(error) })
+      ;
+    })
+  )
+
   getCurrentStatus = () => {
     this.setState({
       profile: {
@@ -264,6 +308,7 @@ class App extends React.Component {
   getEmojis = () => {
     this.setState({
       emojis: {
+        ...this.state.emojis,
         fetching: true,
       }
     })
@@ -344,6 +389,7 @@ class App extends React.Component {
     return (
       <Logged
         {...this.state}
+        reloadAll={this.reloadAll}
         getCurrentStatus={this.getCurrentStatus}
         openNotification={this.openNotification}
         closeNotification={this.closeNotification}
