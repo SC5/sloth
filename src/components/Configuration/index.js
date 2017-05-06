@@ -31,7 +31,6 @@ const formItemLayout = {
 
 class ConfigurationForm extends React.Component {
   state = {
-    reset: false,
     emojis: [],
   };
 
