@@ -612,7 +612,7 @@ class Logged extends React.Component {
 
     if (this.props.crontab) {
       return (
-        <div className={`status ${className}`}>
+        <div className={`status ${className} automation`}>
           <span className="ant-badge ant-badge-not-a-wrapper">
             <sup className="ant-scroll-number ant-badge-count">
               <span className="ant-scroll-number-only">
@@ -735,7 +735,7 @@ class Logged extends React.Component {
             type="primary"
             onClick={() => this.updateStatus()}
             loading={this.props.profile.fetching}
-            disabled={this.props.profile.fetching || this.props.configurations.length < 1}
+            disabled={this.props.profile.fetching || this.props.configurations.length < 1 || this.props.connections.fetching}
           >
             Update
           </Button>
@@ -743,8 +743,8 @@ class Logged extends React.Component {
             icon="reload"
             type="dashed"
             onClick={() => this.reloadAll()}
-            loading={this.props.profile.fetching && this.props.emojis.fetching &&  this.props.connections.fetching}
-            disabled={this.props.profile.fetching && this.props.emojis.fetching &&  this.props.connections.fetching}
+            loading={this.props.profile.fetching || this.props.emojis.fetching ||  this.props.connections.fetching}
+            disabled={this.props.profile.fetching || this.props.emojis.fetching ||  this.props.connections.fetching}
           >
             Refresh all
           </Button>
