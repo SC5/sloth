@@ -1,13 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const wifi = require('node-wifi');
 
-let wifi;
-try      { wifi = require('node-wifi'); }
-catch(e) { wifi = require(path.resolve(__dirname, '../../../../executables/node_modules/node-wifi/src/wifi.js')); }
-
-let Configs;
-try      { Configs = require('./Configs'); }
-catch(e) { Configs = require(path.resolve(__dirname, './Configs.js')); }
+const Configs = require('./Configs');
 
 class Wifi {
   constructor() {

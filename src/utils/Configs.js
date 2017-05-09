@@ -1,11 +1,7 @@
 const path = require('path');
 
-let UserAppData;
-try      { UserAppData = require('./UserAppData'); }
-catch(e) { UserAppData = require(path.resolve(__dirname, './UserAppData.js')); }
-let Constants;
-try      { Constants = require('./Constants'); }
-catch(e) { Constants = require(path.resolve(__dirname, './Constants.js')); }
+const UserAppData = require('./UserAppData');
+const Constants = require('./Constants');
 
 const { DEFAULT_CONFIG } = Constants;
 

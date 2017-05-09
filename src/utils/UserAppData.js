@@ -1,18 +1,6 @@
-'use strict';
-
-var fs = require('fs');
-var path = require('path');
-
-let electron;
-let shell;
-let remote;
-try       { electron = require('electron'); }
-catch (e) { }
-
-if ( electron ) {
-  shell = electron.shell;
-  remote = electron.remote;
-}
+const fs = require('fs');
+const path = require('path');
+const { app: electron, shell, remote } = require('electron');
 
 let PROCESS_ENV = Object.assign({},
   process.env,

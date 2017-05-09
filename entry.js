@@ -12,18 +12,6 @@ import App from './src/containers/App';
 
 const mount  = document.getElementById('app');
 
-if (module.hot) {
-	module.hot.accept();
-	const NewApp = require('./src/containers/App').default;
-	ReactDOM.render(
-    <IntlProvider locale="en">
-      <LocaleProvider locale={locale}>
-        <NewApp />
-      </LocaleProvider>
-    </IntlProvider>
-  , mount);
-}
-
 ReactDOM.render(
   <IntlProvider locale="en">
     <LocaleProvider locale={locale}>

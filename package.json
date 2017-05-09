@@ -1,5 +1,5 @@
 {
-  "version": "0.3.1",
+  "version": "0.3.2",
   "name": "ssid-to-slack-status",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "SSID to Slack status",
@@ -25,13 +25,13 @@
     ],
     "mac": {
       "category": "public.app-category.utilities"
-    }
+    },
+    "compression": "maximum"
   },
   "main": "./index.js",
   "scripts": {
-    "executables-dependencies": "./executables/dependencies.sh",
-    "compile": "NODE_ENV=production ./node_modules/.bin/webpack && npm run executables-dependencies",
-    "compile-dev": "NODE_ENV=dev ./node_modules/.bin/webpack && npm run executables-dependencies",
+    "compile": "NODE_ENV=production ./node_modules/.bin/webpack",
+    "compile-dev": "NODE_ENV=dev ./node_modules/.bin/webpack",
     "open": "open 'dist/mac/SSID to Slack status.app'",
     "build": "npm run compile-dev && npm run pack",
     "build-dist": "npm run compile && npm run dist",
@@ -81,10 +81,8 @@
     "debug": "2.6.6",
     "dotenv": "4.0.0",
     "electron-log": "2.2.4",
-    "electron-react-devtools": "0.4.0",
     "electron-updater": "1.14.4",
     "express": "4.15.2",
-    "express-session": "1.15.2",
     "node-emoji": "1.5.1",
     "node-wifi": "1.2.4",
     "request": "2.81.0",

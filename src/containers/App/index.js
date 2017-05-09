@@ -95,7 +95,12 @@ class App extends React.Component {
       }
     })
 
+    socket.emit('check updates', {});
+
     socket
+      .on('status updated', () => {
+        this.getCurrentStatus();
+      })
       .on('authorised', data => {
         if (!this.state.token && !this.state.initialised) {
           this.getConfig()

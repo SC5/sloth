@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source $DIR/../src/hooks/colors.sh
+source "$DIR/include.sh"
 
 success "Executing: postinstall.sh"
 cp -R src/hooks .git

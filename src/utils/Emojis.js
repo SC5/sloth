@@ -1,8 +1,5 @@
 const path = require('path');
-
-let emoji;
-try      { emoji = require('node-emoji'); }
-catch(e) { emoji = require(path.resolve(__dirname, '../../../../executables/node_modules/node-emoji/index.js')); }
+const emoji = require('node-emoji');
 
 class Emojis {
   /**
