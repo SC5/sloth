@@ -52,17 +52,25 @@ const TIMES = {
 
 const MENU_TEMPLATE = [
   {
-    label: 'View',
+    label: "Edit",
     submenu: [
-      {role: 'reload'},
-      {role: 'forcereload'},
+      { label: "Undo", accelerator: "CmdOrCtrl+Z", selector: "undo:" },
+      { label: "Redo", accelerator: "Shift+CmdOrCtrl+Z", selector: "redo:" },
+      { type: "separator" },
+      { label: "Cut", accelerator: "CmdOrCtrl+X", selector: "cut:" },
+      { label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" },
+      { label: "Paste", accelerator: "CmdOrCtrl+V", selector: "paste:" },
+      { label: "Select All", accelerator: "CmdOrCtrl+A", selector: "selectAll:" }
     ]
   },
   {
     role: 'window',
     submenu: [
-      {role: 'minimize'},
-      {role: 'close'}
+      { role: 'reload' },
+      { role: 'forcereload' },
+      { type: 'separator' },
+      { role: 'close' },
+      { role: 'minimize' }
     ]
   }
 ]
@@ -70,11 +78,14 @@ const MENU_TEMPLATE = [
 if (process.platform === 'darwin') {
   // Window menu
   MENU_TEMPLATE[1].submenu = [
-    {role: 'close'},
-    {role: 'minimize'},
-    {role: 'zoom'},
-    {type: 'separator'},
-    {role: 'front'}
+    { role: 'reload' },
+    { role: 'forcereload' },
+    { type: 'separator' },
+    { role: 'close' },
+    { role: 'minimize' },
+    { role: 'zoom' },
+    { type: 'separator' },
+    { role: 'front' }
   ]
 }
 

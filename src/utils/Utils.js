@@ -3,6 +3,11 @@ const path = require('path');
 const { app: electron, shell, remote } = require('electron');
 const execSync = require('child_process').execSync;
 
+let win;
+if (remote) {
+  win = remote.getGlobal('win');
+}
+
 const isElectronRenderer = function () {
   // running in a web browser
   if (typeof process === 'undefined') return true
@@ -78,6 +83,11 @@ class Utils {
         window.location.href = url;
       }
     }
+  }
+
+  electronOpenLink(url, event) {
+    event.preventDefault();
+    window.open(url, 'modal');
   }
 }
 

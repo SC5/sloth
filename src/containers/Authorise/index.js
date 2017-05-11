@@ -1,6 +1,19 @@
 import './Authorise.less';
 
 import React from 'react';
+import {remote } from 'electron';
+
+let PROCESS_ENV = Object.assign({},
+  process.env,
+  { platform: process.platform }
+);
+
+if (remote) {
+  PROCESS_ENV = Object.assign({},
+    PROCESS_ENV,
+    remote.getGlobal('process_env')
+  );
+}
 
 import { Layout } from 'antd';
 const { Header, Content, Footer } = Layout;
@@ -25,7 +38,7 @@ class Authorise extends React.Component {
           <p className="authorise">
             <a
               href="#"
-              onClick={Utils.electronOpenLinkInBrowser.bind(this, 'https://slack.com/oauth/authorize?client_id=2174365688.170810616229&scope=users.profile:write,users.profile:read,emoji:read&redirect_uri=http://localhost:5000/auth')}
+              onClick={Utils.electronOpenLink.bind(this, `https://${PROCESS_ENV.SLACK_NAME}.slack.com/oauth/authorize?client_id=${PROCESS_ENV.CLIENT_ID}&scope=${PROCESS_ENV.SCOPE}&redirect_uri=${PROCESS_ENV.REDIRECT_URI}`)}
             >
               <img src="sign_in_with_slack.png" />
             </a>

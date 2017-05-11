@@ -1,5 +1,5 @@
 {
-  "version": "0.5.4",
+  "version": "0.6.0",
   "name": "sloth",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "Sloth",
@@ -25,7 +25,12 @@
     ],
     "mac": {
       "category": "public.app-category.utilities"
-    }
+    },
+    "protocols": [{
+      "name": "sloth",
+      "role": "Viewer",
+      "schemes": ["sloth"]
+    }]
   },
   "main": "./index.js",
   "scripts": {

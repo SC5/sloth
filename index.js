@@ -9,8 +9,13 @@ const bodyParser = require('body-parser');
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
+let win;
+
+global.win = win;
 global.process_env = process.env;
 const { autoUpdater } = require('electron-updater');
+
+electron.setAsDefaultProtocolClient('sloth');
 
 autoUpdater.autoDownload = false;
 autoUpdater.logger = log;
@@ -58,8 +63,6 @@ else {
     win.webContents.send('updates', { type, title, message, notification: true, status });
   }
 
-  let win
-
   const startExpress = () => {
     app.use(express.static(__dirname + '/bundles'));
     app.use(express.static(__dirname + '/views'));
@@ -70,7 +73,7 @@ else {
       Slack.checkToken(true)
       .then(tokenSet => {
         if (tokenSet) {
-          res.sendFile(path.join(__dirname, '/views/already_authorised.html'));
+          res.sendFile(path.join(__dirname, '/views/index.html'));
         } else {
           var options = {
             uri: 'https://slack.com/api/oauth.access?code='
@@ -83,9 +86,9 @@ else {
           request(options, (error, response, body) => {
             var JSONresponse = JSON.parse(body);
             if (!JSONresponse.ok){
-              res.send("Error encountered: \n"
-                + "<pre>" + JSON.stringify(JSONresponse)+"</pre>"
-              ).status(200).end();
+              log.error(body);
+              sendStatusToWindow('error', 'Error in authentication!');
+              res.sendFile(path.join(__dirname, '/views/index.html'));
             }
             else{
               const config = Object.assign({},
@@ -93,7 +96,7 @@ else {
                 {token: JSONresponse.access_token}
               );
               Configs.save(config);
-              res.sendFile(path.join(__dirname, '/views/authorised.html'));
+              res.sendFile(path.join(__dirname, '/views/index.html'));
             }
           });
         }
@@ -135,10 +138,6 @@ else {
             label: 'Check for updates',
             click() { autoUpdater.checkForUpdates() }
           },
-          {
-            label: 'Open Dev Tools',
-            click() { win.webContents.openDevTools() }
-          },
           { role: 'services', submenu: [] },
           { type: 'separator' },
           { role: 'hide' },
@@ -150,6 +149,10 @@ else {
       })
     }
     const submenu = [];
+    submenu.push({
+      label: 'Open Developer Tools',
+      click() { win.webContents.openDevTools() }
+    });
     if (process.platform !== 'darwin') {
       submenu.push({
         label: 'Check for updates',
@@ -174,7 +177,7 @@ else {
 
     win = new BrowserWindow({
       width: 600,
-      height: 650,
+      height: 700,
       autoHideMenuBar: true,
       useContentSize: true,
       resizable: false,
@@ -187,6 +190,13 @@ else {
     win.on('closed', () => {
       win = null
     })
+
+    win.webContents.on('new-window', (event, url, frameName, disposition, options, additionalFeatures) => {
+      if (frameName === 'modal') {
+        event.preventDefault()
+        win.loadURL(url);
+      }
+    });
 
     autoUpdater.on('checking-for-update', () => {
       sendStatusToWindow('info', 'Checking for updates...');

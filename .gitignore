@@ -61,6 +61,5 @@ typings/
 dist/**
 build/**
 bundles/**
-dev-app-update.yml
 utils/**
 Resources/**
