@@ -82,11 +82,16 @@ class App extends React.Component {
 
     ipcRenderer.on('updates', (event, data) => {
       if (data.notification) {
+        const buttons = {
+          install: this.renderUpdatesAvailableButton(),
+          update: this.renderRestartButton(),
+        };
+
         notification[data.type]({
           message: data.title,
           description: <div dangerouslySetInnerHTML={{__html: data.message}} />,
           duration: 0,
-          btn: this.renderUpdatesAvailableButton(),
+          btn: buttons[data.status],
           key: 'updates',
         });
       }
@@ -124,8 +129,12 @@ class App extends React.Component {
     this.closeNotification('updates');
   }
 
-  handleUpdate = () => {
+  handleDownloadUpdate = () => {
     socket.emit('update', {});
+  }
+
+  handleInstallUpdate = () => {
+    socket.emit('install update', {});
   }
 
   getConfig = () => (
@@ -379,7 +388,13 @@ class App extends React.Component {
   renderUpdatesAvailableButton = () => (
     <div>
       <Button type="default" icon="link" onClick={event => this.handleViewReleases(event)}>View releases</Button>
-      <Button type="primary" icon="link" onClick={() => this.handleUpdate()}>Update</Button>
+      <Button type="primary" icon="link" onClick={() => this.handleDownloadUpdate()}>Update</Button>
+    </div>
+  )
+
+  renderRestartButton = () => (
+    <div>
+      <Button type="primary" icon="link" onClick={() => this.handleInstallUpdate()}>Restart and update</Button>
     </div>
   )
 

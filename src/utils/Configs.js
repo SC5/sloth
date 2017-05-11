@@ -14,8 +14,8 @@ class Configs {
       this.oldConfig.load();
       if (JSON.stringify(this.config.settings) !== JSON.stringify(this.oldConfig.settings)) {
         this.save(this.oldConfig.settings);
-        this.oldConfig.uninstall();
       }
+      this.oldConfig.uninstall();
     }
   }
 

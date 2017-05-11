@@ -106,6 +106,9 @@ else {
         .on('update', data => {
           appUpdater.downloadUpdate();
         })
+        .on('install update', data => {
+          autoUpdater.quitAndInstall();
+        })
     });
 
     server.listen(5000, 'localhost');
@@ -180,8 +183,8 @@ else {
       win.webContents.send('updates', { type, message, duration });
     }
 
-    const sendNotification = (type, title, message) => {
-      win.webContents.send('updates', { type, title, message, notification: true });
+    const sendNotification = (type, title, message, status) => {
+      win.webContents.send('updates', { type, title, message, notification: true, status });
     }
 
     autoUpdater.on('checking-for-update', () => {
@@ -209,7 +212,7 @@ else {
         <h4>Release notes</h4>
         ${ev.releaseNotes}
       `;
-      sendNotification('warning', 'Update available', message);
+      sendNotification('warning', 'Update available', message, 'update');
     })
     autoUpdater.on('update-not-available', (ev, info) => {
       sendStatusToWindow('success', 'Software is up-to-date.');
@@ -222,14 +225,8 @@ else {
       sendStatusToWindow('info', 'Downloading updates...');
     })
     autoUpdater.on('update-downloaded', (ev, info) => {
-      sendNotification('success', 'Updates downloaded', 'Updates downloaded; will automatically install in 5 seconds');
+      sendNotification('success', 'Update downloaded', 'Please restart the app to finish the update', 'install');
     });
-
-    autoUpdater.on('update-downloaded', (ev, info) => {
-      setTimeout(function () {
-        autoUpdater.quitAndInstall();
-      }, 5000)
-    })
   }
 
   electron.on('ready', createWindow)
