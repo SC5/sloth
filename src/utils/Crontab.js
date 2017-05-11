@@ -7,7 +7,8 @@ class Crontab {
   constructor() {
     this.appPath = Utils.appPath();
     this.config = Configs.load();
-    this.scriptPath = path.join(this.appPath, '../../MacOS/Sloth --args UPDATE');
+    this.scriptPath = path.join(this.appPath, '../../MacOS/Sloth');
+    this.scriptExecute = `\\"${this.scriptPath}\\" --args UPDATE`;
   }
 
   check() {
@@ -24,7 +25,7 @@ class Crontab {
       const regex = new RegExp(/"(.*)"/);
       const matches = regex.exec(output);
 
-      if (!matches || matches[1] !== this.scriptPath) {
+      if (!matches || matches[1] !== this.scriptExecute) {
         return false;
       }
       return true;
@@ -36,7 +37,7 @@ class Crontab {
     let output = this.check();
 
     if (!output || !output.match(/Already installed in crontab/i)) {
-      const command = `((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * \\"${this.scriptPath}\\" >/dev/null 2>&1 # sc5 sloth") | crontab - && echo 'Installed in crontab')`;
+      const command = `((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * ${this.scriptExecute} >/dev/null 2>&1 # sc5 sloth") | crontab - && echo 'Installed in crontab')`;
       output = Utils.parseOutput(command);
     }
 

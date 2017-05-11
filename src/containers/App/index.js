@@ -131,6 +131,7 @@ class App extends React.Component {
 
   handleDownloadUpdate = () => {
     socket.emit('update', {});
+    this.closeNotification('updates');
   }
 
   handleInstallUpdate = () => {

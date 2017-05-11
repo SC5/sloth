@@ -388,7 +388,10 @@ class Logged extends React.Component {
           && record.mac.toLowerCase() === this.props.connections.current.mac.toLowerCase()
         )
         || (
-          this.props.connections.current.ssid
+          this.props.connections.current.mac
+          && !record.mac
+          && this.props.configurations.filter(c => c.ssid === record.ssid && ).length === 1
+          && this.props.connections.current.ssid
           && record.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
         )
       )
@@ -699,7 +702,7 @@ class Logged extends React.Component {
       <Table
         columns={this.getConfigurationColumns()}
         dataSource={Utils.alphabeticSortByProperty(this.props.configurations, 'ssid')}
-        pagination={this.props.configurations.length < 10 ? false : true}
+        pagination={this.props.configurations.length <= 10 ? false : true}
         rowKey={record => `configuration-ssid-${record.uuid}`}
       />
     );
@@ -715,7 +718,7 @@ class Logged extends React.Component {
         loading={!this.props.connections.fetched && this.props.connections.fetching}
         columns={this.getConnectionColumns()}
         dataSource={Utils.uniqueObjectsFromArray(this.props.connections.data, 'mac')}
-        pagination={this.props.connections.data.length < 10 ? false : true}
+        pagination={this.props.connections.data.length <= 10 ? false : true}
         rowKey={record => `connections-ssid-${record.ssid}-${record.mac}`}
       />
     );

@@ -104,6 +104,7 @@ else {
           autoUpdater.checkForUpdates();
         })
         .on('update', data => {
+          sendStatusToWindow('info', 'Downloading updates...');
           autoUpdater.downloadUpdate();
         })
         .on('install update', data => {
@@ -219,7 +220,7 @@ else {
     })
     autoUpdater.on('error', (ev, err) => {
       log.error(err);
-      // sendStatusToWindow('error', 'Error in auto-updater.');
+      sendStatusToWindow('error', 'Error in auto-updater.');
     })
     autoUpdater.on('download-progress', (ev, progressObj) => {
       sendStatusToWindow('info', 'Downloading updates...');
