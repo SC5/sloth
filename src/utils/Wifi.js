@@ -121,11 +121,11 @@ class Wifi {
         parent.getCurrentSsidNames(),
       ])
         .then(values => {
-          const currentBssids = values[0] || [];
-          const currentSsids = values[1] || [];
+          const currentBssids = values[0][0] || '';
+          const currentSsids = values[1][0] || '';
 
-          const viaMac = parent.config.ssids.find(s => currentBssids.includes(s.mac.toLowerCase()));
-          const viaSsid = parent.config.ssids.find(s => currentSsids.includes(s.ssid.toLowerCase()));
+          const viaMac = parent.config.ssids.find(s => s.mac.toLowerCase() === currentBssids);
+          const viaSsid = parent.config.ssids.find(s => s.ssid.toLowerCase() === currentSsids && s.mac === '');
 
           if (viaMac) {
             resolve(viaMac);

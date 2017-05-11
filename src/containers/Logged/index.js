@@ -138,7 +138,10 @@ class Logged extends React.Component {
     this.props.saveToConfig({
       ssids: [
         ...this.props.configurations,
-        this.state.edit
+        {
+          ...this.state.edit,
+          uuid: uuid()
+        }
       ]
     })
     .then(() => {
@@ -160,10 +163,7 @@ class Logged extends React.Component {
   handleModalSaveOld = () => {
     this.props.saveToConfig({
       ssids: this.props.configurations.map(config => {
-        if (
-          config.mac.toLowerCase() === this.state.edit.mac.toLowerCase()
-          || config.ssid.toLowerCase() === this.state.edit.ssid.toLowerCase()
-        ) {
+        if (config.uuid === this.state.edit.uuid) {
           return this.state.edit;
         }
         return config;
@@ -200,7 +200,7 @@ class Logged extends React.Component {
       case 'add': {
         this.setState({
           edit: {
-            uuid: uuid(),
+            uuid: '',
             name: '',
             ssid: '',
             mac: '',
@@ -210,7 +210,7 @@ class Logged extends React.Component {
           modal: {
             title: 'Create new configuration',
             data: {
-              uuid: uuid(),
+              uuid: '',
               name: '',
               ssid: '',
               mac: '',
@@ -227,7 +227,7 @@ class Logged extends React.Component {
       case 'create': {
         this.setState({
           edit: {
-            uuid: uuid(),
+            uuid: '',
             name: '',
             ssid: record.ssid,
             mac: record.mac,
@@ -237,7 +237,7 @@ class Logged extends React.Component {
           modal: {
             title: `Create configuration for "${record.ssid}"`,
             data: {
-              uuid: uuid(),
+              uuid: '',
               name: '',
               ssid: record.ssid,
               mac: record.mac,
@@ -325,7 +325,7 @@ class Logged extends React.Component {
       let menu = undefined;
       let edit = undefined;
 
-      if (this.props.configurations && this.props.configurations.length > 0 && config && config.mac !== record.mac) {
+      if (this.props.configurations && this.props.configurations.length > 0 && config && config.mac.toLowerCase() !== record.mac.toLowerCase()) {
         menu = (
           <Menu onClick={e => this.handleConfigurationButton(e.key, record, config)}>
             <Menu.Item key="edit">
@@ -379,28 +379,36 @@ class Logged extends React.Component {
    * @param {Object} record - Current row.
    */
   isConnected = record => {
-    if (
-      record
-      && this.props.connections.current
-      && (
-        (
-          this.props.connections.current.mac
-          && record.mac.toLowerCase() === this.props.connections.current.mac.toLowerCase()
+    const current = this.props.connections.current;
+    if (current && current.ssid.toLowerCase() === record.ssid.toLowerCase()) {
+      const thisConfigs = this.props.configurations.filter(c => c.ssid.toLowerCase() === record.ssid.toLowerCase());
+      const generic = thisConfigs.find(c => c.mac === '') || {};
+      const specific = thisConfigs.find(c => c.mac !== '' && c.mac.toLowerCase() === current.mac.toLowerCase()) || {};
+
+      if (
+        record
+        && current
+        && (
+          (
+            specific.mac
+            && record.mac.toLowerCase() === specific.mac.toLowerCase()
+          )
+          || (
+            !specific.uuid
+            && generic.ssid
+            && (
+              record.uuid === generic.uuid
+              || record.signal_level
+            )
+          )
         )
-        || (
-          this.props.connections.current.mac
-          && !record.mac
-          && this.props.configurations.filter(c => c.ssid === record.ssid && ).length === 1
-          && this.props.connections.current.ssid
-          && record.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
-        )
-      )
-    ) {
-      return (
-        <Popover placement="topLeft" content="Currently connected">
-          <FaIcon name="wifi" />
-        </Popover>
-      );
+      ) {
+        return (
+          <Popover placement="topLeft" content="Currently connected">
+            <FaIcon name="wifi" />
+          </Popover>
+        );
+      }
     }
 
     return null;
@@ -533,7 +541,7 @@ class Logged extends React.Component {
         title: 'Action',
         key: 'action',
         className: 'action',
-        rowKey: record => `connected-action-${record.ssid}-${record.mac}`,
+        rowKey: record => `connection-action-${record.ssid}-${record.mac}`,
         render: (text, record) => this.tableButton(record, getConfig(record))
       }
     ]);
@@ -701,9 +709,9 @@ class Logged extends React.Component {
     return (
       <Table
         columns={this.getConfigurationColumns()}
-        dataSource={Utils.alphabeticSortByProperty(this.props.configurations, 'ssid')}
+        dataSource={this.props.configurations}
         pagination={this.props.configurations.length <= 10 ? false : true}
-        rowKey={record => `configuration-ssid-${record.uuid}`}
+        rowKey={record => `configuration-ssid-${record.name}-${record.ssid}-${record.mac}-${record.uuid}`}
       />
     );
   }

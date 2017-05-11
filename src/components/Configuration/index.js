@@ -14,6 +14,7 @@ import {
   Form,
   Input,
   Select,
+  Popover,
 } from 'antd';
 
 const FormItem = Form.Item;
@@ -29,9 +30,17 @@ const formItemLayout = {
   },
 };
 
+const bssidPopover = (
+  <div>
+    Click here if you wan't this configuration enabled only on the current WiFi access point.<br />
+    This enables you to specify different automations on different locations with the same SSID, for example: <strong>Helsinki Office</strong> and <strong>Jyväskylä Office</strong>.
+  </div>
+);
+
 class ConfigurationForm extends React.Component {
   state = {
     emojis: [],
+    mac: this.props.data.uuid ? this.props.data.mac : '',
   };
 
   componentDidMount = () => {
@@ -53,17 +62,55 @@ class ConfigurationForm extends React.Component {
     if (nextProps.visible === false) {
       this.resetForm();
     }
+
+    if (
+      nextProps.visible === true
+      && this.state.mac !== nextProps.data.mac
+    ) {
+      this.setState({
+        mac: nextProps.data.uuid ? nextProps.data.mac : '',
+      });
+      this.props.form.resetFields(['bssid']);
+    }
   }
 
   resetForm = () => {
     this.props.form.resetFields();
   }
 
+  renderFillBssid = () => {
+    if (this.props.data.uuid) {
+      return null;
+    }
+
+    return (
+      <Popover
+        className="popover"
+        placement="topLeft"
+        title="Fill BSSID"
+        content={bssidPopover}
+        getPopupContainer={() => document.querySelector('.configuration-form')}
+      >
+        <div
+          className="addon-button"
+          onClick={() => {
+            this.setState({
+              mac: this.props.data.mac
+            });
+            this.props.form.resetFields(['bssid']);
+          }}
+        >
+          Fill BSSID
+        </div>
+      </Popover>
+    );
+  }
+
   render() {
     const { getFieldDecorator } = this.props.form;
 
     return (
-      <Form onSubmit={this.handleSubmit}>
+      <Form onSubmit={this.handleSubmit} className="configuration-form">
         <FormItem
           {...formItemLayout}
           label="Name"
@@ -105,15 +152,15 @@ class ConfigurationForm extends React.Component {
         <FormItem
           {...formItemLayout}
           label="BSSID"
-          hasFeedback
         >
           {getFieldDecorator('bssid', {
-            initialValue: this.props.data.mac.toUpperCase(),
+            initialValue: this.state.mac.toUpperCase(),
           })(
             <Input
               type="text"
               placeholder="BSSID (MAC address) for this access point"
               onChange={e => { this.props.updateData('mac', e.target.value) }}
+              addonAfter={this.renderFillBssid()}
             />
             )}
         </FormItem>

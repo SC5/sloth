@@ -89,7 +89,6 @@ class Slack {
    */
   checkStatus(forced = false) {
     return this.checkToken().then(() => {
-
       const parent = this;
 
       return new Promise((resolve, reject) => {
@@ -107,7 +106,8 @@ class Slack {
                 || (
                   ssidConfig
                   && (`:${ssidConfig.icon}:` !== status_emoji ||  ssidConfig.status !== status_text)
-                  && (process.env.FORCE_UPDATE || parent.config.forceUpdate || (parent.isStatusPredefined(data.profile, ssidConfig) && !Wifi.isCurrentSsid(data.profile, ssidConfig)))
+                  && (process.env.FORCE_UPDATE || parent.config.forceUpdate || (parent.isStatusPredefined(data.profile, ssidConfig)))
+                  // && (process.env.FORCE_UPDATE || parent.config.forceUpdate || (parent.isStatusPredefined(data.profile, ssidConfig) && !Wifi.isCurrentSsid(data.profile, ssidConfig)))
                 )
               ) {
                 parent.setStatus(ssidConfig, data.profile)
