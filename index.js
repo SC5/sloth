@@ -104,7 +104,7 @@ else {
           autoUpdater.checkForUpdates();
         })
         .on('update', data => {
-          appUpdater.downloadUpdate();
+          autoUpdater.downloadUpdate();
         })
         .on('install update', data => {
           autoUpdater.quitAndInstall();

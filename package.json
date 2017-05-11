@@ -1,5 +1,5 @@
 {
-  "version": "0.4.2",
+  "version": "0.5.0",
   "name": "sloth",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "Sloth",
