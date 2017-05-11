@@ -49,6 +49,15 @@ else {
 
   log.info('App starting...');
 
+  const sendStatusToWindow = (type, message) => {
+    const duration = ['error', 'warning'].includes(type) ? 5 : 1.5;
+    win.webContents.send('updates', { type, message, duration });
+  }
+
+  const sendNotification = (type, title, message, status) => {
+    win.webContents.send('updates', { type, title, message, notification: true, status });
+  }
+
   let win
 
   const startExpress = () => {
@@ -178,15 +187,6 @@ else {
     win.on('closed', () => {
       win = null
     })
-
-    const sendStatusToWindow = (type, message) => {
-      const duration = ['error', 'warning'].includes(type) ? 5 : 1.5;
-      win.webContents.send('updates', { type, message, duration });
-    }
-
-    const sendNotification = (type, title, message, status) => {
-      win.webContents.send('updates', { type, title, message, notification: true, status });
-    }
 
     autoUpdater.on('checking-for-update', () => {
       sendStatusToWindow('info', 'Checking for updates...');
