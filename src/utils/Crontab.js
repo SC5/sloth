@@ -7,8 +7,9 @@ class Crontab {
   constructor() {
     this.appPath = Utils.appPath();
     this.config = Configs.load();
+    this.args = '--args UPDATE';
     this.scriptPath = path.join(this.appPath, '../../MacOS/Sloth');
-    this.scriptExecute = `\\"${this.scriptPath}\\" --args UPDATE`;
+    this.scriptExecute = `\\"${this.scriptPath}\\" ${this.args}`;
   }
 
   check() {
@@ -25,7 +26,7 @@ class Crontab {
       const regex = new RegExp(/"(.*)"/);
       const matches = regex.exec(output);
 
-      if (!matches || matches[1] !== this.scriptExecute) {
+      if (!matches || `\\"${matches[1]}\\" ${this.args}` !== this.scriptExecute) {
         return false;
       }
       return true;
