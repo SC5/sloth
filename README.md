@@ -1,4 +1,4 @@
-# ssid-to-slack-status
+# Sloth
 Set your Slack status based on the SSID you're currently connected in.
 
 # Desktop GUI application

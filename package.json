@@ -1,11 +1,11 @@
 {
   "version": "0.3.2",
-  "name": "ssid-to-slack-status",
+  "name": "sloth",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
-  "productName": "SSID to Slack status",
-  "productUrl": "https://github.com/kirbo/ssid-to-slack-status/releases",
+  "productName": "Sloth",
+  "productUrl": "https://github.com/kirbo/sloth/releases",
   "build": {
-    "appId": "com.github.kirbo.ssid-to-slack-status",
+    "appId": "com.github.kirbo.sloth",
     "asar": true,
     "files": [
       "**/*",
@@ -32,7 +32,7 @@
   "scripts": {
     "compile": "NODE_ENV=production ./node_modules/.bin/webpack",
     "compile-dev": "NODE_ENV=dev ./node_modules/.bin/webpack",
-    "open": "open 'dist/mac/SSID to Slack status.app'",
+    "open": "open 'dist/mac/Sloth.app'",
     "build": "npm run compile-dev && npm run pack",
     "build-dist": "npm run compile && npm run dist",
     "build-release": "export $(cat .env | xargs) && npm run compile && npm run release",
@@ -43,7 +43,7 @@
     "postinstall": "./executables/postinstall.sh"
   },
   "repository": {
-    "url": "https://github.com/kirbo/ssid-to-slack-status.git",
+    "url": "https://github.com/kirbo/sloth.git",
     "type": "git"
   },
   "author": "kimmo.saari@sc5.io",
