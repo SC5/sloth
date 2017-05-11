@@ -8,14 +8,14 @@ const { Header, Content, Footer } = Layout;
 import Utils from '../../utils/Utils';
 
 class Authorise extends React.Component {
-  
+
   render = () => {
     return (
       <Layout id="authorise">
         <Header>Welcome!</Header>
         <Content>
           <p>
-            Thank you for using '<strong>SSID to Slack status</strong>'.
+            Thank you for using <strong>Sloth</strong>.
           </p>
 
           <p>

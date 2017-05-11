@@ -7,8 +7,8 @@ const DEFAULT_CONFIG = {
   defaultCollapsed: ['1', '2', '3']
 };
 
-const PRODUCT_NAME = 'SSID to Slack status';
-const PRODUCT_URL = 'https://github.com/kirbo/ssid-to-slack-status/releases';
+const PRODUCT_NAME = 'Sloth';
+const PRODUCT_URL = 'https://github.com/kirbo/sloth/releases';
 
 const CONFIG_PATH = 'data';
 const CONFIG_FILENAME = `${CONFIG_PATH}/config.json`;

@@ -7,22 +7,17 @@ class Crontab {
   constructor() {
     this.appPath = Utils.appPath();
     this.config = Configs.load();
-
-    if (this.appPath.match(/app.asar/i)) {
-      this.scriptPath = path.join(this.appPath, '../../executables/crontab.sh');
-    } else {
-      this.scriptPath = `${this.appPath}/executables/crontab.sh`;
-    }
+    this.scriptPath = path.join(this.appPath, '../../MacOS/Sloth --args UPDATE');
   }
 
   check() {
-    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && echo 'Already installed in crontab' || exit 0";
+    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status\\|# sc5 sloth' && echo 'Already installed in crontab' || exit 0";
     const output = Utils.parseOutput(command);
 
     return output || null;
   }
   checkScriptPath() {
-    const command = "crontab -l 2> /dev/null | grep '# ssid-to-slack-status' || exit 0";
+    const command = "crontab -l 2> /dev/null | grep '# ssid-to-slack-status\\|# sc5 sloth' || exit 0";
     let output = Utils.parseOutput(command);
 
     if (output) {
@@ -41,14 +36,14 @@ class Crontab {
     let output = this.check();
 
     if (!output || !output.match(/Already installed in crontab/i)) {
-      const command = `((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * \\"${this.scriptPath}\\" >/dev/null 2>&1 # ssid-to-slack-status") | crontab - && echo 'Installed in crontab')`;
+      const command = `((crontab -l 2>/dev/null; echo "*/${Math.ceil(this.config.interval)} * * * * \\"${this.scriptPath}\\" >/dev/null 2>&1 # sc5 sloth") | crontab - && echo 'Installed in crontab')`;
       output = Utils.parseOutput(command);
     }
 
     return output;
   }
   uninstall() {
-    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status' && crontab -l 2>/dev/null | grep -v '# ssid-to-slack-status' | crontab - && echo 'Uninstalled from crontab' || echo 'Was not installed in crontab'";
+    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status\\|# sc5 sloth' && crontab -l 2>/dev/null | grep -v '# ssid-to-slack-status\\|# sc5 sloth' | crontab - && echo 'Uninstalled from crontab' || echo 'Was not installed in crontab'";
     const output = Utils.parseOutput(command);
 
     return output;
