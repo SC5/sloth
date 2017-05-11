@@ -124,6 +124,10 @@ class App extends React.Component {
     this.closeNotification('updates');
   }
 
+  handleUpdate = () => {
+    socket.emit('update', {});
+  }
+
   getConfig = () => (
     new Promise((resolve, reject) => {
       resolve(Configs.load());
@@ -373,7 +377,10 @@ class App extends React.Component {
   };
 
   renderUpdatesAvailableButton = () => (
-    <Button type="primary" icon="link" onClick={event => this.handleViewReleases(event)}>View releases</Button>
+    <div>
+      <Button type="default" icon="link" onClick={event => this.handleViewReleases(event)}>View releases</Button>
+      <Button type="primary" icon="link" onClick={() => this.handleUpdate()}>Update</Button>
+    </div>
   )
 
   render = () => {

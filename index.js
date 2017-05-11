@@ -12,6 +12,7 @@ const io = require('socket.io')(server);
 global.process_env = process.env;
 const { autoUpdater } = require('electron-updater');
 
+autoUpdater.autoDownload = false;
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
@@ -101,6 +102,9 @@ else {
         })
         .on('check updates', () => {
           autoUpdater.checkForUpdates();
+        })
+        .on('update', data => {
+          appUpdater.downloadUpdate();
         })
     });
 
