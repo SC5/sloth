@@ -89,7 +89,7 @@ class App extends React.Component {
 
         notification[data.type]({
           message: data.title,
-          description: this.renderUpdateNotes(data.message),
+          description: <div dangerouslySetInnerHTML={{ __html: data.message }} />,
           duration: 0,
           btn: buttons[data.status],
           key: 'updates',
@@ -397,10 +397,6 @@ class App extends React.Component {
     <div className="update-buttons">
       <Button type="primary" icon="link" onClick={() => this.handleInstallUpdate()}>Restart and update</Button>
     </div>
-  )
-
-  renderUpdateNotes = message => (
-    <div dangerouslySetInnerHTML={{ __html: message }} />
   )
 
   render = () => {
