@@ -221,7 +221,9 @@ else {
         <br />
 
         <h4>Release notes</h4>
-        ${ev.releaseNotes}
+        <div class="release-notes">
+          ${ev.releaseNotes}
+        </div>
       `;
       sendNotification('warning', 'Update available', message, 'update');
     })
