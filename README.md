@@ -1,6 +1,8 @@
 # Sloth
 
-Set your Slack status based on the SSID you're currently connected in.
+Set your Slack status based on the (B)SSID you're currently connected in.
+You don't need to leave this app open, if you install the automation by clicking the [`Install` button here](#automation).
+The automation is executed every 5 minutes.
 
 ## Downloads
 
@@ -41,6 +43,7 @@ __I want my status to be updated automatically, based on the location I'm curren
 * Ability to create configurations based on `SSID` or `BSSID`
   * If you set only `SSID`, that configuration is used for every connection with the same name
   * If you set `BSSID`, that configuration is used only for that specific WiFi access point (this enables you to specify different configurations for different WiFi access points, for example if you have same SSID name across all the offices, you can create configurations for each office)
+* Semiautomatic updates for the app
 
 ## What is to be done:
 
