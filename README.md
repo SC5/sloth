@@ -50,10 +50,10 @@ __I want my status to be updated automatically, based on the location I'm curren
 ## Screenshots
 
 ### Authorisation
-![Authorisation](screenshots/authorisation.gif)
+![Authorisation](screenshots/authorisation.gif | width=100)
 
 ### Automation
 ![Automation](screenshots/automation.gif)
 
 ### Configuring
-![Configuring](screenshots/configuring.gif)
+![Configuring](screenshots/configuring.gif | width=200)
