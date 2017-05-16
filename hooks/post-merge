@@ -1,8 +1,8 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source "$DIR/../../bash/include.sh"
-cd "${DIR}/../../"
+DIR="$(dirname $(git rev-parse --git-dir))"
+source "${DIR}/bash/include.sh"
+cd "${DIR}"
 
 success "Executing: npm install"
 npm install
