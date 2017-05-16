@@ -44,7 +44,7 @@ const webpackConfig = {
 
 if (process.env.NODE_ENV === 'production') {
   webpackConfig.plugins.push(new BabiliPlugin({
-    test: /\.js$|\.jsx$/,
+    test: /\.jsx?$/,
     babili: {
       presets: [
         [
