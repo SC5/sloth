@@ -1,4 +1,3 @@
-# Ignore built files except build/index.js
 app/assets/*
 app/dist/*
 dist/*
