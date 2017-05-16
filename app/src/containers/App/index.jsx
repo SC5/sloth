@@ -37,74 +37,33 @@ const PRODUCT_URL = constants.PRODUCT_URL;
 const intervals = [];
 
 class App extends React.Component {
-  static getConfig() {
-    return (
-      new Promise((resolve) => {
-        resolve(Configs.load());
-      })
-    );
-  }
+  state = {
+    profile: {
+      data: null,
+      time: null,
+      fetching: false,
+    },
+    emojis: {
+      data: null,
+      time: null,
+      fetching: false,
+    },
+    connections: {
+      fetching: true,
+      fetched: false,
+      data: [],
+      time: null,
+      current: null,
+    },
+    configurations: [],
+    initialised: false,
+    token: false,
+    crontab: false,
+    interval: 5,
+    confLoaded: false,
+  };
 
-  /**
-   * @param {Date} time - Datetime.
-   */
-  static lastUpdate(time) {
-    if (time === null) {
-      return null;
-    }
-
-    return <FormattedRelative value={time} />;
-  }
-
-  static openNotification(data) {
-    notification[data.type]({
-      message: data.title,
-      description: data.message,
-      duration: data.duration !== undefined ? data.duration : 4.5,
-      btn: data.button,
-      key: data.key,
-      onClose: data.onClose,
-    });
-  }
-
-  static closeNotification(key) {
-    notification.close(key);
-  }
-
-  static openMessage(data) {
-    message[data.type || 'info'](data.message);
-  }
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      profile: {
-        data: null,
-        time: null,
-        fetching: false,
-      },
-      emojis: {
-        data: null,
-        time: null,
-        fetching: false,
-      },
-      connections: {
-        fetching: true,
-        fetched: false,
-        data: [],
-        time: null,
-        current: null,
-      },
-      configurations: [],
-      initialised: false,
-      token: false,
-      crontab: false,
-      interval: 5,
-      confLoaded: false,
-    };
-  }
-
-  componentWillMount() {
+  componentWillMount = () => {
     this.getConfig()
       .then(config => this.setConfig(config))
       .then(() => {
@@ -156,80 +115,82 @@ class App extends React.Component {
     ;
   }
 
-  componentWillUnmount() {
+  componentWillUnmount = () => {
     intervals.map(interval => (
       clearInterval(interval)
     ));
   }
 
-  getCrontab() {
+  getConfig = () => (
+    new Promise((resolve) => {
+      resolve(Configs.load());
+    })
+  );
+
+  getCrontab = () => {
     this.setState({ crontab: !!Crontab.check() });
   }
 
   /**
    * @param {Object} config - Configs.
    */
-  setConfig(config) {
-    return (
-      new Promise((resolve) => {
-        this.setState({
-          token: !!config.token,
-          configurations: config.ssids,
-          defaultCollapsed: config.defaultCollapsed,
-          interval: config.interval || this.state.interval,
-          confLoaded: true,
-        });
-        setTimeout(() => {
-          resolve();
-        }, QUARTER_SECOND);
-      })
-    );
-  }
+  setConfig = config => (
+    new Promise((resolve) => {
+      this.setState({
+        token: !!config.token,
+        configurations: config.ssids,
+        defaultCollapsed: config.defaultCollapsed,
+        interval: config.interval || this.state.interval,
+        confLoaded: true,
+      });
+      setTimeout(() => {
+        resolve();
+      }, QUARTER_SECOND);
+    })
+  );
 
   /**
    * @param {Boolean} crontab - Is crontab installed or not.
    */
-  setCrontab(crontab) {
+  setCrontab = (crontab) => {
     this.setState({ crontab });
   }
 
-  getConnections() {
-    return (
-      new Promise((resolve) => {
+  getConnections = () => (
+    new Promise((resolve) => {
+      this.setState({
+        connections: {
+          ...this.state.connections,
+          fetching: true,
+        },
+      });
+
+      const current = Wifi.getCurrentConnections();
+      const available = Wifi.scanConnections();
+
+      Promise.all([
+        current,
+        available,
+      ])
+      .then((values) => {
         this.setState({
           connections: {
-            ...this.state.connections,
-            fetching: true,
+            data: [
+              ...Utils.alphabeticSortByProperty(values[0], 'ssid'),
+              ...Utils.alphabeticSortByProperty(values[1], 'ssid'),
+            ],
+            current: values[0][0],
+            fetching: false,
+            fetched: true,
+            time: new Date(),
           },
         });
+        resolve();
+      });
+    })
+  );
 
-        const current = Wifi.getCurrentConnections();
-        const available = Wifi.scanConnections();
-
-        Promise.all([
-          current,
-          available,
-        ])
-        .then((values) => {
-          this.setState({
-            connections: {
-              data: [
-                ...Utils.alphabeticSortByProperty(values[0], 'ssid'),
-                ...Utils.alphabeticSortByProperty(values[1], 'ssid'),
-              ],
-              current: values[0][0],
-              fetching: false,
-              fetched: true,
-              time: new Date(),
-            },
-          });
-          resolve();
-        });
-      })
-    );
-  }
-
-  getCurrentStatus() {
+  getCurrentStatus = () => {
     this.setState({
       profile: {
         ...this.state.profile,
@@ -248,7 +209,7 @@ class App extends React.Component {
     });
   }
 
-  getEmojis() {
+  getEmojis = () => {
     this.setState({
       emojis: {
         ...this.state.emojis,
@@ -267,43 +228,71 @@ class App extends React.Component {
     });
   }
 
-  reloadAll() {
-    return (
-      new Promise(() => {
-        this.setState({
-          connections: {
-            ...this.state.connections,
-            fetched: false,
-          },
-        });
-        this.getConfig()
-          .then(config => this.setConfig(config))
-          .then(() => {
-            const emojis = this.getEmojis();
-            const profile = this.getCurrentStatus();
-            const crontab = this.getCrontab();
-            const connections = this.getConnections();
+  /**
+   * @param {Date} time - Datetime.
+   */
+  lastUpdate = (time) => {
+    if (time === null) {
+      return null;
+    }
 
-            return Promise
-              .all([
-                emojis,
-                profile,
-                crontab,
-                connections,
-              ])
-              .then(() => (
-                new Promise((resolve) => {
-                  resolve();
-                })
-              ));
-          })
-          .catch((error) => { throw new Error(error); })
-        ;
-      })
-    );
+    return <FormattedRelative value={time} />;
   }
 
-  updateStatus() {
+  openNotification = (data) => {
+    notification[data.type]({
+      message: data.title,
+      description: data.message,
+      duration: data.duration !== undefined ? data.duration : 4.5,
+      btn: data.button,
+      key: data.key,
+      onClose: data.onClose,
+    });
+  }
+
+  closeNotification = (key) => {
+    notification.close(key);
+  }
+
+  openMessage = (data) => {
+    message[data.type || 'info'](data.message);
+  }
+
+  reloadAll = () => (
+    new Promise(() => {
+      this.setState({
+        connections: {
+          ...this.state.connections,
+          fetched: false,
+        },
+      });
+      this.getConfig()
+        .then(config => this.setConfig(config))
+        .then(() => {
+          const emojis = this.getEmojis();
+          const profile = this.getCurrentStatus();
+          const crontab = this.getCrontab();
+          const connections = this.getConnections();
+
+          return Promise
+            .all([
+              emojis,
+              profile,
+              crontab,
+              connections,
+            ])
+            .then(() => (
+              new Promise((resolve) => {
+                resolve();
+              })
+            ));
+        })
+        .catch((error) => { throw new Error(error); })
+      ;
+    })
+  )
+
+  updateStatus = () => {
     this.setState({
       profile: {
         ...this.state.profile,
@@ -347,7 +336,7 @@ class App extends React.Component {
     });
   }
 
-  hasToken() {
+  hasToken = () => {
     if (this.state.token) {
       intervals.push(setInterval(() => this.getCurrentStatus(), MINUTE * this.state.interval));
 
@@ -374,25 +363,23 @@ class App extends React.Component {
   /**
    * @param {Object} config - Configuration
    */
-  saveToConfig(config) {
-    return (
-      new Promise((resolve) => {
-        resolve(this.setConfig(Configs.save(config)));
-      })
-    );
-  }
+  saveToConfig = config => (
+    new Promise((resolve) => {
+      resolve(this.setConfig(Configs.save(config)));
+    })
+  );
 
-  handleDownloadUpdate() {
+  handleDownloadUpdate = () => {
     socket.emit('update', {});
     this.closeNotification('updates');
   }
 
-  handleInstallUpdate() {
+  handleInstallUpdate = () => {
     socket.emit('install update', {});
     this.closeNotification('updates');
   }
 
-  handleViewReleases(event) {
+  handleViewReleases = (event) => {
     Utils.electronOpenLinkInBrowser(PRODUCT_URL, event);
     this.closeNotification('updates');
   }
@@ -400,36 +387,32 @@ class App extends React.Component {
   /**
    * @param {Array} keys - Expanded panels.
    */
-  saveDefaultCollapse(keys) {
+  saveDefaultCollapse = (keys) => {
     this.setState({
       defaultCollapsed: keys,
     });
   }
 
-  renderUpdatesAvailableButton() {
-    return (
-      <div className="update-buttons">
-        <Button type="default" icon="link" onClick={event => this.handleViewReleases(event)}>
-          View releases
-        </Button>
-        <Button type="primary" icon="link" onClick={() => this.handleDownloadUpdate()}>
-          Update
-        </Button>
-      </div>
-    );
-  }
+  renderUpdatesAvailableButton = () => (
+    <div className="update-buttons">
+      <Button type="default" icon="link" onClick={event => this.handleViewReleases(event)}>
+        View releases
+      </Button>
+      <Button type="primary" icon="link" onClick={() => this.handleDownloadUpdate()}>
+        Update
+      </Button>
+    </div>
+  );
 
-  renderRestartButton() {
-    return (
-      <div className="update-buttons">
-        <Button type="primary" icon="link" onClick={() => this.handleInstallUpdate()}>
-          Restart and update
-        </Button>
-      </div>
-    );
-  }
+  renderRestartButton = () => (
+    <div className="update-buttons">
+      <Button type="primary" icon="link" onClick={() => this.handleInstallUpdate()}>
+        Restart and update
+      </Button>
+    </div>
+  );
 
-  render() {
+  render = () => {
     if (!this.state.confLoaded) {
       return (
         <Loading />

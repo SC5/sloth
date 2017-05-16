@@ -48,8 +48,7 @@ class Slack {
                 {
                   status_text: ssidConfig.status,
                   status_emoji: `:${ssidConfig.icon}:`,
-                },
-              ),
+                }),
             };
 
             slack.users.profile.set(payload, (error, data) => {

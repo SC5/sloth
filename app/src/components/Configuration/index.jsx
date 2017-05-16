@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import {
   Form,
@@ -41,16 +42,20 @@ const bssidPopover = (
 );
 
 class ConfigurationForm extends React.Component {
+  static propTypes = {
+    data: PropTypes.instanceOf(Object).isRequired,
+    emojis: PropTypes.instanceOf(Array).isRequired,
+    visible: PropTypes.instanceOf(Boolean).isRequired,
+    form: PropTypes.instanceOf(Object).isRequired,
+    updateData: PropTypes.instanceOf(Function).isRequired,
+  };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      emojis: [],
-      mac: props.data.uuid ? props.data.mac : '',
-    };
-  }
+  state = {
+    emojis: [],
+    mac: this.props.data.uuid ? this.props.data.mac : '',
+  };
 
-  componentWillMount() {
+  componentWillMount = () => {
     const emojis = Emojis.loadStandard();
 
     Object.keys(this.props.emojis).map(key => (
@@ -65,7 +70,7 @@ class ConfigurationForm extends React.Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentWillReceiveProps = (nextProps) => {
     if (nextProps.visible === false) {
       this.resetForm();
     }
@@ -81,11 +86,11 @@ class ConfigurationForm extends React.Component {
     }
   }
 
-  resetForm() {
+  resetForm = () => {
     this.props.form.resetFields();
   }
 
-  renderFillBssid() {
+  renderFillBssid = () => {
     if (this.props.data.uuid) {
       return null;
     }
@@ -115,7 +120,7 @@ class ConfigurationForm extends React.Component {
     );
   }
 
-  render() {
+  render = () => {
     const { getFieldDecorator } = this.props.form;
 
     return (
@@ -230,13 +235,5 @@ class ConfigurationForm extends React.Component {
     );
   }
 }
-
-ConfigurationForm.propTypes = {
-  data: React.PropTypes.instanceOf(Object).isRequired,
-  emojis: React.PropTypes.instanceOf(Array).isRequired,
-  visible: React.PropTypes.instanceOf(Boolean).isRequired,
-  form: React.PropTypes.instanceOf(Object).isRequired,
-  updateData: React.PropTypes.instanceOf(Function).isRequired,
-};
 
 export default Form.create()(ConfigurationForm);

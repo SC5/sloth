@@ -16,21 +16,19 @@ class Wifi {
    * @param {Array} array - Array to sort.
    * @param {String} property - Property sort by.
    */
-  static uniqueObjectsFromArray(array, property) {
-    return Array.from(array.reduce((m, o) =>
-      m.set(o[property], o), new Map()).values(),
-    );
+  uniqueObjectsFromArray(array, property) {
+    return Array.from(array.reduce((m, o) => m.set(o[property], o), new Map()).values());
   }
 
   /**
    * @param {Array} connections - Connections to fix MAC address from.
    */
-  static fixConnectionsMac(connections) {
+  fixConnectionsMac(connections) {
     return (
       connections.map(connection => (
         Object.assign({},
           connection,
-          { mac: connection.mac.split(':').map(part => part.length < 2 ? `0${part}` : part).join(':') }, // eslint-disable-line
+          { mac: connection.mac.split(':').map(part => part.length < 2 ? `0${part}` : part).join(':') } // eslint-disable-line
         )
       ))
     );

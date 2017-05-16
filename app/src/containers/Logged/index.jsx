@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Icon as FaIcon } from 'react-fa';
 import { v4 as uuid } from 'uuid';
 
@@ -33,30 +34,47 @@ const confirm = Modal.confirm;
 const NOOP = () => { };
 
 class Logged extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      install: false,
-      reinstall: false,
-      uninstall: false,
-      modal: {
-        title: 'Create new configuration',
-        data: [],
-        visible: false,
-        handleOk: NOOP,
-        handleCancel: NOOP,
-      },
-      edit: {
-        name: null,
-        ssid: null,
-        mac: null,
-        icon: null,
-        status: null,
-      },
-    };
-  }
+  static propTypes = {
+    token: PropTypes.bool.isRequired,
+    profile: PropTypes.instanceOf(Object).isRequired,
+    getCurrentStatus: PropTypes.instanceOf(Function).isRequired,
+    emojis: PropTypes.instanceOf(Object).isRequired,
+    configurations: PropTypes.instanceOf(Array).isRequired,
+    setCrontab: PropTypes.instanceOf(Function).isRequired,
+    openMessage: PropTypes.instanceOf(Function).isRequired,
+    openNotification: PropTypes.instanceOf(Function).isRequired,
+    closeNotification: PropTypes.instanceOf(Function).isRequired,
+    saveToConfig: PropTypes.instanceOf(Function).isRequired,
+    connections: PropTypes.instanceOf(Object).isRequired,
+    crontab: PropTypes.bool.isRequired,
+    updateStatus: PropTypes.instanceOf(Function).isRequired,
+    reloadAll: PropTypes.instanceOf(Function).isRequired,
+    lastUpdate: PropTypes.instanceOf(Function).isRequired,
+    initialised: PropTypes.bool.isRequired,
+    defaultCollapsed: PropTypes.instanceOf(Array).isRequired,
+  };
 
-  componentDidMount() {
+  state = {
+    install: false,
+    reinstall: false,
+    uninstall: false,
+    modal: {
+      title: 'Create new configuration',
+      data: [],
+      visible: false,
+      handleOk: NOOP,
+      handleCancel: NOOP,
+    },
+    edit: {
+      name: null,
+      ssid: null,
+      mac: null,
+      icon: null,
+      status: null,
+    },
+  };
+
+  componentDidMount = () => {
     if (this.props.token) {
       Slack.checkStatus()
       .then((output) => {
@@ -67,7 +85,7 @@ class Logged extends React.Component {
     }
   }
 
-  getProfile() {
+  getProfile = () => {
     if (!this.props.profile.data) {
       return (
         <Loading />
@@ -103,7 +121,7 @@ class Logged extends React.Component {
   }
 
 
-  getConfigurationColumns() {
+  getConfigurationColumns = () => {
     const ssidTooltip = ssidConfig => (
       <table className="tooltip-table">
         <tr>
@@ -153,7 +171,7 @@ class Logged extends React.Component {
     ]);
   }
 
-  getConnectionColumns() {
+  getConnectionColumns = () => {
     const ssidTooltip = ssidConfig => (
       <table className="tooltip-table">
         <tr>
@@ -246,7 +264,7 @@ class Logged extends React.Component {
     ]);
   }
 
-  handleInstall() {
+  handleInstall = () => {
     if (!this.state.install) {
       this.setState({ install: true });
       const status = Crontab.install();
@@ -267,7 +285,7 @@ class Logged extends React.Component {
     }
   }
 
-  handleReinstall() {
+  handleReinstall = () => {
     if (!this.state.reinstall) {
       this.setState({ reinstall: true });
       const status = Crontab.reinstall();
@@ -290,7 +308,7 @@ class Logged extends React.Component {
     }
   }
 
-  handleUninstall() {
+  handleUninstall = () => {
     if (!this.state.uninstall) {
       this.setState({ uninstall: true });
       const status = Crontab.uninstall();
@@ -311,7 +329,7 @@ class Logged extends React.Component {
     }
   }
 
-  handleModalSaveNew() {
+  handleModalSaveNew = () => {
     this.props.saveToConfig({
       ssids: [
         ...this.props.configurations,
@@ -337,7 +355,7 @@ class Logged extends React.Component {
     });
   }
 
-  handleModalSaveOld() {
+  handleModalSaveOld = () => {
     this.props.saveToConfig({
       ssids: this.props.configurations.map((config) => {
         if (config.uuid === this.state.edit.uuid) {
@@ -362,7 +380,7 @@ class Logged extends React.Component {
     });
   }
 
-  handleModalCancel() {
+  handleModalCancel = () => {
     this.closeModal();
   }
 
@@ -370,7 +388,7 @@ class Logged extends React.Component {
    * @param {String} action - Which action should we trigger.
    * @param {Object} record - Configuration row data.
    */
-  handleConfigurationButton(action, record = undefined, config = undefined) {
+  handleConfigurationButton = (action, record = undefined, config = undefined) => {
     const parent = this;
 
     switch (action) {
@@ -474,7 +492,7 @@ class Logged extends React.Component {
     }
   }
 
-  closeModal() {
+  closeModal = () => {
     this.setState({
       modal: {
         ...this.state.modal,
@@ -485,7 +503,7 @@ class Logged extends React.Component {
     });
   }
 
-  updateData(property, value) {
+  updateData = (property, value) => {
     this.setState({
       edit: {
         ...this.state.edit,
@@ -497,7 +515,7 @@ class Logged extends React.Component {
   /**
    * @param {Object} record - Configuration row data.
    */
-  tableButton(record = undefined, config) {
+  tableButton = (record = undefined, config) => {
     if (record) {
       let menu;
       let edit;
@@ -558,7 +576,7 @@ class Logged extends React.Component {
   /**
    * @param {Object} record - Current row.
    */
-  isConnected(record) {
+  isConnected = (record) => {
     const current = this.props.connections.current;
     if (current && current.ssid.toLowerCase() === record.ssid.toLowerCase()) {
       const thisConfigs = this.props.configurations
@@ -597,7 +615,7 @@ class Logged extends React.Component {
   }
 
 
-  checkCrontabStatus() {
+  checkCrontabStatus = () => {
     const crontabScriptPath = Crontab.checkScriptPath();
     if (!this.props.crontab) {
       return (
@@ -629,7 +647,7 @@ class Logged extends React.Component {
     );
   }
 
-  crontabStatusIcon() {
+  crontabStatusIcon = () => {
     const crontabScriptPath = Crontab.checkScriptPath();
     let className = 'installed';
 
@@ -659,7 +677,7 @@ class Logged extends React.Component {
     return null;
   }
 
-  configurationStatusIcon() {
+  configurationStatusIcon = () => {
     if (this.props.configurations && this.props.configurations.length > 0) {
       return (
         <div className="status info">
@@ -671,7 +689,7 @@ class Logged extends React.Component {
     return null;
   }
 
-  isButtonsDisabled(state) {
+  isButtonsDisabled = (state) => {
     switch (state) {
       case 'install': {
         return this.state.reinstall || this.state.uninstall;
@@ -688,7 +706,7 @@ class Logged extends React.Component {
     }
   }
 
-  updateStatus() {
+  updateStatus = () => {
     this.props.updateStatus()
       .then(() => {
         this.props.openMessage({
@@ -704,7 +722,7 @@ class Logged extends React.Component {
       });
   }
 
-  reloadAll() {
+  reloadAll = () => {
     this.props.reloadAll()
       .then(() => {
         this.props.openMessage({
@@ -721,7 +739,7 @@ class Logged extends React.Component {
     ;
   }
 
-  renderConfigurationsTable() {
+  renderConfigurationsTable = () => {
     if (!this.props.configurations || this.props.configurations.length < 1) {
       return <span>Nothing here.</span>;
     }
@@ -736,7 +754,7 @@ class Logged extends React.Component {
     );
   }
 
-  renderConnectionsTable() {
+  renderConnectionsTable = () => {
     if (
       this.props.connections.fetched
       && (!this.props.connections.data || this.props.connections.data.length < 1)
@@ -755,7 +773,7 @@ class Logged extends React.Component {
     );
   }
 
-  renderProfileFetched() {
+  renderProfileFetched = () => {
     if (!this.props.profile.time) {
       return null;
     }
@@ -799,32 +817,28 @@ class Logged extends React.Component {
     );
   }
 
-  renderCurrentProfile() {
-    return (
-      <div className="header">
-        <div className="title">
-          <div className="text">
-            {this.getProfile()}
-          </div>
-          {this.renderProfileFetched()}
+  renderCurrentProfile = () => (
+    <div className="header">
+      <div className="title">
+        <div className="text">
+          {this.getProfile()}
         </div>
+        {this.renderProfileFetched()}
       </div>
-    );
-  }
+    </div>
+  );
 
-  renderCrontabButtonsUninstall() {
-    return (
-      <Button
-        icon="close"
-        disabled={this.isButtonsDisabled('uninstall')}
-        loading={this.state.uninstall}
-        onClick={() => this.handleUninstall()}
-        type="danger"
-      >
-        Uninstall
-      </Button>
-    );
-  }
+  renderCrontabButtonsUninstall = () => (
+    <Button
+      icon="close"
+      disabled={this.isButtonsDisabled('uninstall')}
+      loading={this.state.uninstall}
+      onClick={() => this.handleUninstall()}
+      type="danger"
+    >
+      Uninstall
+    </Button>
+  );
 
   renderCrontabButtonsReinstall(disableable) {
     return (
@@ -840,7 +854,7 @@ class Logged extends React.Component {
     );
   }
 
-  renderCrontabButtons() {
+  renderCrontabButtons = () => {
     if (!this.props.crontab) {
       return (
         <div className="buttons">
@@ -865,56 +879,50 @@ class Logged extends React.Component {
     );
   }
 
-  renderAutomationContent() {
-    return (
-      <div className="crontab">
-        {this.checkCrontabStatus()}
-        {this.renderCrontabButtons()}
-      </div>
-    );
-  }
+  renderAutomationContent = () => (
+    <div className="crontab">
+      {this.checkCrontabStatus()}
+      {this.renderCrontabButtons()}
+    </div>
+  );
 
-  renderAutomation() {
-    return (
-      <Panel
-        header={
-          <div className="header-text">
-            Automation
-            {this.crontabStatusIcon()}
-          </div>
-        }
-        key="1"
-      >
-        {this.renderAutomationContent()}
-      </Panel>
-    );
-  }
-
-  renderConfigurations() {
-    return (
-      <Panel
-        header={
-          <div className="header-text">
-            Configurations
-            {this.configurationStatusIcon()}
-          </div>
-        }
-        key="2"
-      >
-        <div className="configuration-content">
-          {this.renderConfigurationsTable()}
-          <Button
-            type="primary"
-            onClick={() => this.handleConfigurationButton('add', {})}
-          >
-            Add new
-          </Button>
+  renderAutomation = () => (
+    <Panel
+      header={
+        <div className="header-text">
+          Automation
+          {this.crontabStatusIcon()}
         </div>
-      </Panel>
-    );
-  }
+      }
+      key="1"
+    >
+      {this.renderAutomationContent()}
+    </Panel>
+  );
 
-  renderLastUpdate(time) {
+  renderConfigurations = () => (
+    <Panel
+      header={
+        <div className="header-text">
+          Configurations
+          {this.configurationStatusIcon()}
+        </div>
+      }
+      key="2"
+    >
+      <div className="configuration-content">
+        {this.renderConfigurationsTable()}
+        <Button
+          type="primary"
+          onClick={() => this.handleConfigurationButton('add', {})}
+        >
+          Add new
+        </Button>
+      </div>
+    </Panel>
+  );
+
+  renderLastUpdate = (time) => {
     if (time === null) {
       return null;
     }
@@ -928,42 +936,38 @@ class Logged extends React.Component {
     );
   }
 
-  renderConnections() {
-    return (
-      <Panel
-        header={
-          <div className="header-text">
-            Connections
-            {this.renderLastUpdate(this.props.connections.time)}
-          </div>
-        }
-        key="3"
-      >
-        {this.renderConnectionsTable()}
-      </Panel>
-    );
-  }
+  renderConnections = () => (
+    <Panel
+      header={
+        <div className="header-text">
+          Connections
+          {this.renderLastUpdate(this.props.connections.time)}
+        </div>
+      }
+      key="3"
+    >
+      {this.renderConnectionsTable()}
+    </Panel>
+  );
 
-  renderModal() {
-    return (
-      <Modal
-        title={this.state.modal.title}
+  renderModal = () => (
+    <Modal
+      title={this.state.modal.title}
+      visible={this.state.modal.visible}
+      onOk={this.state.modal.handleOk}
+      onCancel={this.state.modal.handleCancel}
+    >
+      <Configuration
         visible={this.state.modal.visible}
-        onOk={this.state.modal.handleOk}
-        onCancel={this.state.modal.handleCancel}
-      >
-        <Configuration
-          visible={this.state.modal.visible}
-          data={this.state.modal.data}
-          edit={this.state.edit}
-          emojis={this.props.emojis.data}
-          updateData={this.updateData}
-        />
-      </Modal>
-    );
-  }
+        data={this.state.modal.data}
+        edit={this.state.edit}
+        emojis={this.props.emojis.data}
+        updateData={this.updateData}
+      />
+    </Modal>
+  );
 
-  render() {
+  render = () => {
     if (!this.props.initialised) {
       return (
         <Loading />
@@ -998,25 +1002,5 @@ class Logged extends React.Component {
     );
   }
 }
-
-Logged.propTypes = {
-  token: React.PropTypes.instanceOf(String).isRequired,
-  profile: React.PropTypes.instanceOf(Object).isRequired,
-  getCurrentStatus: React.PropTypes.instanceOf(Function).isRequired,
-  emojis: React.PropTypes.instanceOf(Array).isRequired,
-  configurations: React.PropTypes.instanceOf(Array).isRequired,
-  setCrontab: React.PropTypes.instanceOf(Function).isRequired,
-  openMessage: React.PropTypes.instanceOf(Function).isRequired,
-  openNotification: React.PropTypes.instanceOf(Boolean).isRequired,
-  closeNotification: React.PropTypes.instanceOf(Function).isRequired,
-  saveToConfig: React.PropTypes.instanceOf(Function).isRequired,
-  connections: React.PropTypes.instanceOf(Array).isRequired,
-  crontab: React.PropTypes.instanceOf(Boolean).isRequired,
-  updateStatus: React.PropTypes.instanceOf(Function).isRequired,
-  reloadAll: React.PropTypes.instanceOf(Function).isRequired,
-  lastUpdate: React.PropTypes.instanceOf(Function).isRequired,
-  initialised: React.PropTypes.instanceOf(Boolean).isRequired,
-  defaultCollapsed: React.PropTypes.instanceOf(Array).isRequired,
-};
 
 export default Logged;

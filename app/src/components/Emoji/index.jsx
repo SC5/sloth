@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import './Emoji.less';
 
@@ -27,8 +28,8 @@ const Emoji = (props) => {
 };
 
 Emoji.propTypes = {
-  emojis: React.PropTypes.instanceOf(Array).isRequired,
-  emoji: React.PropTypes.instanceOf(String).isRequired,
+  emojis: PropTypes.instanceOf(Object).isRequired,
+  emoji: PropTypes.string.isRequired,
 };
 
 export default Emoji;

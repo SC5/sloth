@@ -5,14 +5,14 @@ class Emojis {
    *
    * @param {String} text - Emoji.
    */
-  static get(text) {
+  get(text) {
     return emoji.get(text);
   }
 
   /**
    *
    */
-  static loadStandard() {
+  loadStandard() {
     return emoji.search('');
   }
 }

@@ -13,10 +13,10 @@ const io = require('socket.io')(server);
 const socket = require('socket.io-client/lib/index')('http://localhost:5000');
 
 const {
-    MENU_TEMPLATE,
+  MENU_TEMPLATE,
   PRODUCT_NAME,
   PRODUCT_URL,
-  } = require('./src/utils/Constants');
+} = require('./src/utils/Constants');
 
 let win;
 
@@ -36,7 +36,7 @@ if (process.env.APP_ENV === 'browser') {
 } else {
   envPath = path.join(__dirname);
 }
-dotenv.config({ path: `${envPath}/.env` });
+dotenv.config({ path: `${envPath}/.express.env` });
 
 const Configs = require('./src/utils/Configs');
 const Slack = require('./src/utils/Slack');
@@ -65,7 +65,7 @@ if (process.argv.includes('UPDATE')) {
   };
 
   const startExpress = () => {
-    app.use(express.static(path.join(__dirname, '/bundles')));
+    app.use(express.static(path.join(__dirname, '/dist')));
     app.use(express.static(path.join(__dirname, '/views')));
     app.use(express.static(path.join(__dirname, '/assets')));
     app.use(bodyParser.json());
@@ -89,8 +89,7 @@ if (process.argv.includes('UPDATE')) {
             } else {
               const config = Object.assign({},
                 Configs.load(),
-                { token: JSONresponse.access_token },
-              );
+                { token: JSONresponse.access_token });
               Configs.save(config);
               res.sendFile(path.join(__dirname, '/views/index.html'));
             }

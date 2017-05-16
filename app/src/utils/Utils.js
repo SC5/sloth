@@ -22,7 +22,7 @@ const isElectronRenderer = () => {
 
 
 class Utils {
-  static appPath() {
+  appPath() {
     let configPath;
     if (process.env.APP_ENV === 'browser') {
       configPath = path.normalize(remote.app.getAppPath());
@@ -38,7 +38,7 @@ class Utils {
    * @param {Array} array - Array to sort.
    * @param {String} property - Property sort by.
    */
-  static uniqueObjectsFromArray(array, property) {
+  uniqueObjectsFromArray(array, property) {
     return Array.from(array.reduce((m, o) =>
       m.set(o[property], o), new Map()).values(),
     );
@@ -49,7 +49,7 @@ class Utils {
    * @param {Array} data - Data to sort.
    * @param {String} property - Property to sort by.
    */
-  static alphabeticSortByProperty(data, property) {
+  alphabeticSortByProperty(data, property) {
     return data.sort((a, b) => {
       if (a[property].toLowerCase() < b[property].toLowerCase()) return -1;
       if (a[property].toLowerCase() > b[property].toLowerCase()) return 1;
@@ -57,7 +57,7 @@ class Utils {
     });
   }
 
-  static parseOutput(command) {
+  parseOutput(command) {
     const output = execSync(command);
     if (output) {
       return output.toString().replace(/^\s+|\s+$/g, '');
@@ -66,7 +66,7 @@ class Utils {
     return null;
   }
 
-  static electronOpenLinkInBrowser(url, event) {
+  electronOpenLinkInBrowser(url, event) {
     if (isElectronRenderer()) {
       if (url && url.preventDefault) {
         event.preventDefault();
@@ -81,7 +81,7 @@ class Utils {
     }
   }
 
-  static electronOpenLink(url, event) {
+  electronOpenLink(url, event) {
     event.preventDefault();
     window.open(url, 'modal');
   }
