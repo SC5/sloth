@@ -67,16 +67,18 @@ class Utils {
   }
 
   electronOpenLinkInBrowser(url, event) {
+    let ev = event;
     if (isElectronRenderer()) {
       if (url && url.preventDefault) {
-        event.preventDefault();
-        shell.openExternal(event.target.href);
+        ev = url;
+        ev.preventDefault();
+        shell.openExternal(ev.target.href);
       } else {
-        event.preventDefault();
+        ev.preventDefault();
         shell.openExternal(url);
       }
     } else if (url && !url.preventDefault) {
-      event.preventDefault();
+      ev.preventDefault();
       window.location.href = url;
     }
   }

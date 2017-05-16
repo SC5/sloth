@@ -1,6 +1,5 @@
 import React from 'react';
 import { FormattedRelative } from 'react-intl';
-
 import {
   Button,
   notification,
@@ -19,7 +18,6 @@ import Crontab from '../../utils/Crontab';
 import Slack from '../../utils/Slack';
 import Utils from '../../utils/Utils';
 import Wifi from '../../utils/Wifi';
-
 import * as constants from '../../utils/Constants';
 
 const {
@@ -168,25 +166,27 @@ class App extends React.Component {
       const current = Wifi.getCurrentConnections();
       const available = Wifi.scanConnections();
 
-      Promise.all([
-        current,
-        available,
-      ])
-      .then((values) => {
-        this.setState({
-          connections: {
-            data: [
-              ...Utils.alphabeticSortByProperty(values[0], 'ssid'),
-              ...Utils.alphabeticSortByProperty(values[1], 'ssid'),
-            ],
-            current: values[0][0],
-            fetching: false,
-            fetched: true,
-            time: new Date(),
-          },
-        });
-        resolve();
-      });
+      Promise
+        .all([
+          current,
+          available,
+        ])
+        .then((values) => {
+          this.setState({
+            connections: {
+              data: [
+                ...Utils.alphabeticSortByProperty(values[0], 'ssid'),
+                ...Utils.alphabeticSortByProperty(values[1], 'ssid'),
+              ],
+              current: values[0][0],
+              fetching: false,
+              fetched: true,
+              time: new Date(),
+            },
+          });
+          resolve();
+        })
+      ;
     })
   );
 

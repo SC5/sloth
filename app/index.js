@@ -17,6 +17,8 @@ const {
   PRODUCT_NAME,
   PRODUCT_URL,
 } = require('./src/utils/Constants');
+const Configs = require('./src/utils/Configs');
+const Slack = require('./src/utils/Slack');
 
 let win;
 
@@ -37,9 +39,6 @@ if (process.env.APP_ENV === 'browser') {
   envPath = path.join(__dirname);
 }
 dotenv.config({ path: `${envPath}/.express.env` });
-
-const Configs = require('./src/utils/Configs');
-const Slack = require('./src/utils/Slack');
 
 if (process.argv.includes('UPDATE')) {
   log.info('Updating status...');
@@ -169,7 +168,9 @@ if (process.argv.includes('UPDATE')) {
 
     electron.commandLine.appendSwitch('js-flags', '--harmony');
 
-    startExpress();
+    if (process.env.NODE_ENV !== 'development') {
+      startExpress();
+    }
 
     win = new BrowserWindow({
       width: 600,

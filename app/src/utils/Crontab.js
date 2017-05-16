@@ -13,13 +13,13 @@ class Crontab {
   }
 
   check() {
-    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status\\|# sc5 sloth' && echo 'Already installed in crontab' || exit 0";
+    const command = "crontab -l 2> /dev/null | grep -q '# sc5 sloth' && echo 'Already installed in crontab' || exit 0";
     const output = Utils.parseOutput(command);
 
     return output || null;
   }
   checkScriptPath() {
-    const command = "crontab -l 2> /dev/null | grep '# ssid-to-slack-status\\|# sc5 sloth' || exit 0";
+    const command = "crontab -l 2> /dev/null | grep '# sc5 sloth' || exit 0";
     const output = Utils.parseOutput(command);
 
     if (output) {
@@ -45,7 +45,7 @@ class Crontab {
     return output;
   }
   uninstall() {
-    const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status\\|# sc5 sloth' && crontab -l 2>/dev/null | grep -v '# ssid-to-slack-status\\|# sc5 sloth' | crontab - && echo 'Uninstalled from crontab' || echo 'Was not installed in crontab'";
+    const command = "crontab -l 2> /dev/null | grep -q '# sc5 sloth' && crontab -l 2>/dev/null | grep -v '# sc5 sloth' | crontab - && echo 'Uninstalled from crontab' || echo 'Was not installed in crontab'";
     const output = Utils.parseOutput(command);
 
     return output;

@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
 import {
   Form,
   Input,
@@ -11,13 +10,10 @@ import {
 import './Configuration.less';
 
 import Emoji from '../Emoji';
-
 import Emojis from '../../utils/Emojis';
 import Utils from '../../utils/Utils';
 
 const { Option } = Select;
-
-
 const FormItem = Form.Item;
 
 const formItemLayout = {

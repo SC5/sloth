@@ -5,16 +5,27 @@ import ReactDOM from 'react-dom';
 import { IntlProvider } from 'react-intl';
 import { LocaleProvider } from 'antd';
 import locale from 'antd/lib/locale-provider/en_US';
+import { AppContainer } from 'react-hot-loader';
 
 import App from './src/containers/App';
 
 const mount = document.getElementById('app');
 
-ReactDOM.render(
-  <IntlProvider locale="en">
-    <LocaleProvider locale={locale}>
-      <App />
-    </LocaleProvider>
-  </IntlProvider>
-, mount);
+const render = (Component) => {
+  ReactDOM.render(
+    <IntlProvider locale="en">
+      <LocaleProvider locale={locale}>
+        <AppContainer>
+          <Component />
+        </AppContainer>
+      </LocaleProvider>
+    </IntlProvider>,
+    mount
+  );
+}
 
+if (module.hot) {
+  module.hot.accept();
+}
+
+render(App);

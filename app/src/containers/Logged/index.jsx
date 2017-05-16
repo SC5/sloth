@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Icon as FaIcon } from 'react-fa';
 import { v4 as uuid } from 'uuid';
-
 import {
   Layout,
   Menu,
@@ -18,6 +17,7 @@ import {
 
 import './Logged.less';
 
+import Footer from '../../components/Footer';
 import Loading from '../../components/Loading';
 import Emoji from '../../components/Emoji';
 import Configuration from '../../components/Configuration';
@@ -26,8 +26,7 @@ import Crontab from '../../utils/Crontab';
 import Utils from '../../utils/Utils';
 import Slack from '../../utils/Slack';
 
-
-const { Header, Content, Footer } = Layout;
+const { Header, Content } = Layout;
 const Panel = Collapse.Panel;
 const confirm = Modal.confirm;
 
@@ -990,14 +989,7 @@ class Logged extends React.Component {
           </Collapse>
           {this.renderModal()}
         </Content>
-        <Footer>
-          <a
-            href="http://github.com/kirbo"
-            onClick={() => Utils.electronOpenLinkInBrowser(this)}
-          >
-            Kimmo Saari ©2017
-          </a>
-        </Footer>
+        <Footer />
       </Layout>
     );
   }

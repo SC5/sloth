@@ -10,9 +10,6 @@ const DEFAULT_CONFIG = {
 const PRODUCT_NAME = 'Sloth';
 const PRODUCT_URL = 'https://github.com/kirbo/sloth/releases';
 
-const CONFIG_PATH = 'data';
-const CONFIG_FILENAME = `${CONFIG_PATH}/config.json`;
-
 /* eslint-disable */
 const MILLISECOND     = 1;
 const QUARTER_SECOND  = 250   * MILLISECOND;
@@ -94,8 +91,6 @@ if (process.platform === 'darwin') {
 module.exports = {
   TIMES,
   DEFAULT_CONFIG,
-  CONFIG_PATH,
-  CONFIG_FILENAME,
   MENU_TEMPLATE,
   PRODUCT_NAME,
   PRODUCT_URL,

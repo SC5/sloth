@@ -3,7 +3,9 @@ import { Layout } from 'antd';
 import { remote } from 'electron';
 
 import './Authorise.less';
+
 import Utils from '../../utils/Utils';
+import Footer from '../../components/Footer';
 
 let PROCESS_ENV = Object.assign({},
   process.env,
@@ -17,7 +19,7 @@ if (remote) {
   );
 }
 
-const { Header, Content, Footer } = Layout;
+const { Header, Content } = Layout;
 
 const url = `https://${PROCESS_ENV.SLACK_NAME}.slack.com/oauth/authorize?client_id=${PROCESS_ENV.CLIENT_ID}&scope=${PROCESS_ENV.SCOPE}&redirect_uri=${PROCESS_ENV.REDIRECT_URI}`;
 
@@ -47,14 +49,7 @@ const Authorise = () => (
         </a>
       </p>
     </Content>
-    <Footer>
-      <a
-        href="http://github.com/kirbo"
-        onClick={() => {
-          Utils.electronOpenLinkInBrowser(this);
-        }}
-      >Kimmo Saari ©2017</a>
-    </Footer>
+    <Footer />
   </Layout>
 );
 

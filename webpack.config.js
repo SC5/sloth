@@ -3,12 +3,23 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const BabiliPlugin = require('babili-webpack-plugin');
 
+const host = 'localhost';
+const port = 5000;
+
+const uri = `http://${host}:${port}/`;
+
 const webpackConfig = {
-  target: 'electron',
-  entry: './app/entry.jsx',
+  target: 'electron-renderer',
+  entry: [
+    'react-hot-loader/patch',
+    `webpack-dev-server/client?${uri}`,
+    'webpack/hot/only-dev-server',
+    './app/entry.jsx',
+  ],
   output: {
     path: path.join(__dirname, 'app', 'dist'),
     filename: 'bundle.js',
+    publicPath: uri,
   },
   devtool: 'inline-source-map',
   externals: {
@@ -39,7 +50,28 @@ const webpackConfig = {
     }),
 
     new ExtractTextPlugin('styles.css'),
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NamedModulesPlugin(),
   ],
+  devServer: {
+    host,
+    port,
+    publicPath: uri,
+
+    hot: true,
+    inline: true,
+    stats: {
+      colors: true,
+      errorDetails: true,
+      chunks: false,
+    },
+
+    contentBase: [
+      path.join(__dirname, 'app', 'assets'),
+      path.join(__dirname, 'app', 'views'),
+      path.join(__dirname, 'app', 'dist'),
+    ],
+  },
 };
 
 if (process.env.NODE_ENV === 'production') {

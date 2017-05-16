@@ -6,7 +6,8 @@
     "stage-0"
   ],
   "plugins": [
-    [ "import", { "libraryName": "antd" } ]
+    [ "import", { "libraryName": "antd" } ],
+    "react-hot-loader/babel"
   ],
   "env": {
     "production": {
