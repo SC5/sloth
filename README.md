@@ -29,6 +29,8 @@ Old CLI version can be [found here](https://github.com/kirbo/sloth/tree/cli).
 * [Font Awesome](https://github.com/FortAwesome/Font-Awesome)
 * [Babel](https://github.com/babel/babel)
 * [Webpack](https://github.com/webpack/webpack)
+* [Eslint](https://github.com/eslint/eslint)
+* [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
 
 ## Motivation
 
