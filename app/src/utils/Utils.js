@@ -1,29 +1,28 @@
-const fs = require('fs');
 const path = require('path');
-const { app: electron, shell, remote } = require('electron');
+const { shell, remote } = require('electron');
 const execSync = require('child_process').execSync;
 
-let win;
+let window;
 if (remote) {
-  win = remote.getGlobal('win');
+  window = remote.getGlobal('win');
 }
 
-const isElectronRenderer = function () {
+const isElectronRenderer = () => {
   // running in a web browser
-  if (typeof process === 'undefined') return true
+  if (typeof process === 'undefined') return true;
 
   // node-integration is disabled
-  if (!process) return true
+  if (!process) return true;
 
   // We're in node.js somehow
-  if (!process.type) return false
+  if (!process.type) return false;
 
-  return process.type === 'renderer'
-}
+  return process.type === 'renderer';
+};
 
 
 class Utils {
-  appPath() {
+  static appPath() {
     let configPath;
     if (process.env.APP_ENV === 'browser') {
       configPath = path.normalize(remote.app.getAppPath());
@@ -39,10 +38,10 @@ class Utils {
    * @param {Array} array - Array to sort.
    * @param {String} property - Property sort by.
    */
-  uniqueObjectsFromArray(array, property) {
+  static uniqueObjectsFromArray(array, property) {
     return Array.from(array.reduce((m, o) =>
-      m.set(o[property], o), new Map()).values()
-    )
+      m.set(o[property], o), new Map()).values(),
+    );
   }
 
   /**
@@ -50,42 +49,39 @@ class Utils {
    * @param {Array} data - Data to sort.
    * @param {String} property - Property to sort by.
    */
-  alphabeticSortByProperty(data, property) {
-    return data.sort((a,b) => {
+  static alphabeticSortByProperty(data, property) {
+    return data.sort((a, b) => {
       if (a[property].toLowerCase() < b[property].toLowerCase()) return -1;
       if (a[property].toLowerCase() > b[property].toLowerCase()) return 1;
       return 0;
-    })
+    });
   }
 
-  parseOutput(command) {
+  static parseOutput(command) {
     const output = execSync(command);
     if (output) {
-      return output.toString().replace(/^\s+|\s+$/g, '')
+      return output.toString().replace(/^\s+|\s+$/g, '');
     }
 
     return null;
   }
 
-  electronOpenLinkInBrowser(url, event) {
+  static electronOpenLinkInBrowser(url, event) {
     if (isElectronRenderer()) {
       if (url && url.preventDefault) {
-        event = url;
         event.preventDefault();
         shell.openExternal(event.target.href);
       } else {
         event.preventDefault();
         shell.openExternal(url);
       }
-    } else {
-      if (url && !url.preventDefault) {
-        event.preventDefault();
-        window.location.href = url;
-      }
+    } else if (url && !url.preventDefault) {
+      event.preventDefault();
+      window.location.href = url;
     }
   }
 
-  electronOpenLink(url, event) {
+  static electronOpenLink(url, event) {
     event.preventDefault();
     window.open(url, 'modal');
   }

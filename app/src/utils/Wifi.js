@@ -1,5 +1,3 @@
-const fs = require('fs');
-const path = require('path');
 const wifi = require('node-wifi');
 
 const Configs = require('./Configs');
@@ -18,21 +16,21 @@ class Wifi {
    * @param {Array} array - Array to sort.
    * @param {String} property - Property sort by.
    */
-  uniqueObjectsFromArray(array, property) {
+  static uniqueObjectsFromArray(array, property) {
     return Array.from(array.reduce((m, o) =>
-      m.set(o[property], o), new Map()).values()
-    )
+      m.set(o[property], o), new Map()).values(),
+    );
   }
 
   /**
    * @param {Array} connections - Connections to fix MAC address from.
    */
-  fixConnectionsMac(connections) {
+  static fixConnectionsMac(connections) {
     return (
       connections.map(connection => (
         Object.assign({},
           connection,
-          { mac: connection.mac.split(':').map(part => part.length < 2 ? `0${part}` : part).join(':') }
+          { mac: connection.mac.split(':').map(part => part.length < 2 ? `0${part}` : part).join(':') }, // eslint-disable-line
         )
       ))
     );
@@ -54,8 +52,8 @@ class Wifi {
         resolve(parent.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
       });
     })
-      .catch(error => {
-        console.error('Error:', error);
+      .catch((error) => {
+        console.error('Error:', error); // eslint-disable-line
       });
   }
 
@@ -75,8 +73,8 @@ class Wifi {
         resolve(parent.uniqueObjectsFromArray(parent.fixConnectionsMac(connections), 'ssid'));
       });
     })
-      .catch(error => {
-        console.error('Error:', error);
+      .catch((error) => {
+        console.error('Error:', error); // eslint-disable-line
       });
   }
 
@@ -87,12 +85,13 @@ class Wifi {
    */
   getCurrentSsidNames() {
     const parent = this;
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       parent.getCurrentConnections()
-        .then(connections => {
+        .then((connections) => {
           resolve(connections.map(connection => connection.ssid.toLowerCase()) || []);
         })
-    })
+      ;
+    });
   }
 
   /**
@@ -102,12 +101,13 @@ class Wifi {
    */
   getCurrentBssidNames() {
     const parent = this;
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       parent.getCurrentConnections()
-        .then(connections => {
+        .then((connections) => {
           resolve(connections.map(connection => connection.mac.toLowerCase()) || []);
         })
-    })
+      ;
+    });
   }
 
   /**
@@ -115,12 +115,13 @@ class Wifi {
    */
   getSsidConfig() {
     const parent = this;
-    return new Promise((resolve, reject) => {
-      Promise.all([
-        parent.getCurrentBssidNames(),
-        parent.getCurrentSsidNames(),
-      ])
-        .then(values => {
+    return new Promise((resolve) => {
+      Promise
+        .all([
+          parent.getCurrentBssidNames(),
+          parent.getCurrentSsidNames(),
+        ])
+        .then((values) => {
           const currentBssids = values[0][0] || '';
           const currentSsids = values[1][0] || '';
 
@@ -129,15 +130,14 @@ class Wifi {
 
           if (viaMac) {
             resolve(viaMac);
-          }
-          else if (viaSsid) {
+          } else if (viaSsid) {
             resolve(viaSsid);
-          }
-          else {
+          } else {
             resolve(undefined);
           }
         })
-    })
+      ;
+    });
   }
 
   /**
@@ -149,16 +149,14 @@ class Wifi {
    * @returns {Boolean} - true = Predefined, false = Custom
    */
   isCurrentSsid(profile, currentSsid) {
-    return !!this.config.ssids.find(s =>
-      (
-        s.status === profile.status_text
-        && `:${s.icon}:` === profile.status_emoji
-        && (
-          s.mac.toLowerCase() === currentSsid.mac.toLowerCase()
-          || s.ssid.toLowerCase() === currentSsid.ssid.toLowerCase()
-        )
+    return !!this.config.ssids.find(s => (
+      s.status === profile.status_text
+      && `:${s.icon}:` === profile.status_emoji
+      && (
+        s.mac.toLowerCase() === currentSsid.mac.toLowerCase()
+        || s.ssid.toLowerCase() === currentSsid.ssid.toLowerCase()
       )
-    );
+    ));
   }
 }
 

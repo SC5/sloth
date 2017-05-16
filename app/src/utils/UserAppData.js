@@ -1,32 +1,32 @@
 const fs = require('fs');
 const path = require('path');
-const { app: electron, shell, remote } = require('electron');
+const { remote } = require('electron');
 
 let PROCESS_ENV = Object.assign({},
   process.env,
-  {platform: process.platform}
+  { platform: process.platform },
 );
 
 if (remote) {
   PROCESS_ENV = Object.assign({},
     PROCESS_ENV,
-    remote.getGlobal('process_env')
+    remote.getGlobal('process_env'),
   );
 }
 
-var linuxHome = function () {
-  return PROCESS_ENV.HOME || PROCESS_ENV.HOMEPATH || PROCESS_ENV.USERPROFILE;
-};
+const linuxHome = () => (
+  PROCESS_ENV.HOME || PROCESS_ENV.HOMEPATH || PROCESS_ENV.USERPROFILE
+);
 
-var osxHome = function () {
-  return path.join(PROCESS_ENV.HOME, 'Library/Preferences');
-};
+const osxHome = () => (
+  path.join(PROCESS_ENV.HOME, 'Library/Preferences')
+);
 
-var home = function () {
-  return PROCESS_ENV.APPDATA || (PROCESS_ENV.platform === 'darwin' ? osxHome() : linuxHome());
-};
+const home = () => (
+  PROCESS_ENV.APPDATA || (PROCESS_ENV.platform === 'darwin' ? osxHome() : linuxHome())
+);
 
-var UserAppData = function (config) {
+const UserAppData = (config) => {
   if (!config || !config.appname) {
     throw new Error('missing appname');
   }
@@ -61,22 +61,22 @@ var UserAppData = function (config) {
 };
 
 
-UserAppData.prototype.setConfigFilename = function (filename) {
+UserAppData.prototype.setConfigFilename = (filename) => {
   this.filename = path.join(this.dataFolder, filename);
 };
 
-UserAppData.prototype.save = function () {
+UserAppData.prototype.save = () => {
   if (!fs.existsSync(this.dataFolder)) {
     fs.mkdirSync(this.dataFolder);
   }
   fs.writeFileSync(this.filename, JSON.stringify(this.settings, null, 4));
 };
 
-UserAppData.prototype.load = function () {
+UserAppData.prototype.load = () => {
   this.settings = JSON.parse(fs.readFileSync(this.filename).toString());
 };
 
-UserAppData.prototype.uninstall = function () {
+UserAppData.prototype.uninstall = () => {
   fs.unlink(this.filename);
 };
 

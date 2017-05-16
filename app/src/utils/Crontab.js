@@ -12,15 +12,15 @@ class Crontab {
     this.scriptExecute = `\\"${this.scriptPath}\\" ${this.args}`;
   }
 
-  check() {
+  static check() {
     const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status\\|# sc5 sloth' && echo 'Already installed in crontab' || exit 0";
     const output = Utils.parseOutput(command);
 
     return output || null;
   }
-  checkScriptPath() {
+  static checkScriptPath() {
     const command = "crontab -l 2> /dev/null | grep '# ssid-to-slack-status\\|# sc5 sloth' || exit 0";
-    let output = Utils.parseOutput(command);
+    const output = Utils.parseOutput(command);
 
     if (output) {
       const regex = new RegExp(/"(.*)"/);
@@ -34,7 +34,7 @@ class Crontab {
 
     return output || null;
   }
-  install() {
+  static install() {
     let output = this.check();
 
     if (!output || !output.match(/Already installed in crontab/i)) {
@@ -44,17 +44,17 @@ class Crontab {
 
     return output;
   }
-  uninstall() {
+  static uninstall() {
     const command = "crontab -l 2> /dev/null | grep -q '# ssid-to-slack-status\\|# sc5 sloth' && crontab -l 2>/dev/null | grep -v '# ssid-to-slack-status\\|# sc5 sloth' | crontab - && echo 'Uninstalled from crontab' || echo 'Was not installed in crontab'";
     const output = Utils.parseOutput(command);
 
     return output;
   }
-  reinstall() {
+  static reinstall() {
     const unistall = this.uninstall();
-    const install = this.install();
+    this.install();
 
-    let output = "Reinstalled in crontab";
+    let output = 'Reinstalled in crontab';
     if (unistall === 'Was not installed in crontab') {
       output = 'Installed in crontab';
     }

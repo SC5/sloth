@@ -1,20 +1,6 @@
-import './Logged.less';
-
 import React from 'react';
 import { Icon as FaIcon } from 'react-fa';
 import { v4 as uuid } from 'uuid';
-
-import Loading from '../../components/Loading';
-import Emoji from '../../components/Emoji';
-import Authorise from '../Authorise';
-import Configuration from '../../components/Configuration';
-
-import Crontab from '../../utils/Crontab';
-import Utils from '../../utils/Utils';
-import Slack from '../../utils/Slack';
-
-import * as constants from '../../utils/Constants';
-const { SECOND, MINUTE } = constants.TIMES;
 
 import {
   Layout,
@@ -26,395 +12,98 @@ import {
   Dropdown,
   Popover,
   Modal,
-  Form,
-  Input,
-  Select,
   Badge,
 } from 'antd';
-const { Header, Content, Footer, Sider } = Layout;
+
+import './Logged.less';
+
+import Loading from '../../components/Loading';
+import Emoji from '../../components/Emoji';
+import Configuration from '../../components/Configuration';
+
+import Crontab from '../../utils/Crontab';
+import Utils from '../../utils/Utils';
+import Slack from '../../utils/Slack';
+
+
+const { Header, Content, Footer } = Layout;
 const Panel = Collapse.Panel;
 const confirm = Modal.confirm;
 
 const NOOP = () => { };
 
 class Logged extends React.Component {
-  state = {
-    install: false,
-    reinstall: false,
-    uninstall: false,
-    modal: {
-      title: 'Create new configuration',
-      data: [],
-      visible: false,
-      handleOk: NOOP,
-      handleCancel: NOOP,
-    },
-    edit: {
-      name: null,
-      ssid: null,
-      mac: null,
-      icon: null,
-      status: null,
-    }
-  }
-
-  componentDidMount = () => {
-    if (this.props.token) {
-      Slack.checkStatus()
-      .then(output => {
-        if (!output.match(/^Already up-to-date/)) {
-          this.props.getCurrentStatus();
-        }
-      })
-    }
-  }
-
-  handleInstall = () => {
-    if (!this.state.install) {
-      this.setState({ install: true });
-      const status = Crontab.install();
-
-      if (
-        status.match(/^Installed in crontab/)
-        || status.match(/^Already installed in crontab/)
-      ) {
-        this.props.setCrontab(true);
-      }
-
-      this.setState({ install: false });
-      this.props.openMessage({
-        type: 'success',
-        title: 'Crontab',
-        message: 'Crontab succesfully installed.'
-      });
-    }
-  }
-
-  handleReinstall = () => {
-    if (!this.state.reinstall) {
-      this.setState({ reinstall: true });
-      const status = Crontab.reinstall();
-
-      if (
-        status.match(/^Reinstalled in crontab/)
-        || status.match(/^Installed in crontab/)
-      ) {
-        this.props.setCrontab(true);
-      }
-
-      this.props.closeNotification('notification-crontab-fail');
-
-      this.setState({ reinstall: false });
-      this.props.openMessage({
-        type: 'success',
-        title: 'Crontab',
-        message: 'Crontab succesfully reinstalled.'
-      });
-    }
-  }
-
-  handleUninstall = () => {
-    if (!this.state.uninstall) {
-      this.setState({ uninstall: true });
-      const status = Crontab.uninstall();
-
-      if (
-        status.match(/^Uninstalled from crontab/)
-        || status.match(/^Was not installed in crontab/)
-      ) {
-        this.props.setCrontab(false);
-      }
-
-      this.setState({ uninstall: false });
-      this.props.openMessage({
-        type: 'success',
-        title: 'Crontab',
-        message: 'Crontab succesfully uninstalled.'
-      });
-    }
-  }
-
-  handleModalSaveNew = () => {
-    this.props.saveToConfig({
-      ssids: [
-        ...this.props.configurations,
-        {
-          ...this.state.edit,
-          uuid: uuid()
-        }
-      ]
-    })
-    .then(() => {
-      if (
-        this.state.edit.mac.toLowerCase() === this.props.connections.current.mac.toLowerCase()
-        || this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
-      ) {
-        this.updateStatus();
-      } else {
-        this.props.openMessage({
-          type: 'info',
-          message: 'Succesfully created'
-        });
-      }
-      this.closeModal();
-    });
-  }
-
-  handleModalSaveOld = () => {
-    this.props.saveToConfig({
-      ssids: this.props.configurations.map(config => {
-        if (config.uuid === this.state.edit.uuid) {
-          return this.state.edit;
-        }
-        return config;
-      })
-    })
-    .then(() => {
-      if (
-        this.state.edit.mac.toLowerCase() === this.props.connections.current.mac.toLowerCase()
-        || this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
-      ) {
-        this.updateStatus();
-      } else {
-        this.props.openMessage({
-          type: 'info',
-          message: 'Succesfully edited'
-        });
-      }
-      this.closeModal();
-    });
-  }
-
-  handleModalCancel = () => {
-    this.closeModal();
-  }
-
-  /**
-   * @param {String} action - Which action should we trigger.
-   * @param {Object} record - Configuration row data.
-   */
-  handleConfigurationButton = (action, record = undefined, config = undefined) => {
-    const parent = this;
-
-    switch (action) {
-      case 'add': {
-        this.setState({
-          edit: {
-            uuid: '',
-            name: '',
-            ssid: '',
-            mac: '',
-            icon: '',
-            status: null,
-          },
-          modal: {
-            title: 'Create new configuration',
-            data: {
-              uuid: '',
-              name: '',
-              ssid: '',
-              mac: '',
-              icon: '',
-              status: null,
-            },
-            visible: true,
-            handleOk: () => this.handleModalSaveNew(),
-            handleCancel: () => this.handleModalCancel(),
-          }
-        });
-        break;
-      }
-      case 'create': {
-        this.setState({
-          edit: {
-            uuid: '',
-            name: '',
-            ssid: record.ssid,
-            mac: record.mac,
-            icon: '',
-            status: null,
-          },
-          modal: {
-            title: `Create configuration for "${record.ssid}"`,
-            data: {
-              uuid: '',
-              name: '',
-              ssid: record.ssid,
-              mac: record.mac,
-              icon: '',
-              status: null,
-            },
-            visible: true,
-            handleOk: () => this.handleModalSaveNew(),
-            handleCancel: () => this.handleModalCancel(),
-          }
-        });
-        break;
-      }
-      case 'edit': {
-        this.setState({
-          edit: {
-            uuid: config.uuid,
-            name: config.name,
-            ssid: config.ssid,
-            mac: config.mac,
-            icon: config.icon,
-            status: config.status,
-          },
-          modal: {
-            title: `Edit configuration for "${record.ssid}"`,
-            data: config,
-            visible: true,
-            handleOk: () => this.handleModalSaveOld(),
-            handleCancel: () => this.handleModalCancel(),
-          }
-        });
-        break;
-      }
-      case 'delete': {
-        confirm({
-          title: `Are you sure delete configurations for "${record.ssid}"?`,
-          onOk() {
-            parent.props.saveToConfig({
-              ssids: parent.props.configurations.filter(conf => conf.uuid !== config.uuid)
-            })
-            .then(() => {
-              parent.props.openMessage({
-                type: 'info',
-                message: 'Succesfully deleted'
-              });
-            })
-          },
-          onCancel() {
-
-          },
-        });
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-  }
-
-  closeModal = () => {
-    this.setState({
+  constructor(props) {
+    super(props);
+    this.state = {
+      install: false,
+      reinstall: false,
+      uninstall: false,
       modal: {
-        ...this.state.modal,
+        title: 'Create new configuration',
+        data: [],
         visible: false,
         handleOk: NOOP,
         handleCancel: NOOP,
-      }
-    });
-  }
-
-  updateData = (property, value) => {
-    this.setState({
+      },
       edit: {
-        ...this.state.edit,
-        [property]: value,
-      }
-    });
+        name: null,
+        ssid: null,
+        mac: null,
+        icon: null,
+        status: null,
+      },
+    };
   }
 
-  /**
-   * @param {Object} record - Configuration row data.
-   */
-  tableButton = (record = undefined, config) => {
-    if (record) {
-      let menu = undefined;
-      let edit = undefined;
+  componentDidMount() {
+    if (this.props.token) {
+      Slack.checkStatus()
+      .then((output) => {
+        if (!output.match(/^Already up-to-date/)) {
+          this.props.getCurrentStatus();
+        }
+      });
+    }
+  }
 
-      if (this.props.configurations && this.props.configurations.length > 0 && config && config.mac.toLowerCase() !== record.mac.toLowerCase()) {
-        menu = (
-          <Menu onClick={e => this.handleConfigurationButton(e.key, record, config)}>
-            <Menu.Item key="edit">
-              Edit
-            </Menu.Item>
-            <Menu.Item key="delete">
-              Delete
-            </Menu.Item>
-          </Menu>
-        );
-
-        edit = (
-          <Dropdown.Button trigger={['hover']} onClick={() => this.handleConfigurationButton('create', record, config)} overlay={menu}>
-            Create
-          </Dropdown.Button>
-        );
-      }
-      else if (this.props.configurations && this.props.configurations.length > 0) {
-        menu = (
-        <Menu onClick={e => this.handleConfigurationButton(e.key, record, config)}>
-            <Menu.Item key="delete">
-              Delete
-            </Menu.Item>
-          </Menu>
-        );
-
-        edit = (
-          <Dropdown.Button trigger={['hover']} onClick={() => this.handleConfigurationButton('edit', record, config)} overlay={menu}>
-            Edit
-          </Dropdown.Button>
-        );
-      }
-
-      const create = (
-        <Button onClick={() => this.handleConfigurationButton('create', record)}>
-          Create
-        </Button>
-      );
-
+  getProfile() {
+    if (!this.props.profile.data) {
       return (
-        <span>
-          {config ? edit : create}
-        </span>
+        <Loading />
       );
     }
 
-    return null;
+    return (
+      <div className="profile">
+        <div className="column-left">
+          <div className="user">
+            <div className="avatar">
+              <img src={this.props.profile.data.image_72} alt="" />
+            </div>
+          </div>
+        </div>
+        <div className="column-right">
+          <div className="user">
+            <div className="firstname">{this.props.profile.data.first_name}</div>
+            <div className="lastname">{this.props.profile.data.last_name}</div>
+          </div>
+          <div className="status">
+            <div className="emoji">
+              <Emoji
+                emojis={this.props.emojis.data}
+                emoji={this.props.profile.data.status_emoji}
+              />
+            </div>
+            <div className="status">{this.props.profile.data.status_text}</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  /**
-   * @param {Object} record - Current row.
-   */
-  isConnected = record => {
-    const current = this.props.connections.current;
-    if (current && current.ssid.toLowerCase() === record.ssid.toLowerCase()) {
-      const thisConfigs = this.props.configurations.filter(c => c.ssid.toLowerCase() === record.ssid.toLowerCase());
-      const generic = thisConfigs.find(c => c.mac === '') || {};
-      const specific = thisConfigs.find(c => c.mac !== '' && c.mac.toLowerCase() === current.mac.toLowerCase()) || {};
 
-      if (
-        record
-        && current
-        && (
-          (
-            specific.mac
-            && record.mac.toLowerCase() === specific.mac.toLowerCase()
-          )
-          || (
-            !specific.uuid
-            && generic.ssid
-            && (
-              record.uuid === generic.uuid
-              || record.signal_level
-            )
-          )
-        )
-      ) {
-        return (
-          <Popover placement="topLeft" content="Currently connected">
-            <FaIcon name="wifi" />
-          </Popover>
-        );
-      }
-    }
-
-    return null;
-  }
-
-  getConfigurationColumns = () => {
+  getConfigurationColumns() {
     const ssidTooltip = ssidConfig => (
       <table className="tooltip-table">
         <tr>
@@ -459,12 +148,12 @@ class Logged extends React.Component {
         key: 'action',
         className: 'action',
         rowKey: record => `connected-action-${record.uuid}`,
-        render: (text, record) => this.tableButton(record, record)
-      }
-    ])
+        render: (text, record) => this.tableButton(record, record),
+      },
+    ]);
   }
 
-  getConnectionColumns = () => {
+  getConnectionColumns() {
     const ssidTooltip = ssidConfig => (
       <table className="tooltip-table">
         <tr>
@@ -478,24 +167,32 @@ class Logged extends React.Component {
       </table>
     );
 
-    const getConfig = record => {
-      const viaMacAndSsid = this.props.configurations.find(c => c.mac.toLowerCase() === record.mac.toLowerCase() && c.ssid.toLowerCase() === record.ssid.toLowerCase());
+    const getConfig = (record) => {
+      const viaMacAndSsid = this.props.configurations
+        .find(c => (
+          c.mac.toLowerCase() === record.mac.toLowerCase()
+          && c.ssid.toLowerCase() === record.ssid.toLowerCase()
+        ));
       if (viaMacAndSsid) {
         return viaMacAndSsid;
       }
 
-      const viaMac = this.props.configurations.find(c => c.mac.toLowerCase() === record.mac.toLowerCase());
+      const viaMac = this.props.configurations
+        .find(c => c.mac.toLowerCase() === record.mac.toLowerCase())
+      ;
       if (viaMac) {
         return viaMac;
       }
 
-      const viaSsid = this.props.configurations.find(c => c.ssid.toLowerCase() === record.ssid.toLowerCase());
+      const viaSsid = this.props.configurations
+        .find(c => c.ssid.toLowerCase() === record.ssid.toLowerCase())
+      ;
       if (viaSsid) {
         return viaSsid;
       }
 
       return undefined;
-    }
+    };
 
     return ([
       {
@@ -523,6 +220,8 @@ class Logged extends React.Component {
               <Emoji emojis={this.props.emojis.data} emoji={config.icon} />
             );
           }
+
+          return null;
         },
       },
       {
@@ -535,52 +234,370 @@ class Logged extends React.Component {
             return config.status;
           }
           return '';
-        }
+        },
       },
       {
         title: 'Action',
         key: 'action',
         className: 'action',
         rowKey: record => `connection-action-${record.ssid}-${record.mac}`,
-        render: (text, record) => this.tableButton(record, getConfig(record))
-      }
+        render: (text, record) => this.tableButton(record, getConfig(record)),
+      },
     ]);
   }
 
-  getProfile = () => {
-    if (!this.props.profile.data) {
+  handleInstall() {
+    if (!this.state.install) {
+      this.setState({ install: true });
+      const status = Crontab.install();
+
+      if (
+        status.match(/^Installed in crontab/)
+        || status.match(/^Already installed in crontab/)
+      ) {
+        this.props.setCrontab(true);
+      }
+
+      this.setState({ install: false });
+      this.props.openMessage({
+        type: 'success',
+        title: 'Crontab',
+        message: 'Crontab succesfully installed.',
+      });
+    }
+  }
+
+  handleReinstall() {
+    if (!this.state.reinstall) {
+      this.setState({ reinstall: true });
+      const status = Crontab.reinstall();
+
+      if (
+        status.match(/^Reinstalled in crontab/)
+        || status.match(/^Installed in crontab/)
+      ) {
+        this.props.setCrontab(true);
+      }
+
+      this.props.closeNotification('notification-crontab-fail');
+
+      this.setState({ reinstall: false });
+      this.props.openMessage({
+        type: 'success',
+        title: 'Crontab',
+        message: 'Crontab succesfully reinstalled.',
+      });
+    }
+  }
+
+  handleUninstall() {
+    if (!this.state.uninstall) {
+      this.setState({ uninstall: true });
+      const status = Crontab.uninstall();
+
+      if (
+        status.match(/^Uninstalled from crontab/)
+        || status.match(/^Was not installed in crontab/)
+      ) {
+        this.props.setCrontab(false);
+      }
+
+      this.setState({ uninstall: false });
+      this.props.openMessage({
+        type: 'success',
+        title: 'Crontab',
+        message: 'Crontab succesfully uninstalled.',
+      });
+    }
+  }
+
+  handleModalSaveNew() {
+    this.props.saveToConfig({
+      ssids: [
+        ...this.props.configurations,
+        {
+          ...this.state.edit,
+          uuid: uuid(),
+        },
+      ],
+    })
+    .then(() => {
+      if (
+        this.state.edit.mac.toLowerCase() === this.props.connections.current.mac.toLowerCase()
+        || this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
+      ) {
+        this.updateStatus();
+      } else {
+        this.props.openMessage({
+          type: 'info',
+          message: 'Succesfully created',
+        });
+      }
+      this.closeModal();
+    });
+  }
+
+  handleModalSaveOld() {
+    this.props.saveToConfig({
+      ssids: this.props.configurations.map((config) => {
+        if (config.uuid === this.state.edit.uuid) {
+          return this.state.edit;
+        }
+        return config;
+      }),
+    })
+    .then(() => {
+      if (
+        this.state.edit.mac.toLowerCase() === this.props.connections.current.mac.toLowerCase()
+        || this.state.edit.ssid.toLowerCase() === this.props.connections.current.ssid.toLowerCase()
+      ) {
+        this.updateStatus();
+      } else {
+        this.props.openMessage({
+          type: 'info',
+          message: 'Succesfully edited',
+        });
+      }
+      this.closeModal();
+    });
+  }
+
+  handleModalCancel() {
+    this.closeModal();
+  }
+
+  /**
+   * @param {String} action - Which action should we trigger.
+   * @param {Object} record - Configuration row data.
+   */
+  handleConfigurationButton(action, record = undefined, config = undefined) {
+    const parent = this;
+
+    switch (action) {
+      case 'add': {
+        this.setState({
+          edit: {
+            uuid: '',
+            name: '',
+            ssid: '',
+            mac: '',
+            icon: '',
+            status: null,
+          },
+          modal: {
+            title: 'Create new configuration',
+            data: {
+              uuid: '',
+              name: '',
+              ssid: '',
+              mac: '',
+              icon: '',
+              status: null,
+            },
+            visible: true,
+            handleOk: () => this.handleModalSaveNew(),
+            handleCancel: () => this.handleModalCancel(),
+          },
+        });
+        break;
+      }
+      case 'create': {
+        this.setState({
+          edit: {
+            uuid: '',
+            name: '',
+            ssid: record.ssid,
+            mac: record.mac,
+            icon: '',
+            status: null,
+          },
+          modal: {
+            title: `Create configuration for "${record.ssid}"`,
+            data: {
+              uuid: '',
+              name: '',
+              ssid: record.ssid,
+              mac: record.mac,
+              icon: '',
+              status: null,
+            },
+            visible: true,
+            handleOk: () => this.handleModalSaveNew(),
+            handleCancel: () => this.handleModalCancel(),
+          },
+        });
+        break;
+      }
+      case 'edit': {
+        this.setState({
+          edit: {
+            uuid: config.uuid,
+            name: config.name,
+            ssid: config.ssid,
+            mac: config.mac,
+            icon: config.icon,
+            status: config.status,
+          },
+          modal: {
+            title: `Edit configuration for "${record.ssid}"`,
+            data: config,
+            visible: true,
+            handleOk: () => this.handleModalSaveOld(),
+            handleCancel: () => this.handleModalCancel(),
+          },
+        });
+        break;
+      }
+      case 'delete': {
+        confirm({
+          title: `Are you sure delete configurations for "${record.ssid}"?`,
+          onOk() {
+            parent.props.saveToConfig({
+              ssids: parent.props.configurations.filter(conf => conf.uuid !== config.uuid),
+            })
+            .then(() => {
+              parent.props.openMessage({
+                type: 'info',
+                message: 'Succesfully deleted',
+              });
+            });
+          },
+          onCancel() {
+
+          },
+        });
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+  }
+
+  closeModal() {
+    this.setState({
+      modal: {
+        ...this.state.modal,
+        visible: false,
+        handleOk: NOOP,
+        handleCancel: NOOP,
+      },
+    });
+  }
+
+  updateData(property, value) {
+    this.setState({
+      edit: {
+        ...this.state.edit,
+        [property]: value,
+      },
+    });
+  }
+
+  /**
+   * @param {Object} record - Configuration row data.
+   */
+  tableButton(record = undefined, config) {
+    if (record) {
+      let menu;
+      let edit;
+
+      if (
+        this.props.configurations
+        && this.props.configurations.length > 0
+        && config && config.mac.toLowerCase() !== record.mac.toLowerCase()
+      ) {
+        menu = (
+          <Menu onClick={e => this.handleConfigurationButton(e.key, record, config)}>
+            <Menu.Item key="edit">
+              Edit
+            </Menu.Item>
+            <Menu.Item key="delete">
+              Delete
+            </Menu.Item>
+          </Menu>
+        );
+
+        edit = (
+          <Dropdown.Button trigger={['hover']} onClick={() => this.handleConfigurationButton('create', record, config)} overlay={menu}>
+            Create
+          </Dropdown.Button>
+        );
+      } else if (this.props.configurations && this.props.configurations.length > 0) {
+        menu = (
+          <Menu onClick={e => this.handleConfigurationButton(e.key, record, config)}>
+            <Menu.Item key="delete">
+              Delete
+            </Menu.Item>
+          </Menu>
+        );
+
+        edit = (
+          <Dropdown.Button trigger={['hover']} onClick={() => this.handleConfigurationButton('edit', record, config)} overlay={menu}>
+            Edit
+          </Dropdown.Button>
+        );
+      }
+
+      const create = (
+        <Button onClick={() => this.handleConfigurationButton('create', record)}>
+          Create
+        </Button>
+      );
+
       return (
-        <Loading />
+        <span>
+          {config ? edit : create}
+        </span>
       );
     }
 
-    return (
-      <div className="profile">
-        <div className="column-left">
-          <div className="user">
-            <div className="avatar"><img src={this.props.profile.data.image_72} /></div>
-          </div>
-        </div>
-        <div className="column-right">
-          <div className="user">
-            <div className="firstname">{this.props.profile.data.first_name}</div>
-            <div className="lastname">{this.props.profile.data.last_name}</div>
-          </div>
-          <div className="status">
-            <div className="emoji">
-              <Emoji
-                emojis={this.props.emojis.data}
-                emoji={this.props.profile.data.status_emoji}
-              />
-              </div>
-            <div className="status">{this.props.profile.data.status_text}</div>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
-  checkCrontabStatus = () => {
+  /**
+   * @param {Object} record - Current row.
+   */
+  isConnected(record) {
+    const current = this.props.connections.current;
+    if (current && current.ssid.toLowerCase() === record.ssid.toLowerCase()) {
+      const thisConfigs = this.props.configurations
+        .filter(c => c.ssid.toLowerCase() === record.ssid.toLowerCase())
+      ;
+      const generic = thisConfigs.find(c => c.mac === '') || {};
+      const specific = thisConfigs.find(c => c.mac !== '' && c.mac.toLowerCase() === current.mac.toLowerCase()) || {};
+
+      if (
+        record
+        && current
+        && (
+          (
+            specific.mac
+            && record.mac.toLowerCase() === specific.mac.toLowerCase()
+          )
+          || (
+            !specific.uuid
+            && generic.ssid
+            && (
+              record.uuid === generic.uuid
+              || record.signal_level
+            )
+          )
+        )
+      ) {
+        return (
+          <Popover placement="topLeft" content="Currently connected">
+            <FaIcon name="wifi" />
+          </Popover>
+        );
+      }
+    }
+
+    return null;
+  }
+
+
+  checkCrontabStatus() {
     const crontabScriptPath = Crontab.checkScriptPath();
     if (!this.props.crontab) {
       return (
@@ -588,8 +605,7 @@ class Logged extends React.Component {
           <Icon type="close-circle" /> Not installed
         </div>
       );
-    }
-    else if (this.props.crontab && crontabScriptPath === false) {
+    } else if (this.props.crontab && crontabScriptPath === false) {
       this.props.openNotification({
         type: 'error',
         title: 'Error',
@@ -613,7 +629,7 @@ class Logged extends React.Component {
     );
   }
 
-  crontabStatusIcon = () => {
+  crontabStatusIcon() {
     const crontabScriptPath = Crontab.checkScriptPath();
     let className = 'installed';
 
@@ -639,19 +655,23 @@ class Logged extends React.Component {
         </div>
       );
     }
+
+    return null;
   }
 
-  configurationStatusIcon = () => {
-    if (this.props.configurations && this.props.configurations.length > 0) {
+  configurationStatusIcon() {
+    if (this.props.configurations && this.props.configurations.length > 0) {
       return (
         <div className="status info">
           <Badge count={this.props.configurations.length} />
         </div>
       );
     }
+
+    return null;
   }
 
-  isButtonsDisabled = state => {
+  isButtonsDisabled(state) {
     switch (state) {
       case 'install': {
         return this.state.reinstall || this.state.uninstall;
@@ -663,45 +683,45 @@ class Logged extends React.Component {
         return this.state.install || this.state.reinstall;
       }
       default: {
-        break;
+        return null;
       }
     }
   }
 
-  updateStatus = () => {
+  updateStatus() {
     this.props.updateStatus()
       .then(() => {
         this.props.openMessage({
           type: 'info',
-          message: 'Status succesfully updated.'
+          message: 'Status succesfully updated.',
         });
       })
-      .catch(reason => {
+      .catch((reason) => {
         this.props.openMessage({
           type: 'error',
           message: reason,
         });
-      })
-  };
+      });
+  }
 
-  reloadAll = () => {
+  reloadAll() {
     this.props.reloadAll()
       .then(() => {
         this.props.openMessage({
           type: 'info',
-          message: 'Everything reloaded.'
+          message: 'Everything reloaded.',
         });
       })
-      .catch(reason => {
+      .catch((reason) => {
         this.props.openMessage({
           type: 'error',
           message: reason,
         });
       })
     ;
-  };
+  }
 
-  renderConfigurationsTable = () => {
+  renderConfigurationsTable() {
     if (!this.props.configurations || this.props.configurations.length < 1) {
       return <span>Nothing here.</span>;
     }
@@ -710,14 +730,17 @@ class Logged extends React.Component {
       <Table
         columns={this.getConfigurationColumns()}
         dataSource={this.props.configurations}
-        pagination={this.props.configurations.length <= 10 ? false : true}
+        pagination={this.props.configurations.length > 10}
         rowKey={record => `configuration-ssid-${record.name}-${record.ssid}-${record.mac}-${record.uuid}`}
       />
     );
   }
 
-  renderConnectionsTable = () => {
-    if (this.props.connections.fetched && (!this.props.connections.data || this.props.connections.data.length < 1)) {
+  renderConnectionsTable() {
+    if (
+      this.props.connections.fetched
+      && (!this.props.connections.data || this.props.connections.data.length < 1)
+    ) {
       return <span>No Data</span>;
     }
 
@@ -726,13 +749,13 @@ class Logged extends React.Component {
         loading={!this.props.connections.fetched && this.props.connections.fetching}
         columns={this.getConnectionColumns()}
         dataSource={Utils.uniqueObjectsFromArray(this.props.connections.data, 'mac')}
-        pagination={this.props.connections.data.length <= 10 ? false : true}
+        pagination={this.props.connections.data.length > 10}
         rowKey={record => `connections-ssid-${record.ssid}-${record.mac}`}
       />
     );
   }
 
-  renderProfileFetched = () => {
+  renderProfileFetched() {
     if (!this.props.profile.time) {
       return null;
     }
@@ -746,7 +769,11 @@ class Logged extends React.Component {
             type="primary"
             onClick={() => this.updateStatus()}
             loading={this.props.profile.fetching}
-            disabled={this.props.profile.fetching || this.props.configurations.length < 1 || this.props.connections.fetching}
+            disabled={
+              this.props.profile.fetching
+              || this.props.configurations.length < 1
+              || this.props.connections.fetching
+            }
           >
             Update
           </Button>
@@ -754,8 +781,16 @@ class Logged extends React.Component {
             icon="reload"
             type="dashed"
             onClick={() => this.reloadAll()}
-            loading={this.props.profile.fetching || this.props.emojis.fetching ||  this.props.connections.fetching}
-            disabled={this.props.profile.fetching || this.props.emojis.fetching ||  this.props.connections.fetching}
+            loading={
+              this.props.profile.fetching
+              || this.props.emojis.fetching
+              || this.props.connections.fetching
+            }
+            disabled={
+              this.props.profile.fetching
+              || this.props.emojis.fetching
+              || this.props.connections.fetching
+            }
           >
             Refresh all
           </Button>
@@ -764,7 +799,7 @@ class Logged extends React.Component {
     );
   }
 
-  renderCurrentProfile = () => {
+  renderCurrentProfile() {
     return (
       <div className="header">
         <div className="title">
@@ -774,22 +809,50 @@ class Logged extends React.Component {
           {this.renderProfileFetched()}
         </div>
       </div>
-    )
+    );
   }
 
-  renderCrontabButtonsUninstall = disableable => (
-    <Button icon="close" disabled={this.isButtonsDisabled('uninstall')} loading={this.state.uninstall} onClick={() => this.handleUninstall()} type="danger">Uninstall</Button>
-  )
+  renderCrontabButtonsUninstall() {
+    return (
+      <Button
+        icon="close"
+        disabled={this.isButtonsDisabled('uninstall')}
+        loading={this.state.uninstall}
+        onClick={() => this.handleUninstall()}
+        type="danger"
+      >
+        Uninstall
+      </Button>
+    );
+  }
 
-  renderCrontabButtonsReinstall = disableable => (
-    <Button type={Crontab.checkScriptPath() === false ? 'primary' : ''} icon="reload" disabled={disableable && this.isButtonsDisabled('reinstall')} loading={this.state.reinstall} onClick={() => this.handleReinstall()}>Reinstall</Button>
-  )
+  renderCrontabButtonsReinstall(disableable) {
+    return (
+      <Button
+        type={Crontab.checkScriptPath() === false ? 'primary' : ''}
+        icon="reload"
+        disabled={disableable && this.isButtonsDisabled('reinstall')}
+        loading={this.state.reinstall}
+        onClick={() => this.handleReinstall()}
+      >
+        Reinstall
+      </Button>
+    );
+  }
 
-  renderCrontabButtons = () => {
+  renderCrontabButtons() {
     if (!this.props.crontab) {
       return (
         <div className="buttons">
-          <Button icon="plus" disabled={this.isButtonsDisabled('install')} loading={this.state.install} onClick={() => this.handleInstall()} type="primary">Install</Button>
+          <Button
+            icon="plus"
+            disabled={this.isButtonsDisabled('install')}
+            loading={this.state.install}
+            onClick={() => this.handleInstall()}
+            type="primary"
+          >
+            Install
+          </Button>
         </div>
       );
     }
@@ -802,7 +865,7 @@ class Logged extends React.Component {
     );
   }
 
-  renderAutomationContent = () => {
+  renderAutomationContent() {
     return (
       <div className="crontab">
         {this.checkCrontabStatus()}
@@ -811,7 +874,7 @@ class Logged extends React.Component {
     );
   }
 
-  renderAutomation = () => {
+  renderAutomation() {
     return (
       <Panel
         header={
@@ -824,10 +887,10 @@ class Logged extends React.Component {
       >
         {this.renderAutomationContent()}
       </Panel>
-    )
+    );
   }
 
-  renderConfigurations = () => {
+  renderConfigurations() {
     return (
       <Panel
         header={
@@ -848,15 +911,15 @@ class Logged extends React.Component {
           </Button>
         </div>
       </Panel>
-    )
+    );
   }
 
-  renderLastUpdate = time => {
+  renderLastUpdate(time) {
     if (time === null) {
       return null;
     }
 
-    const connectionCount = [ ...new Set(this.props.connections.data.map(c => c.ssid)) ].length;
+    const connectionCount = [...new Set(this.props.connections.data.map(c => c.ssid))].length;
 
     return (
       <div className="update info">
@@ -865,7 +928,7 @@ class Logged extends React.Component {
     );
   }
 
-  renderConnections = () => {
+  renderConnections() {
     return (
       <Panel
         header={
@@ -878,27 +941,29 @@ class Logged extends React.Component {
       >
         {this.renderConnectionsTable()}
       </Panel>
-    )
+    );
   }
 
-  renderModal = () => (
-    <Modal
-      title={this.state.modal.title}
-      visible={this.state.modal.visible}
-      onOk={this.state.modal.handleOk}
-      onCancel={this.state.modal.handleCancel}
-    >
-      <Configuration
+  renderModal() {
+    return (
+      <Modal
+        title={this.state.modal.title}
         visible={this.state.modal.visible}
-        data={this.state.modal.data}
-        edit={this.state.edit}
-        emojis={this.props.emojis.data}
-        updateData={this.updateData}
-      />
-    </Modal>
-  )
+        onOk={this.state.modal.handleOk}
+        onCancel={this.state.modal.handleCancel}
+      >
+        <Configuration
+          visible={this.state.modal.visible}
+          data={this.state.modal.data}
+          edit={this.state.edit}
+          emojis={this.props.emojis.data}
+          updateData={this.updateData}
+        />
+      </Modal>
+    );
+  }
 
-  render = () => {
+  render() {
     if (!this.props.initialised) {
       return (
         <Loading />
@@ -911,7 +976,10 @@ class Logged extends React.Component {
           {this.renderCurrentProfile()}
         </Header>
         <Content>
-          <Collapse defaultActiveKey={this.props.defaultCollapsed} onChange={keys => this.props.saveToConfig({defaultCollapsed: keys})}>
+          <Collapse
+            defaultActiveKey={this.props.defaultCollapsed}
+            onChange={keys => this.props.saveToConfig({ defaultCollapsed: keys })}
+          >
             {this.renderAutomation()}
             {this.renderConfigurations()}
             {this.renderConnections()}
@@ -919,11 +987,36 @@ class Logged extends React.Component {
           {this.renderModal()}
         </Content>
         <Footer>
-          <a href="http://github.com/kirbo" onClick={Utils.electronOpenLinkInBrowser.bind(this)}>Kimmo Saari ©2017</a>
+          <a
+            href="http://github.com/kirbo"
+            onClick={() => Utils.electronOpenLinkInBrowser(this)}
+          >
+            Kimmo Saari ©2017
+          </a>
         </Footer>
       </Layout>
     );
   }
 }
+
+Logged.propTypes = {
+  token: React.PropTypes.instanceOf(String).isRequired,
+  profile: React.PropTypes.instanceOf(Object).isRequired,
+  getCurrentStatus: React.PropTypes.instanceOf(Function).isRequired,
+  emojis: React.PropTypes.instanceOf(Array).isRequired,
+  configurations: React.PropTypes.instanceOf(Array).isRequired,
+  setCrontab: React.PropTypes.instanceOf(Function).isRequired,
+  openMessage: React.PropTypes.instanceOf(Function).isRequired,
+  openNotification: React.PropTypes.instanceOf(Boolean).isRequired,
+  closeNotification: React.PropTypes.instanceOf(Function).isRequired,
+  saveToConfig: React.PropTypes.instanceOf(Function).isRequired,
+  connections: React.PropTypes.instanceOf(Array).isRequired,
+  crontab: React.PropTypes.instanceOf(Boolean).isRequired,
+  updateStatus: React.PropTypes.instanceOf(Function).isRequired,
+  reloadAll: React.PropTypes.instanceOf(Function).isRequired,
+  lastUpdate: React.PropTypes.instanceOf(Function).isRequired,
+  initialised: React.PropTypes.instanceOf(Boolean).isRequired,
+  defaultCollapsed: React.PropTypes.instanceOf(Array).isRequired,
+};
 
 export default Logged;

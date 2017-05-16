@@ -1,14 +1,4 @@
-import './Configuration.less';
-
 import React from 'react';
-
-import Emoji from '../Emoji';
-
-import Emojis from '../../utils/Emojis';
-import Utils from '../../utils/Utils';
-
-import * as constants from '../../utils/Constants';
-const { SECOND, MINUTE } = constants.TIMES;
 
 import {
   Form,
@@ -16,6 +6,16 @@ import {
   Select,
   Popover,
 } from 'antd';
+
+import './Configuration.less';
+
+import Emoji from '../Emoji';
+
+import Emojis from '../../utils/Emojis';
+import Utils from '../../utils/Utils';
+
+const { Option } = Select;
+
 
 const FormItem = Form.Item;
 
@@ -32,33 +32,40 @@ const formItemLayout = {
 
 const bssidPopover = (
   <div>
-    Click here if you wan't this configuration enabled only on the current WiFi access point.<br />
-    This enables you to specify different automations on different locations with the same SSID, for example: <strong>Helsinki Office</strong> and <strong>Jyväskylä Office</strong>.
+    Click here if you wan&apos;t this configuration enabled only on
+    the current WiFi access point.<br />
+    This enables you to specify different automations on different locations
+    with the same SSID, for example: <strong>Helsinki Office</strong> and
+    <strong>Jyväskylä Office</strong>.
   </div>
 );
 
 class ConfigurationForm extends React.Component {
-  state = {
-    emojis: [],
-    mac: this.props.data.uuid ? this.props.data.mac : '',
-  };
 
-  componentDidMount = () => {
+  constructor(props) {
+    super(props);
+    this.state = {
+      emojis: [],
+      mac: props.data.uuid ? props.data.mac : '',
+    };
+  }
+
+  componentWillMount() {
     const emojis = Emojis.loadStandard();
 
-    Object.keys(this.props.emojis).map(key => {
+    Object.keys(this.props.emojis).map(key => (
       emojis.push({
         key,
-        emoji: null
+        emoji: null,
       })
-    });
+    ));
 
     this.setState({
-      emojis: Utils.alphabeticSortByProperty(emojis, 'key')
+      emojis: Utils.alphabeticSortByProperty(emojis, 'key'),
     });
   }
 
-  componentWillReceiveProps = (nextProps, nextState) => {
+  componentWillReceiveProps(nextProps) {
     if (nextProps.visible === false) {
       this.resetForm();
     }
@@ -74,11 +81,11 @@ class ConfigurationForm extends React.Component {
     }
   }
 
-  resetForm = () => {
+  resetForm() {
     this.props.form.resetFields();
   }
 
-  renderFillBssid = () => {
+  renderFillBssid() {
     if (this.props.data.uuid) {
       return null;
     }
@@ -92,10 +99,12 @@ class ConfigurationForm extends React.Component {
         getPopupContainer={() => document.querySelector('.configuration-form')}
       >
         <div
+          role="button"
+          tabIndex={0}
           className="addon-button"
           onClick={() => {
             this.setState({
-              mac: this.props.data.mac
+              mac: this.props.data.mac,
             });
             this.props.form.resetFields(['bssid']);
           }}
@@ -126,9 +135,9 @@ class ConfigurationForm extends React.Component {
             <Input
               type="text"
               placeholder="Connection name, e.g.: Home or Helsinki office"
-              onChange={e => { this.props.updateData('name', e.target.value) }}
-            />
-            )}
+              onChange={(e) => { this.props.updateData('name', e.target.value); }}
+            />,
+          )}
         </FormItem>
         <FormItem
           {...formItemLayout}
@@ -145,9 +154,9 @@ class ConfigurationForm extends React.Component {
             <Input
               type="text"
               placeholder="SSID of the WiFi access point"
-              onChange={e => { this.props.updateData('ssid', e.target.value) }}
-            />
-            )}
+              onChange={(e) => { this.props.updateData('ssid', e.target.value); }}
+            />,
+          )}
         </FormItem>
         <FormItem
           {...formItemLayout}
@@ -159,10 +168,10 @@ class ConfigurationForm extends React.Component {
             <Input
               type="text"
               placeholder="BSSID (MAC address) for this access point"
-              onChange={e => { this.props.updateData('mac', e.target.value) }}
+              onChange={(e) => { this.props.updateData('mac', e.target.value); }}
               addonAfter={this.renderFillBssid()}
-            />
-            )}
+            />,
+          )}
         </FormItem>
         <FormItem
           {...formItemLayout}
@@ -179,8 +188,10 @@ class ConfigurationForm extends React.Component {
             <Select
               showSearch
               placeholder="Select an icon"
-              filterOption={(input, option) => option.props.value.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-              onChange={(value,label) => {this.props.updateData('icon', value)}}
+              filterOption={(input, option) => (
+                option.props.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              )}
+              onChange={(value) => { this.props.updateData('icon', value); }}
             >
               {this.state.emojis.map(icon => (
                 <Option value={icon.key}>
@@ -189,7 +200,7 @@ class ConfigurationForm extends React.Component {
                   </div>
                 </Option>
               ))}
-            </Select>
+            </Select>,
           )}
         </FormItem>
         <FormItem
@@ -205,19 +216,27 @@ class ConfigurationForm extends React.Component {
             },
             {
               max: 100,
-              message: 'Status can be only 100 characters long!'
+              message: 'Status can be only 100 characters long!',
             }],
           })(
             <Input
               type="textarea"
               placeholder="Status, e.g.: Working remotely, At the Helsinki office, ..."
-              onChange={e => { this.props.updateData('status', e.target.value) }}
-            />
+              onChange={(e) => { this.props.updateData('status', e.target.value); }}
+            />,
           )}
         </FormItem>
       </Form>
     );
   }
 }
+
+ConfigurationForm.propTypes = {
+  data: React.PropTypes.instanceOf(Object).isRequired,
+  emojis: React.PropTypes.instanceOf(Array).isRequired,
+  visible: React.PropTypes.instanceOf(Boolean).isRequired,
+  form: React.PropTypes.instanceOf(Object).isRequired,
+  updateData: React.PropTypes.instanceOf(Function).isRequired,
+};
 
 export default Form.create()(ConfigurationForm);

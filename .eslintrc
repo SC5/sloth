@@ -11,5 +11,9 @@
         "peerDependencies": false
       }
     ]
+  },
+  "env": {
+    "browser": true,
+    "node": true
   }
 }

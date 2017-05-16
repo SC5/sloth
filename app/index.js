@@ -10,6 +10,14 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
+const socket = require('socket.io-client/lib/index')('http://localhost:5000');
+
+const {
+    MENU_TEMPLATE,
+  PRODUCT_NAME,
+  PRODUCT_URL,
+  } = require('./src/utils/Constants');
+
 let win;
 
 global.win = win;
@@ -36,7 +44,6 @@ const Slack = require('./src/utils/Slack');
 if (process.argv.includes('UPDATE')) {
   log.info('Updating status...');
 
-  const socket = require('socket.io-client/lib/index')('http://localhost:5000');
   Slack.checkStatus(Configs.forceUpdate)
     .then(() => {
       log.info('Status updated');
@@ -46,22 +53,16 @@ if (process.argv.includes('UPDATE')) {
     .catch(() => electron.quit())
   ;
 } else {
-  const {
-    MENU_TEMPLATE,
-      PRODUCT_NAME,
-      PRODUCT_URL,
-  } = require('./src/utils/Constants');
-
   log.info('App starting...');
 
   const sendStatusToWindow = (type, message) => {
     const duration = ['error', 'warning'].includes(type) ? 5 : 1.5;
     win.webContents.send('updates', { type, message, duration });
-  }
+  };
 
   const sendNotification = (type, title, message, status) => {
     win.webContents.send('updates', { type, title, message, notification: true, status });
-  }
+  };
 
   const startExpress = () => {
     app.use(express.static(path.join(__dirname, '/bundles')));
@@ -88,7 +89,7 @@ if (process.argv.includes('UPDATE')) {
             } else {
               const config = Object.assign({},
                 Configs.load(),
-                { token: JSONresponse.access_token }
+                { token: JSONresponse.access_token },
               );
               Configs.save(config);
               res.sendFile(path.join(__dirname, '/views/index.html'));

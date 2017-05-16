@@ -1,4 +1,3 @@
-const path = require('path');
 const emoji = require('node-emoji');
 
 class Emojis {
@@ -6,14 +5,14 @@ class Emojis {
    *
    * @param {String} text - Emoji.
    */
-  get(text) {
+  static get(text) {
     return emoji.get(text);
   }
 
   /**
    *
    */
-  loadStandard() {
+  static loadStandard() {
     return emoji.search('');
   }
 }
