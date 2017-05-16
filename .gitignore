@@ -59,7 +59,4 @@ typings/
 
 .vscode
 dist/**
-build/**
-bundles/**
-utils/**
-Resources/**
+app/dist/**

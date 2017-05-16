@@ -65,7 +65,7 @@ if (process.argv.includes('UPDATE')) {
   };
 
   const startExpress = () => {
-    app.use(express.static(path.join(__dirname, '/bundles')));
+    app.use(express.static(path.join(__dirname, '/dist')));
     app.use(express.static(path.join(__dirname, '/views')));
     app.use(express.static(path.join(__dirname, '/assets')));
     app.use(bodyParser.json());
@@ -89,8 +89,7 @@ if (process.argv.includes('UPDATE')) {
             } else {
               const config = Object.assign({},
                 Configs.load(),
-                { token: JSONresponse.access_token },
-              );
+                { token: JSONresponse.access_token });
               Configs.save(config);
               res.sendFile(path.join(__dirname, '/views/index.html'));
             }

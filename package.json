@@ -1,5 +1,5 @@
 {
-  "version": "0.6.2",
+  "version": "0.7.0",
   "name": "sloth",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "Sloth",
@@ -10,18 +10,17 @@
     "files": [
       "**/*",
       "!*.*",
-      "!data/",
       "!dist/",
-      "!build/",
-      "!src/",
-      "!Resources/",
+      "!app/",
       ".env",
-      "src/utils/**",
-      "index.js",
+      "app/assets/**",
+      "app/src/utils/**",
+      "app/entry.js",
+      "app/index.js",
       "package.json"
     ],
     "extraFiles": [
-      "executables/**"
+      "bash/**"
     ],
     "mac": {
       "category": "public.app-category.utilities"
@@ -36,7 +35,7 @@
       }
     ]
   },
-  "main": "./index.js",
+  "main": "./app/index.js",
   "scripts": {
     "compile": "NODE_ENV=production ./node_modules/.bin/webpack",
     "compile-dev": "NODE_ENV=dev ./node_modules/.bin/webpack",
@@ -48,7 +47,7 @@
     "dist": "build",
     "release": "export $(cat .env | xargs) && build",
     "start": "npm run build && npm run open",
-    "postinstall": "./executables/postinstall.sh",
+    "postinstall": "./bash/postinstall.sh",
     "lint": "./node_modules/.bin/eslint ."
   },
   "repository": {
@@ -58,6 +57,7 @@
   "author": "kimmo.saari@sc5.io",
   "license": "MIT",
   "devDependencies": {
+    "airbnb-style": "2.0.0",
     "antd": "2.10.0",
     "babel-core": "6.24.1",
     "babel-loader": "7.0.0",
@@ -71,7 +71,10 @@
     "babili": "0.0.12",
     "babili-webpack-plugin": "0.0.11",
     "css-loader": "0.28.1",
+    "electron": "1.6.7",
     "electron-builder": "17.5.0",
+    "eslint": "3.19.0",
+    "eslint-config-airbnb": "15.0.0",
     "eslint-plugin-import": "2.2.0",
     "eslint-plugin-jsx-a11y": "5.0.1",
     "eslint-plugin-react": "7.0.1",
@@ -88,15 +91,11 @@
     "webpack": "2.5.1"
   },
   "dependencies": {
-    "airbnb-style": "2.0.0",
     "body-parser": "1.17.1",
     "debug": "2.6.6",
     "dotenv": "4.0.0",
-    "electron": "1.6.7",
     "electron-log": "2.2.4",
     "electron-updater": "1.15.0",
-    "eslint": "3.19.0",
-    "eslint-config-airbnb": "15.0.0",
     "express": "4.15.2",
     "node-emoji": "1.5.1",
     "node-wifi": "https://github.com/kirbo/node-wifi.git",
