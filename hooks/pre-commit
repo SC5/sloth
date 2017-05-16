@@ -6,4 +6,4 @@ source "$DIR/../../executables/include.sh"
 success "Executing: npm run lint"
 npm run lint
 
-success "All done."
+exit $?
