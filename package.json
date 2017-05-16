@@ -8,10 +8,10 @@
     "appId": "com.github.kirbo.sloth",
     "asar": true,
     "files": [
-      "!*.*",
-      "node_modules/**",
       ".express.env",
+      "node_modules/**",
       "app/assets/**",
+      "app/dist/**",
       "app/src/utils/**",
       "app/views/**",
       "app/index.js"
@@ -34,20 +34,20 @@
   },
   "main": "./app/index.js",
   "scripts": {
-    "compile": "NODE_ENV=production ./node_modules/.bin/webpack",
-    "compile-dev": "NODE_ENV=dev ./node_modules/.bin/webpack",
-    "open": "open 'dist/mac/Sloth.app'",
     "build": "npm run compile-dev && npm run pack",
     "build-dist": "npm run compile && npm run dist",
-    "build-release": "export $(cat .env | xargs) && npm run compile && npm run release",
-    "pack": "build --dir",
+    "build-release": "npm run compile && npm run release",
+    "compile": "NODE_ENV=production ./node_modules/.bin/webpack",
+    "compile-dev": "NODE_ENV=dev ./node_modules/.bin/webpack",
+    "dev": "./node_modules/.bin/electron .",
     "dist": "build",
-    "release": "export $(cat .env | xargs) && build",
-    "start": "npm run build && npm run open",
-    "postinstall": "./bash/postinstall.sh",
     "lint": "./node_modules/.bin/eslint .",
-    "watch": "NODE_ENV=dev ./node_modules/.bin/webpack --watch",
-    "dev": "./node_modules/.bin/electron ."
+    "open": "open 'dist/mac/Sloth.app'",
+    "pack": "build --dir",
+    "postinstall": "./bash/postinstall.sh",
+    "release": "export $(cat .release.env | xargs) && build",
+    "start": "npm run build && npm run open",
+    "watch": "NODE_ENV=dev ./node_modules/.bin/webpack --watch"
   },
   "repository": {
     "url": "https://github.com/kirbo/sloth.git",

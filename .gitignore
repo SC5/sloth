@@ -55,8 +55,7 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
-.express.env
+**.env
 
 .vscode
 dist/**
