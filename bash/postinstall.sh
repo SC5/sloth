@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR="$(dirname $(git rev-parse --git-dir))"
+DIR="$(cd $(dirname $(git rev-parse --git-dir)) && pwd)"
 source "${DIR}/bash/include.sh"
 cd "${DIR}"
 
