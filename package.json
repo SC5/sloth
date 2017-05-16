@@ -49,7 +49,7 @@
     "release": "export $(cat .env | xargs) && build",
     "start": "npm run build && npm run open",
     "postinstall": "./executables/postinstall.sh",
-    "lint": "./node_modules/.bin/eslint app"
+    "lint": "./node_modules/.bin/eslint ."
   },
   "repository": {
     "url": "https://github.com/kirbo/sloth.git",
@@ -71,7 +71,6 @@
     "babili": "0.0.12",
     "babili-webpack-plugin": "0.0.11",
     "css-loader": "0.28.1",
-    "electron": "1.6.7",
     "electron-builder": "17.5.0",
     "eslint-plugin-import": "2.2.0",
     "eslint-plugin-jsx-a11y": "5.0.1",
@@ -93,6 +92,7 @@
     "body-parser": "1.17.1",
     "debug": "2.6.6",
     "dotenv": "4.0.0",
+    "electron": "1.6.7",
     "electron-log": "2.2.4",
     "electron-updater": "1.15.0",
     "eslint": "3.19.0",

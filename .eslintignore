@@ -1,0 +1,5 @@
+# Ignore built files except build/index.js
+app/assets/*
+bundles/*
+dist/*
+node_modules/*
