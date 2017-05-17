@@ -32,12 +32,6 @@ Old CLI version can be [found here](https://github.com/sc5/sloth/tree/cli).
 * [Eslint](https://github.com/eslint/eslint)
 * [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
 
-## Motivation
-
-I've wanted to create an Electron app for a while but I didn't have any ideas what to do with it.
-Then Slack announced statuses and I instantly got a vision:
-__I want my status to be updated automatically, based on the location I'm currently in.__
-
 ## What is done:
 
 * Configure settings for WiFi connections
@@ -46,13 +40,6 @@ __I want my status to be updated automatically, based on the location I'm curren
   * If you set only `SSID`, that configuration is used for every connection with the same name
   * If you set `BSSID`, that configuration is used only for that specific WiFi access point (this enables you to specify different configurations for different WiFi access points, for example if you have same SSID name across all the offices, you can create configurations for each office)
 * Semiautomatic updates for the app
-
-## What is to be done:
-
-* Integrate with calendar so that this app can check if you're currently in a meeting, on a holiday, on a sick leave, etc..
-* Windows support. Currently works only on Mac
-* Major refactoring
-* Implement a logo
 
 ## Screenshots
 
