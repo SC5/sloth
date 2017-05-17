@@ -23,7 +23,7 @@
     "open": "open 'dist/mac/Sloth.app'",
     "pack": "build --dir",
     "postinstall": "./bash/postinstall.sh",
-    "release": "export $(cat .release.env | xargs) && build",
+    "release": "export $(cat .release.env | grep -v '#' | xargs) && build",
     "start": "npm run build && npm run open",
     "watch": "NODE_ENV=development ./node_modules/.bin/webpack-dev-server"
   },
