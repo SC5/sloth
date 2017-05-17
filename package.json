@@ -1,9 +1,32 @@
 {
   "version": "0.7.0",
   "name": "sloth",
+  "main": "./app/index.js",
+  "author": "kimmo.saari@sc5.io",
+  "license": "MIT",
+    "repository": {
+    "url": "https://github.com/sc5/sloth.git",
+    "type": "git"
+  },
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "Sloth",
   "productUrl": "https://github.com/sc5/sloth/releases",
+  "scripts": {
+    "build": "npm run compile-dev && npm run pack",
+    "build-dist": "npm run compile && npm run dist",
+    "build-release": "npm run compile && npm run release",
+    "compile": "NODE_ENV=production ./node_modules/.bin/webpack",
+    "compile-dev": "NODE_ENV=development ./node_modules/.bin/webpack",
+    "dev": "NODE_ENV=development ./node_modules/.bin/electron .",
+    "dist": "build",
+    "lint": "./node_modules/.bin/eslint .",
+    "open": "open 'dist/mac/Sloth.app'",
+    "pack": "build --dir",
+    "postinstall": "./bash/postinstall.sh",
+    "release": "export $(cat .release.env | xargs) && build",
+    "start": "npm run build && npm run open",
+    "watch": "NODE_ENV=development ./node_modules/.bin/webpack-dev-server"
+  },
   "build": {
     "appId": "com.github.sc5.sloth",
     "asar": true,
@@ -33,29 +56,6 @@
       }
     ]
   },
-  "main": "./app/index.js",
-  "scripts": {
-    "build": "npm run compile-dev && npm run pack",
-    "build-dist": "npm run compile && npm run dist",
-    "build-release": "npm run compile && npm run release",
-    "compile": "NODE_ENV=production ./node_modules/.bin/webpack",
-    "compile-dev": "NODE_ENV=development ./node_modules/.bin/webpack",
-    "dev": "NODE_ENV=development ./node_modules/.bin/electron .",
-    "dist": "build",
-    "lint": "./node_modules/.bin/eslint .",
-    "open": "open 'dist/mac/Sloth.app'",
-    "pack": "build --dir",
-    "postinstall": "./bash/postinstall.sh",
-    "release": "export $(cat .release.env | xargs) && build",
-    "start": "npm run build && npm run open",
-    "watch": "NODE_ENV=development ./node_modules/.bin/webpack-dev-server"
-  },
-  "repository": {
-    "url": "https://github.com/sc5/sloth.git",
-    "type": "git"
-  },
-  "author": "kimmo.saari@sc5.io",
-  "license": "MIT",
   "devDependencies": {
     "airbnb-style": "2.0.0",
     "antd": "2.10.0",
