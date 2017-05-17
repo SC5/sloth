@@ -3,9 +3,9 @@
   "name": "sloth",
   "description": "Changes your Slack status based on the SSID you're currently connected to.",
   "productName": "Sloth",
-  "productUrl": "https://github.com/kirbo/sloth/releases",
+  "productUrl": "https://github.com/sc5/sloth/releases",
   "build": {
-    "appId": "com.github.kirbo.sloth",
+    "appId": "com.github.sc5.sloth",
     "asar": true,
     "files": [
       ".express.env",
@@ -51,7 +51,7 @@
     "watch": "NODE_ENV=development ./node_modules/.bin/webpack-dev-server"
   },
   "repository": {
-    "url": "https://github.com/kirbo/sloth.git",
+    "url": "https://github.com/sc5/sloth.git",
     "type": "git"
   },
   "author": "kimmo.saari@sc5.io",

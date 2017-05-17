@@ -8,10 +8,10 @@ import './Footer.less';
 const Footer = () => (
   <Layout.Footer>
     <a
-      href="http://github.com/kirbo"
+      href="http://github.com/sc5"
       onClick={event => Utils.electronOpenLinkInBrowser(event, this)}
     >
-      Kimmo Saari © 2017
+      SC5 © 2017
     </a>
   </Layout.Footer>
 );

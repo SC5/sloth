@@ -8,7 +8,7 @@ const DEFAULT_CONFIG = {
 };
 
 const PRODUCT_NAME = 'Sloth';
-const PRODUCT_URL = 'https://github.com/kirbo/sloth/releases';
+const PRODUCT_URL = 'https://github.com/sc5/sloth/releases';
 
 /* eslint-disable */
 const MILLISECOND     = 1;
