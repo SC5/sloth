@@ -28,7 +28,7 @@
     "watch": "NODE_ENV=development ./node_modules/.bin/webpack-dev-server"
   },
   "build": {
-    "appId": "com.github.sc5.sloth",
+    "appId": "com.github.kirbo.sloth",
     "asar": true,
     "files": [
       ".express.env",
