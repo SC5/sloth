@@ -40,8 +40,8 @@ const bssidPopover = (
 class ConfigurationForm extends React.Component {
   static propTypes = {
     data: PropTypes.instanceOf(Object).isRequired,
-    emojis: PropTypes.instanceOf(Array).isRequired,
-    visible: PropTypes.instanceOf(Boolean).isRequired,
+    emojis: PropTypes.instanceOf(Object).isRequired,
+    visible: PropTypes.bool.isRequired,
     form: PropTypes.instanceOf(Object).isRequired,
     updateData: PropTypes.instanceOf(Function).isRequired,
   };
@@ -195,7 +195,7 @@ class ConfigurationForm extends React.Component {
               onChange={(value) => { this.props.updateData('icon', value); }}
             >
               {this.state.emojis.map(icon => (
-                <Option value={icon.key}>
+                <Option key={icon.key} value={icon.key}>
                   <div className="option">
                     <Emoji emojis={this.props.emojis} emoji={icon.key} /> - {icon.key}
                   </div>

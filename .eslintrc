@@ -13,6 +13,9 @@
     ],
     "class-methods-use-this": [
       "off"
+    ],
+    "jsx-a11y/href-no-hash": [
+      "off"
     ]
   },
   "env": {

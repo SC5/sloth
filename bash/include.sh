@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source /etc/profile
+if [ -e /etc/profile ]; then
+  source /etc/profile
+fi
 
 if [ -e /etc/bash.bashrc ]; then
   source /etc/bash.bashrc
